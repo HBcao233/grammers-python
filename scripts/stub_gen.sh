@@ -1,0 +1,1 @@
+cargo run --bin stub_gen --features stub-gen

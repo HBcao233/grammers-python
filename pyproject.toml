@@ -1,0 +1,46 @@
+# pip install ziglang
+# maturin build --release --target aarch64-unknown-linux-gnu --zig
+[build-system]
+requires = ["maturin>=1.4,<2.0"]
+build-backend = "maturin"
+
+[tool.maturin]
+features = ["pyo3/extension-module"]
+module-name = "grammers._rs"
+python-source = "python"
+
+
+[project]
+name = "grammers"
+version = "0.0.1"
+authors = [
+  { name = "HBcao233", email = "hbcaoqaq@outlook.com" }
+]
+readme = "README.md"
+license = "MIT"
+keywords = ["telegram", "rust", "grammers"]
+requires-python = ">=3.9"
+classifiers = [
+  "Programming Language :: Rust",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: 3.12",
+]
+# dependencies = ["cffi"]
+
+# [project.scripts]
+# cathon = "cathon.cli:main"
+
+[project.urls]
+Homepage = "https://github.com/HBcao233/grammers_python"
+
+
+[tool.ruff]
+line-length = 88
+indent-width = 2
+
+[tool.ruff.format]
+# Prefer single quotes over double quotes.
+quote-style = "single"
+
+[tool.ruff.lint]
+ignore = ["E402", "F401", "F403", "F405"]

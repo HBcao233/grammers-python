@@ -1,0 +1,12 @@
+[package]
+name = "grammers-tl-types-pyo3"
+version = "0.0.1"
+edition = "2024"
+
+[dependencies]
+pyo3 = { version = "0.27" }
+grammers-tl-types = { git = "https://github.com/Lonami/grammers.git", features = ["tl-mtproto"] }
+
+[build-dependencies]
+grammers-tl-parser = { git = "https://github.com/Lonami/grammers.git" }
+grammers-tl-gen-pyo3 = { path = "../grammers-tl-gen-pyo3" }
