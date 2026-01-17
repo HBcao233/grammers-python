@@ -22,7 +22,6 @@ pub struct Outputs<W: Write> {
   pub functions_: W,
   /// Writer to the file containing all of the boxed [`Category::Types`] constructors.
   pub enums: W,
-  pub enums_: W,
 }
 impl<W: Write> Outputs<W> {
   /// Flush all writers sequentially.
@@ -33,7 +32,6 @@ impl<W: Write> Outputs<W> {
     self.functions.flush()?;
     self.functions_.flush()?;
     self.enums.flush()?;
-    self.enums_.flush()?;
     Ok(())
   }
 }
@@ -72,7 +70,6 @@ pub fn generate_rust_code<W: Write>(
   
   enums::write_enums_mod(
     &mut outputs.enums,
-    &mut outputs.enums_,
     definitions,
     &metadata,
   )?;

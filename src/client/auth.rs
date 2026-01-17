@@ -3,6 +3,8 @@ use crate::client::PyClient;
 use crate::errors::InvocationErrorConverter;
 //use grammers_mtsender::InvocationError;
 
+#[cfg(feature = "stub-gen")]
+use pyo3_stub_gen::derive::*;
 
 #[cfg_attr(feature = "stub-gen", gen_stub_pymethods)]
 #[pymethods]

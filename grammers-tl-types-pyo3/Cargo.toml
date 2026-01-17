@@ -1,11 +1,18 @@
 [package]
 name = "grammers-tl-types-pyo3"
-version = "0.0.1"
-edition = "2024"
+version = { workspace = true }
+edition = { workspace = true }
 
 [dependencies]
-pyo3 = { version = "0.27" }
-grammers-tl-types = { git = "https://github.com/Lonami/grammers.git", features = ["tl-mtproto"] }
+pyo3 = { workspace = true }
+grammers-tl-types = { workspace = true }
+
+pyo3-stub-gen = { optional = true, workspace = true }
+
+[features]
+default = []
+stub-gen = ["pyo3-stub-gen"]
+
 
 [build-dependencies]
 grammers-tl-parser = { git = "https://github.com/Lonami/grammers.git" }

@@ -10,7 +10,7 @@ use crate::ignore_type;
 /// Defines the `struct` corresponding to the definition:
 ///
 /// ```ignore
-/// #[pyo3::pyclass(name = "Name", extends = crate::TLObject)]
+/// #[pyo3::pyclass(name = "Name", module = "grammers.tl[.ns]", extends = crate::TLObject)]
 /// pub struct PyName {
 ///     pub field: Type,
 /// }
@@ -54,26 +54,29 @@ fn write_struct<W: Write>(
   )?;
 
   writeln!(file, "{indent}#[derive(Debug, Clone)]")?;
-  // writeln!(file, "{indent}#[derive(Clone, PartialEq)]")?;
   writeln!(
     file, 
-    "{}#[pyo3::pyclass(name = \"{}\", extends = crate::{})]",
+    "{}#[pyo3::pyclass(name = \"{}\", module = \"grammers.tl{}\", extends = crate::{})]",
     indent,
     type_name,
+    if def.namespace.is_empty() {
+      "".to_string()
+    } else {
+      format!(".{}", def.namespace[0])
+    },
     match def.category {
       Category::Types => "TLObject",
       Category::Functions => "TLRequest",
     },
   )?;
-  write!(
+  writeln!(file, "{indent}#[cfg_attr(feature = \"stub-gen\", pyo3_stub_gen::derive::gen_stub_pyclass)]")?;
+  writeln!(
     file,
     "{}pub struct Py{} {{",
     indent,
     type_name,
-    // get_generic_param_list(def, ""),
   )?;
 
-  writeln!(file)?;
   for param in def.params.iter() {
     match &param.ty {
       ParameterType::Flags => {
@@ -96,6 +99,43 @@ fn write_struct<W: Write>(
     }
   }
   writeln!(file, "{indent}}}")?;
+  
+  writeln!(
+    file, 
+    r#"{indent}#[repr(transparent)]
+{indent}#[derive(Debug, pyo3::FromPyObject, pyo3::IntoPyObject)]
+{indent}pub struct Py{name}Wrapper(pub pyo3::Py<Py{name}>);
+{indent}impl Clone for Py{name}Wrapper {{
+{indent}    fn clone(&self) -> Self {{
+{indent}        pyo3::Python::attach(|py| self.0.borrow(py).clone()).into()
+{indent}    }}
+{indent}}}
+{indent}impl From<pyo3::Py<Py{name}>> for Py{name}Wrapper {{
+{indent}    fn from(x: pyo3::Py<Py{name}>) -> Self {{
+{indent}        Self(x)
+{indent}    }}
+{indent}}}
+{indent}impl From<Py{name}> for Py{name}Wrapper {{
+{indent}    fn from(x: Py{name}) -> Self {{
+{indent}        pyo3::Python::attach(|py| {{
+{indent}            let init = pyo3::PyClassInitializer::from(crate::{base} {{}});
+{indent}            pyo3::Py::new(py, init.add_subclass(x)).expect("init")
+{indent}        }}).into()
+{indent}    }}
+{indent}}}
+{indent}impl From<Py{name}> for crate::Py{base} {{
+{indent}    fn from(x: Py{name}) -> Self {{
+{indent}        Self::{ns_name}(x.into())
+{indent}    }}
+{indent}}}"#,
+    name = type_name,
+    base = match def.category {
+      Category::Functions => "TLRequest",
+      Category::Types => "TLObject",
+    },
+    ns_name = rustifier::definitions::ns_type_name(def),
+  )?;
+  
   Ok(())
 }
 
@@ -123,11 +163,8 @@ fn write_impl<W: Write>(
   def: &Definition,
 ) -> io::Result<()> {
   let type_name = rustifier::definitions::type_name(def);
-  writeln!(
-    file, 
-    "{}#[pyo3::pymethods]",
-    indent,
-  )?;
+  writeln!(file, "{indent}#[cfg_attr(feature = \"stub-gen\", pyo3_stub_gen::derive::gen_stub_pymethods)]")?;
+  writeln!(file, "{indent}#[pyo3::pymethods]")?;
   writeln!(
     file,
     "{}impl Py{} {{",
@@ -161,7 +198,8 @@ fn write_impl<W: Write>(
   } 
   writeln!(
     file, 
-    ") -> (Self, crate::{}) {{",
+    ") -> (Py{}, crate::{}) {{",
+    type_name,
     match def.category {
       Category::Types => "TLObject",
       Category::Functions => "TLRequest",
@@ -247,16 +285,12 @@ fn write_identifiable<W: Write>(
 ) -> io::Result<()> {
   writeln!(
     file,
-    "{}impl grammers_tl_types::Identifiable for Py{} {{",
-    indent,
+    r#"{indent}impl grammers_tl_types::Identifiable for Py{} {{
+{indent}    const CONSTRUCTOR_ID: u32 = {};
+{indent}}}"#,
     rustifier::definitions::type_name(def),
+    def.id
   )?;
-  writeln!(
-    file,
-    "{}    const CONSTRUCTOR_ID: u32 = {};",
-    indent, def.id
-  )?;
-  writeln!(file, "{indent}}}")?;
   Ok(())
 }
 
@@ -274,16 +308,17 @@ fn write_serializable<W: Write>(
   indent: &str,
   def: &Definition,
 ) -> io::Result<()> {
+  let type_name = rustifier::definitions::type_name(def);
   writeln!(
     file,
-    "{}impl grammers_tl_types::Serializable for Py{} {{",
-    indent,
-    rustifier::definitions::type_name(def),
+    "{indent}impl grammers_tl_types::Serializable for Py{} {{",
+    type_name,
   )?;
   writeln!(
     file,
-    "{}    fn serialize(&self, buf: &mut impl Extend<u8>) {{",
-    indent,
+    "{indent}    fn serialize(&self, {}buf: &mut impl Extend<u8>) {{",
+    if def.params.is_empty() && def.category == Category::Types
+    { "_" } else { "" },
   )?;
 
   match def.category {
@@ -356,6 +391,18 @@ fn write_serializable<W: Write>(
 
   writeln!(file, "{indent}    }}")?;
   writeln!(file, "{indent}}}")?;
+  
+  // wrapper
+  writeln!(
+    file,
+    r#"{indent}impl grammers_tl_types::Serializable for Py{}Wrapper {{
+{indent}    fn serialize(&self, buf: &mut impl Extend<u8>) {{
+{indent}        pyo3::Python::attach(|py| self.0.borrow(py).serialize(buf));
+{indent}    }}
+{indent}}}"#,
+    type_name,
+  )?;
+  
   Ok(())
 }
 
@@ -375,11 +422,12 @@ fn write_deserializable<W: Write>(
   def: &Definition,
   metadata: &Metadata,
 ) -> io::Result<()> {
+  let type_name = rustifier::definitions::type_name(def);
   writeln!(
     file,
     "{}impl grammers_tl_types::Deserializable for Py{} {{",
     indent,
-    rustifier::definitions::type_name(def),
+    type_name,
   )?;
   writeln!(
       file,
@@ -460,6 +508,18 @@ fn write_deserializable<W: Write>(
   writeln!(file, "{indent}        }})")?;
   writeln!(file, "{indent}    }}")?;
   writeln!(file, "{indent}}}")?;
+  
+  // wrapper
+  writeln!(
+    file,
+    r#"{indent}impl grammers_tl_types::Deserializable for Py{name}Wrapper {{
+{indent}    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{
+{indent}        Ok(Py{name}::deserialize(buf)?.into())
+{indent}    }}
+{indent}}}"#, 
+    name = type_name,
+  )?;
+  
   Ok(())
 }
 
@@ -474,11 +534,12 @@ fn write_definition<'a, W: Write>(
   write_struct(file, file_, indent, def)?;
   write_impl(file, indent, def)?;
   write_identifiable(file, indent, def)?;
+  write_serializable(file, indent, def)?;
   
-  if def.category == Category::Functions {
-    write_serializable(file, indent, def)?;
-  }
-  if def.category == Category::Types {
+  if def.category == Category::Types
+    // special-case needed for update handling
+    || def.name == "sendMessage"
+  {
     write_deserializable(file, indent, def, metadata)?;
   }
   writeln!(file)?;

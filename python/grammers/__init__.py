@@ -6,6 +6,7 @@ sys.modules['grammers._rs.errors'] = _rs.errors
 sys.modules['grammers._rs.tl'] = _rs.tl
 
 from . import crypto, errors, tl
+from .tl import TLObject, TLRequest, types, functions
 from collections.abc import Awaitable
 import sys
 import asyncio
@@ -13,9 +14,13 @@ import signal
 
 __all__ = [
   "_rs",
-  "crypto", 
-  "errors", 
-  "tl", 
+  "crypto",
+  "errors",
+  "tl",
+  "TLObject",
+  "TLRequest",
+  "types",
+  "functions",
   "Client",
 ]
 

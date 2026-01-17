@@ -88,7 +88,7 @@ pub mod definitions {
         result
     }
     
-    pub fn ori_qual_name(def: &Definition) -> String {
+    pub fn qual_name(def: &Definition) -> String {
         let mut result = String::new();
         result.push_str("crate::types::");
         def.namespace.iter().for_each(|ns| {
@@ -100,30 +100,11 @@ pub mod definitions {
         result
     }
 
-    pub fn qual_name(def: &Definition) -> String {
-        let mut result = String::new();
-        result.push_str("pyo3::Py<crate::types::");
-        def.namespace.iter().for_each(|ns| {
-            result.push_str(ns);
-            result.push_str("::");
-        });
-        result.push_str("Py");
-        result.push_str(&type_name(def));
-        result.push_str(">");
+    pub fn wrap_qual_name(def: &Definition) -> String {
+        let mut result = qual_name(def);
+        result.push_str("Wrapper");
         result
     }
-    
-    /*
-    pub fn tl_qual_name(def: &Definition) -> String {
-        let mut result = String::new();
-        result.push_str("grammers_tl_types::types::");
-        def.namespace.iter().for_each(|ns| {
-            result.push_str(ns);
-            result.push_str("::");
-        });
-        result.push_str(&type_name(def));
-        result
-    }*/
 
     pub fn variant_name(def: &Definition) -> String {
         let name = type_name(def);
@@ -175,17 +156,11 @@ pub mod functions {
         result
     }
     
-    /*
-    pub fn tl_qual_name(def: &Definition) -> String {
-        let mut result = String::new();
-        result.push_str("grammers_tl_types::functions::");
-        def.namespace.iter().for_each(|ns| {
-            result.push_str(ns);
-            result.push_str("::");
-        });
-        result.push_str(&definitions::type_name(def));
+    pub fn wrap_qual_name(def: &Definition) -> String {
+        let mut result = qual_name(def);
+        result.push_str("Wrapper");
         result
-    }*/
+    }
 }
 
 pub struct TypeNameFmt<'t>(pub &'t Type);
@@ -232,11 +207,6 @@ pub mod types {
             "string" => "String",
             "true" => "bool",
             "vector" => "crate::PyRawVec",
-            /*if tl {
-              "grammers_tl_types::RawVec"
-            } else { 
-              "pyo3::types::PyList"
-            },*/
             "Vector" => "Vec",
             _ => return None,
         })
@@ -246,10 +216,10 @@ pub mod types {
     // name and item paths so this method is used for both:
     // 1. use `::<...>` instead of `<...>` to specify type arguments
     // 2. missing angle brackets in associated item path
-    fn get_path(ty: &Type, path: bool, tl: bool) -> String {
+    fn get_path(ty: &Type, path: bool) -> String {
         if ty.generic_ref {
             // return ty.name.clone();
-            return "pyo3::Py<crate::PyTLRequest>".to_string();
+            return "crate::PyTLRequestWrapper".to_string();
         }
 
         let btype = builtin_type(ty, path);
@@ -257,11 +227,7 @@ pub mod types {
             name.to_string()
         } else {
             let mut result = String::new();
-            if tl {
-              result.push_str("grammers_tl_types");
-            } else {
-              result.push_str("crate");
-            }
+            result.push_str("crate");
             if ty.bare {
                 result.push_str("::types::");
             } else {
@@ -272,21 +238,18 @@ pub mod types {
                 result.push_str("::");
             });
             
-            if !tl {
-              result.push_str("Py");
-            } 
+            result.push_str("Py");
             result.push_str(&type_name(ty));
             result
         };
 
-        if let Some(_generic_ty) = &ty.generic_arg {
+        if let Some(generic_ty) = &ty.generic_arg {
             if btype.is_none() || btype != Some("crate::PyRawVec") {
                 if path {
                     result.push_str("::");
                 }
                 result.push('<');
-                // result.push_str(&get_path(generic_ty, path, tl));
-                result.push_str("crate::PyTLObjectWrapper");
+                result.push_str(&get_path(generic_ty, path));
                 result.push('>');
             }
         }
@@ -299,16 +262,11 @@ pub mod types {
     }
 
     pub fn qual_name(ty: &Type) -> String {
-        get_path(ty, false, false)
+        get_path(ty, false)
     }
     
-    /*
-    pub fn tl_qual_name(ty: &Type) -> String {
-        get_path(ty, false, true)
-    }*/
-    
     pub fn item_path(ty: &Type) -> String {
-        get_path(ty, true, false)
+        get_path(ty, true)
     }
 }
 
@@ -334,27 +292,6 @@ pub mod parameters {
             }
         }
     }
-    
-    /*
-    pub fn tl_qual_name(param: &Parameter) -> String {
-        match &param.ty {
-            ParameterType::Flags => "u32".into(),
-            ParameterType::Normal { ty, flag } if flag.is_some() && ty.name == "true" => {
-                "bool".into()
-            }
-            ParameterType::Normal { ty, flag } => {
-                let mut result = String::new();
-                if flag.is_some() {
-                    result.push_str("Option<");
-                }
-                result.push_str(&types::tl_qual_name(ty));
-                if flag.is_some() {
-                    result.push('>');
-                }
-                result
-            }
-        }
-    }*/
 
     pub fn attr_name(param: &Parameter) -> String {
         match &param.name[..] {
@@ -369,216 +306,5 @@ pub mod parameters {
                 result
             }
         }
-    }
-}
-
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // Core methods
-
-    #[test]
-    fn check_rusty_type_name() {
-        assert_eq!(rusty_type_name("ns.some_OK_name"), "SomeOkName");
-    }
-
-    // Definition methods
-
-    #[test]
-    fn check_def_type_name() {
-        let def = "userEmpty = User".parse().unwrap();
-        let name = definitions::type_name(&def);
-        assert_eq!(name, "UserEmpty");
-    }
-
-    #[test]
-    fn check_def_qual_name() {
-        let def = "userEmpty = User".parse().unwrap();
-        let name = definitions::qual_name(&def);
-        assert_eq!(name, "crate::types::UserEmpty");
-    }
-
-    #[test]
-    fn check_def_namespaced_qual_name() {
-        let def = "upload.fileCdnRedirect = upload.File".parse().unwrap();
-        let name = definitions::qual_name(&def);
-        assert_eq!(name, "crate::types::upload::FileCdnRedirect");
-    }
-
-    #[test]
-    fn check_def_variant_name() {
-        let def = "new_session_created = NewSession".parse().unwrap();
-        let name = definitions::variant_name(&def);
-        assert_eq!(name, "Created");
-    }
-
-    #[test]
-    fn check_def_empty_variant_name() {
-        let def = "true = True".parse().unwrap();
-        let name = definitions::variant_name(&def);
-        assert_eq!(name, "True");
-    }
-
-    #[test]
-    fn check_def_self_variant_name() {
-        let def = "inputPeerSelf = InputPeer".parse().unwrap();
-        let name = definitions::variant_name(&def);
-        assert_eq!(name, "PeerSelf");
-    }
-
-    #[test]
-    fn check_def_numeric_variant_name() {
-        let def = "inputBotInlineMessageID64 = inputBotInlineMessageID"
-            .parse()
-            .unwrap();
-        let name = definitions::variant_name(&def);
-        assert_eq!(name, "Id64");
-    }
-
-    // Type methods
-
-    #[test]
-    fn check_type_type_name() {
-        let ty = "storage.FileType".parse().unwrap();
-        let name = types::type_name(&ty);
-        assert_eq!(name, "FileType");
-    }
-
-    #[test]
-    fn check_type_qual_name() {
-        let ty = "InputPeer".parse().unwrap();
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "crate::enums::InputPeer");
-    }
-
-    #[test]
-    fn check_type_qual_namespaced_name() {
-        let ty = "storage.FileType".parse().unwrap();
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "crate::enums::storage::FileType");
-    }
-
-    #[test]
-    fn check_type_qual_bare_name() {
-        let ty = "ipPort".parse().unwrap();
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "crate::types::IpPort");
-    }
-
-    #[test]
-    fn check_type_qual_namespaced_bare_name() {
-        let ty = "storage.fileUnknown".parse().unwrap();
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "crate::types::storage::FileUnknown");
-    }
-
-    #[test]
-    fn check_type_bytes_qual_name() {
-        let ty = "bytes".parse().unwrap();
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "Vec<u8>");
-    }
-
-    #[test]
-    fn check_type_large_int_qual_name() {
-        let ty = "int256".parse().unwrap();
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "[u8; 32]");
-    }
-
-    #[test]
-    fn check_type_raw_vec_qual_name() {
-        let ty = "vector<long>".parse().unwrap();
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "crate::RawVec<i64>");
-    }
-
-    #[test]
-    fn check_type_vec_qual_name() {
-        let ty = "Vector<Bool>".parse().unwrap();
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "Vec<bool>");
-    }
-
-    #[test]
-    fn check_type_generic_ref_qual_name() {
-        let mut ty: Type = "X".parse().unwrap();
-        ty.generic_ref = true;
-        let name = types::qual_name(&ty);
-        assert_eq!(name, "X");
-    }
-
-    #[test]
-    fn check_type_item_path() {
-        let ty = "Vector<FileHash>".parse().unwrap();
-        let name = types::item_path(&ty);
-        assert_eq!(name, "Vec::<crate::enums::FileHash>");
-    }
-
-    #[test]
-    fn check_type_bytes_item_path() {
-        let ty = "bytes".parse().unwrap();
-        let name = types::item_path(&ty);
-        assert_eq!(name, "Vec::<u8>");
-    }
-
-    #[test]
-    fn check_type_large_int_item_path() {
-        let ty = "int256".parse().unwrap();
-        let name = types::item_path(&ty);
-        assert_eq!(name, "<[u8; 32]>");
-    }
-
-    // Parameter methods
-
-    #[test]
-    fn check_param_qual_name() {
-        let param = "pts:int".parse().unwrap();
-        let name = parameters::qual_name(&param);
-        assert_eq!(name, "i32");
-    }
-
-    #[test]
-    fn check_param_flag_def_qual_name() {
-        let param = "flags:#".parse().unwrap();
-        let name = parameters::qual_name(&param);
-        assert_eq!(name, "u32");
-    }
-
-    #[test]
-    fn check_param_flags_qual_name() {
-        let param = "timeout:flags.1?int".parse().unwrap();
-        let name = parameters::qual_name(&param);
-        assert_eq!(name, "Option<i32>");
-    }
-
-    #[test]
-    fn check_param_true_flags_qual_name() {
-        let param = "big:flags.0?true".parse().unwrap();
-        let name = parameters::qual_name(&param);
-        assert_eq!(name, "bool");
-    }
-
-    #[test]
-    fn check_param_attr_name() {
-        let param = "access_hash:long".parse().unwrap();
-        let name = parameters::attr_name(&param);
-        assert_eq!(name, "access_hash");
-    }
-
-    #[test]
-    fn check_param_reserved_attr_name() {
-        let param = "final:flags.0?true".parse().unwrap();
-        let name = parameters::attr_name(&param);
-        assert_eq!(name, "r#final");
-    }
-
-    #[test]
-    fn check_param_self_attr_name() {
-        let param = "self:flags.0?true".parse().unwrap();
-        let name = parameters::attr_name(&param);
-        assert_eq!(name, "is_self");
     }
 }

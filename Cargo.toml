@@ -2,15 +2,60 @@
 members = [
   "grammers-tl-gen-pyo3",
   "grammers-tl-types-pyo3",
+  "./",
 ]
 resolver = "2"
 
+[workspace.package]
+version = "0.1.0"
+edition = "2024"
+authors = ["HBcao233 <hbcaoqaq@outlook.com>"]
+license = "MIT"
+
+[workspace.dependencies]
+grammers-tl-gen-pyo3 = { path = "../grammers-tl-gen-pyo3", package = "grammers-tl-gen-pyo3" }
+grammers-tl-types-pyo3 = { path = "./grammers-tl-types-pyo3", package = "grammers-tl-types-pyo3" }
+
+grammers-tl-parser = { git = "https://github.com/Lonami/grammers.git" }
+grammers-crypto = { git = "https://github.com/Lonami/grammers.git" }
+grammers-session = { git = "https://github.com/Lonami/grammers.git" }
+grammers-client = { git = "https://github.com/Lonami/grammers.git" }
+
+sha1 = { version = "0.10.6" }
+tokio = { version = "1.49.0", features = ["full"] }
+rusqlite = { version = "0.38" }
+os_info = { version = "3.14" }
+
+[workspace.dependencies.grammers-mtsender]
+git = "https://github.com/Lonami/grammers.git"
+features = ["proxy"]
+
+[workspace.dependencies.grammers-tl-types]
+git = "https://github.com/Lonami/grammers.git"
+features = ["tl-mtproto"]
+
+[workspace.dependencies.pyo3]
+version = "0.27"
+features = [
+  # "extension-module", 
+  # "abi3-py310", 
+  "multiple-pymethods", 
+  "experimental-async",
+]
+
+[workspace.dependencies.pyo3-async-runtimes]
+version = "0.27"
+features = ["tokio-runtime"]
+
+[workspace.dependencies.pyo3-stub-gen]
+version = "0.17.2"
+
+
 [package]
 name = "grammers-python"
-version = "0.0.1"
-edition = "2024"
+version = { workspace = true }
+edition = { workspace = true }
 description = "Python bindings for grammers"
-license = "MIT"
 
 [lib]
 name = "_rs"
@@ -18,31 +63,25 @@ path = "src/lib.rs"
 crate-type = ["cdylib", "rlib"]
 
 [dependencies]
-grammers-crypto = { git = "https://github.com/Lonami/grammers.git" }
-grammers-session = { git = "https://github.com/Lonami/grammers.git" }
-grammers-client = { git = "https://github.com/Lonami/grammers.git" }
-grammers-mtsender = { git = "https://github.com/Lonami/grammers.git", features = ["proxy"] }
-grammers-tl-types = { git = "https://github.com/Lonami/grammers.git", features = ["tl-mtproto"] }
-grammers-tl-types-pyo3 = { path = "./grammers-tl-types-pyo3", package = "grammers-tl-types-pyo3" }
+grammers-crypto = { workspace = true }
+grammers-session = { workspace = true }
+grammers-client = { workspace = true }
+grammers-mtsender = { workspace = true }
+grammers-tl-types = { workspace = true }
+grammers-tl-types-pyo3 = { workspace = true }
 
-sha1 = "0.10.6"
-pyo3 = { version = "0.27", features = [
-  "extension-module", 
-  # "abi3-py310", 
-  "multiple-pymethods", 
-  "experimental-async"
-] }
-pyo3-async-runtimes = { version = "0.27", features = ["tokio-runtime"] }
-tokio = { version = "1.49.0", features = ["full"] }
-rusqlite = { version = "0.38" }
-os_info = { version = "3.14" }
+sha1 = { workspace = true }
+pyo3 = { workspace = true }
+pyo3-async-runtimes = { workspace = true }
+tokio = { workspace = true }
+rusqlite = { workspace = true }
+os_info = { workspace = true }
 
-# 可选依赖
-pyo3-stub-gen = { version = "0.17.2", optional = true }
+pyo3-stub-gen = { optional = true, workspace = true }
 
 [features]
 default = []
-stub-gen = ["pyo3-stub-gen"]
+stub-gen = ["pyo3-stub-gen", "grammers-tl-types-pyo3/stub-gen"]
 
 [[bin]]
 name = "stub_gen"

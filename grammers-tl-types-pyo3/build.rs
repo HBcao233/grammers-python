@@ -40,7 +40,6 @@ fn main() -> std::io::Result<()> {
     functions: BufWriter::new(File::create(output_dir.join("generated_functions.rs"))?),
     functions_: BufWriter::new(File::create(output_dir.join("generated_functions_.rs"))?),
     enums: BufWriter::new(File::create(output_dir.join("generated_enums.rs"))?),
-    enums_: BufWriter::new(File::create(output_dir.join("generated_enums_.rs"))?),
   };
   
   generate_rust_code(&mut outputs, &definitions)?;

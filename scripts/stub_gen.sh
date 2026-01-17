@@ -1,1 +1,1 @@
-cargo run --bin stub_gen --features stub-gen
+cargo run --bin stub_gen --features stub-gen --package grammers-python

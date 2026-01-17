@@ -4,8 +4,9 @@ use pyo3::types::PyString;
 use pyo3_async_runtimes::tokio::get_runtime;
 use std::sync::Arc;
 use grammers_client::{Client, SenderPool};
-use grammers_session::storages::SqliteSession;
+use grammers_client::client::UpdateStream;
 use grammers_session::updates::UpdatesLike;
+use grammers_session::storages::SqliteSession;
 use grammers_mtsender::{ConnectionParams, SenderPoolHandle};
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
@@ -16,6 +17,16 @@ use pyo3_stub_gen::derive::*;
 
 #[derive(Debug, Clone)]
 pub struct ApiId(pub i32);
+
+#[cfg(feature = "stub-gen")]
+impl pyo3_stub_gen::PyStubType for ApiId {
+  fn type_output() -> pyo3_stub_gen::TypeInfo {
+    pyo3_stub_gen::TypeInfo {
+      name: "builtins.int | builtins.str".to_string(),
+      import: vec!["builtins".into()].into_iter().collect(),
+    }
+  }
+}
 
 impl<'a, 'py> FromPyObject<'a, 'py> for ApiId {
   type Error = PyErr;
@@ -43,7 +54,8 @@ impl<'a, 'py> FromPyObject<'a, 'py> for ApiId {
 pub struct PyClient {
   pub inner: Client,
   pub pool_task: Option<JoinHandle<()>>,
-  pub updates: mpsc::UnboundedReceiver<UpdatesLike>,
+  pub updates: Option<mpsc::UnboundedReceiver<UpdatesLike>>,
+  pub stream_updates: Option<UpdateStream>,
   pub handle: SenderPoolHandle,
   
   #[pyo3(get)]
@@ -71,7 +83,7 @@ pub struct PyClient {
 #[cfg_attr(feature = "stub-gen", gen_stub_pymethods)]
 #[pymethods]
 impl PyClient {
-  /// Create instanse
+  /// Create client instanse.
   /// 
   /// Args:
   ///     name (``str``):
@@ -94,8 +106,8 @@ impl PyClient {
     app_version=None,
     device_model=None,
     system_version=None,
-    lang_code="en",
-    system_lang_code="en",
+    lang_code=Some("en"),
+    system_lang_code=Some("en"),
     use_ipv6=false,
   ))]
   pub fn new<'py>(
@@ -196,7 +208,8 @@ impl PyClient {
 
     Ok(Self {
       inner,
-      updates,
+      updates: Some(updates),
+      stream_updates: None,
       handle,
       pool_task: Some(pool_task),
       name: name.to_string(),

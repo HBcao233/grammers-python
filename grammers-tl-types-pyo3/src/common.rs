@@ -5,14 +5,42 @@ use pyo3::exceptions::PyNotImplementedError;
 use grammers_tl_types as tl;
 
 
-#[pyclass(module = "grammers.tl", subclass)]
+pub type Buffer<'a, 'b> = &'a mut grammers_tl_types::deserialize::Cursor<'b>;
+
+#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pyclass)]
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+#[pyclass]
+pub struct PyRawVec(Vec<crate::PyTLObject>);
+
+impl tl::Serializable for PyRawVec {
+  fn serialize(&self, buf: &mut impl Extend<u8>) {
+    (self.0.len() as i32).serialize(buf);
+    self.0.iter().for_each(|x| x.serialize(buf));
+  }
+}
+impl tl::Deserializable for PyRawVec {
+  fn deserialize(buf: crate::Buffer) -> tl::deserialize::Result<Self> {
+    let len = u32::deserialize(buf)?;
+    Ok(Self(
+        (0..len)
+            .map(|_| crate::PyTLObject::deserialize(buf))
+            .collect::<tl::deserialize::Result<Vec<crate::PyTLObject>>>()?,
+    ))
+  }
+}
+
+
+#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pyclass)]
 #[derive(Debug, Clone, PartialEq)]
+#[pyclass(module = "grammers.tl", subclass)]
 pub struct TLObject {}
 
+#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pymethods)]
 #[pymethods]
 impl TLObject {
   #[staticmethod]
-  #[pyo3(signature = (obj, indent=0))]
+  #[pyo3(signature = (obj, indent=Some(0)))]
   fn pretty_format(obj: Bound<'_, PyAny>, indent: Option<usize>) -> PyResult<String> {
     let (obj, cls_name) = if obj.is_instance_of::<TLObject>() {
       let cls = obj.getattr("__class__")?;
@@ -111,14 +139,16 @@ impl TLObject {
 }
 
 
+#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pyclass)]
 #[pyclass(module = "grammers.tl", subclass)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct TLRequest {}
 
+#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pymethods)]
 #[pymethods]
 impl TLRequest {
   #[staticmethod]
-  #[pyo3(signature = (obj, indent=0))]
+  #[pyo3(signature = (obj, indent=Some(0)))]
   fn pretty_format(obj: Bound<'_, PyAny>, indent: Option<usize>) -> PyResult<String> {
     TLObject::pretty_format(obj, indent)
   }
@@ -132,19 +162,23 @@ impl TLRequest {
 
 
 #[repr(transparent)]
-#[derive(Debug, Clone, IntoPyObject)]
+#[derive(Debug, Clone, FromPyObject, IntoPyObject)]
 pub struct PyTLObjectWrapper(crate::PyTLObject);
 
-/*impl From<crate::PyTLObject> for PyTLObjectWrapper {
-  fn from(x: crate::PyTLObject) -> Self {
-    Self(x)
+#[cfg(feature = "stub-gen")]
+impl pyo3_stub_gen::PyStubType for PyTLObjectWrapper {
+  fn type_output() -> pyo3_stub_gen::TypeInfo {
+    pyo3_stub_gen::TypeInfo {
+      name: "grammers.tl.TLObject".to_string(),
+      import: vec!["grammers.tl".into()].into_iter().collect(),
+    }
   }
 }
-impl From<PyTLObjectWrapper> for crate::PyTLObject {
-  fn from(x: PyTLObjectWrapper) -> Self {
-    x.0
+impl tl::Serializable for PyTLObjectWrapper {
+  fn serialize(&self, buf: &mut impl Extend<u8>) {
+    self.0.serialize(buf);
   }
-}*/
+}
 impl tl::Deserializable for PyTLObjectWrapper {
   fn deserialize(buf: crate::Buffer) -> tl::deserialize::Result<Self> {
     let x = crate::PyTLObject::deserialize(buf)?;
@@ -154,16 +188,20 @@ impl tl::Deserializable for PyTLObjectWrapper {
 
 
 #[repr(transparent)]
-#[derive(Debug, Clone, IntoPyObject)]
-pub struct PyRawVec(Vec<crate::PyTLObject>);
+#[derive(Debug, Clone, FromPyObject, IntoPyObject)]
+pub struct PyTLRequestWrapper(crate::PyTLRequest);
 
-impl tl::Deserializable for PyRawVec {
-  fn deserialize(buf: crate::Buffer) -> tl::deserialize::Result<Self> {
-    let len = u32::deserialize(buf)?;
-    Ok(Self(
-        (0..len)
-            .map(|_| crate::PyTLObject::deserialize(buf))
-            .collect::<tl::deserialize::Result<Vec<crate::PyTLObject>>>()?,
-    ))
+#[cfg(feature = "stub-gen")]
+impl pyo3_stub_gen::PyStubType for PyTLRequestWrapper {
+  fn type_output() -> pyo3_stub_gen::TypeInfo {
+    pyo3_stub_gen::TypeInfo {
+      name: "grammers.tl.TLRequest".to_string(),
+      import: vec!["grammers.tl".into()].into_iter().collect(),
+    }
+  }
+}
+impl tl::Serializable for PyTLRequestWrapper {
+  fn serialize(&self, buf: &mut impl Extend<u8>) {
+    self.0.serialize(buf);
   }
 }

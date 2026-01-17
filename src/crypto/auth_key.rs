@@ -6,8 +6,6 @@ use crate::sha1;
 
 #[cfg(feature = "stub-gen")]
 use pyo3_stub_gen::derive::*;
-#[cfg(feature = "stub-gen")]
-use pyo3_stub_gen::{PyStubType, TypeInfo};
 
 
 #[derive(FromPyObject)]
@@ -19,11 +17,11 @@ enum BytesOrStr {
 }
 
 #[cfg(feature = "stub-gen")]
-impl PyStubType for BytesOrStr {
-  fn type_output() -> TypeInfo {
-    TypeInfo {
+impl pyo3_stub_gen::PyStubType for BytesOrStr {
+  fn type_output() -> pyo3_stub_gen::TypeInfo {
+    pyo3_stub_gen::TypeInfo {
       name: "builtins.bytes | builtins.str".to_string(),
-      import: vec![].into_iter().collect(),
+      import: vec!["builtins".into()].into_iter().collect(),
     }
   }
 }

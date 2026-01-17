@@ -1,9 +1,9 @@
 use pyo3::prelude::*;
 use grammers_tl_types_pyo3 as tlpy;
-use grammers_mtsender::InvocationError;
+// use grammers_mtsender::InvocationError;
 
 use super::PyClient;
-// use crate::errors::InvocationErrorConverter;
+use crate::errors::InvocationErrorConverter;
 
 #[cfg(feature = "stub-gen")]
 use pyo3_stub_gen::derive::*;
