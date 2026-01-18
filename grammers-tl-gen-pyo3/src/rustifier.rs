@@ -79,7 +79,7 @@ pub mod definitions {
     pub fn type_name(def: &Definition) -> String {
         rusty_type_name(&def.name)
     }
-    
+
     pub fn ns_type_name(def: &Definition) -> String {
         let mut result = String::new();
         def.namespace.iter().for_each(|ns| {
@@ -89,7 +89,7 @@ pub mod definitions {
         result.push_str(&type_name(def));
         result
     }
-    
+
     pub fn qual_name(def: &Definition) -> String {
         let mut result = String::new();
         result.push_str("crate::types::");
@@ -145,7 +145,7 @@ pub mod definitions {
 
 pub mod functions {
     use super::*;
-    
+
     pub fn qual_name(def: &Definition) -> String {
         let mut result = String::new();
         result.push_str("crate::functions::");
@@ -157,7 +157,7 @@ pub mod functions {
         result.push_str(&definitions::type_name(def));
         result
     }
-    
+
     pub fn wrap_qual_name(def: &Definition) -> String {
         let mut result = qual_name(def);
         result.push_str("Wrapper");
@@ -239,7 +239,7 @@ pub mod types {
                 result.push_str(ns);
                 result.push_str("::");
             });
-            
+
             result.push_str("Py");
             result.push_str(&type_name(ty));
             result
@@ -266,11 +266,11 @@ pub mod types {
     pub fn qual_name(ty: &Type) -> String {
         get_path(ty, false)
     }
-    
+
     pub fn item_path(ty: &Type) -> String {
         get_path(ty, true)
     }
-    
+
     fn py_builtin_type(ty: &Type) -> Option<&'static str> {
         Some(match ty.name.as_ref() {
             "Bool" => "bool",
@@ -287,7 +287,7 @@ pub mod types {
             _ => return None,
         })
     }
-    
+
     pub fn py_qual_name(ty: &Type, metadata: &Metadata) -> String {
         if ty.generic_ref {
             // return ty.name.clone();
@@ -302,26 +302,28 @@ pub mod types {
             if ty.bare {
                 result.push_str("types.");
             } else {
-                let res = metadata.defs_with_type(ty).iter()
-                  .map(|d| {
-                    let mut res = String::new();
-                    res.push_str("types.");
-                    d.namespace.iter().for_each(|ns| {
-                      res.push_str(ns);
-                      res.push_str(".");
-                    });
-                    res.push_str(&definitions::type_name(d));
-                    res
-                  })
-                  .collect::<Vec<String>>()
-                  .join(" | ");
+                let res = metadata
+                    .defs_with_type(ty)
+                    .iter()
+                    .map(|d| {
+                        let mut res = String::new();
+                        res.push_str("types.");
+                        d.namespace.iter().for_each(|ns| {
+                            res.push_str(ns);
+                            res.push_str(".");
+                        });
+                        res.push_str(&definitions::type_name(d));
+                        res
+                    })
+                    .collect::<Vec<String>>()
+                    .join(" | ");
                 result.push_str(&res);
             }
             ty.namespace.iter().for_each(|ns| {
                 result.push_str(ns);
                 result.push_str("::");
             });
-            
+
             result.push_str("Py");
             result.push_str(&type_name(ty));
             result
@@ -359,7 +361,7 @@ pub mod parameters {
             }
         }
     }
-    
+
     pub fn py_qual_name(param: &Parameter, metadata: &Metadata) -> String {
         match &param.ty {
             ParameterType::Flags => "bool".into(),
@@ -394,7 +396,7 @@ pub mod parameters {
             }
         }
     }
-    
+
     pub fn py_attr_name(param: &Parameter) -> String {
         match &param.name[..] {
             "final" => "final".into(),

@@ -1,9 +1,9 @@
-mod metadata;
-mod grouper;
-mod rustifier;
-mod structs;
 mod common;
 mod enums;
+mod grouper;
+mod metadata;
+mod rustifier;
+mod structs;
 
 use std::collections::HashMap;
 use std::fs::File;
@@ -12,31 +12,31 @@ use std::path::PathBuf;
 
 use metadata::Metadata;
 
-use grammers_tl_parser::tl::{Category, Definition, Type, ParameterType};
+use grammers_tl_parser::tl::{Category, Definition, ParameterType, Type};
 
 pub struct Outputs<W: Write> {
-  /// Writer to the file containing all of the boxed [`Category::Functions`] constructors.
-  pub common: W,
-  /// Writer to the file containing all of the concrete [`Category::Types`] constructors.
-  pub types: W,
-  pub types_: W,
-  /// Writer to the file containing all of the [`Category::Functions`] constructors.
-  pub functions: W,
-  pub functions_: W,
-  /// Writer to the file containing all of the boxed [`Category::Types`] constructors.
-  pub enums: W,
+    /// Writer to the file containing all of the boxed [`Category::Functions`] constructors.
+    pub common: W,
+    /// Writer to the file containing all of the concrete [`Category::Types`] constructors.
+    pub types: W,
+    pub types_: W,
+    /// Writer to the file containing all of the [`Category::Functions`] constructors.
+    pub functions: W,
+    pub functions_: W,
+    /// Writer to the file containing all of the boxed [`Category::Types`] constructors.
+    pub enums: W,
 }
 impl<W: Write> Outputs<W> {
-  /// Flush all writers sequentially.
-  pub fn flush(&mut self) -> std::io::Result<()> {
-    self.common.flush()?;
-    self.types.flush()?;
-    self.types_.flush()?;
-    self.functions.flush()?;
-    self.functions_.flush()?;
-    self.enums.flush()?;
-    Ok(())
-  }
+    /// Flush all writers sequentially.
+    pub fn flush(&mut self) -> std::io::Result<()> {
+        self.common.flush()?;
+        self.types.flush()?;
+        self.types_.flush()?;
+        self.functions.flush()?;
+        self.functions_.flush()?;
+        self.enums.flush()?;
+        Ok(())
+    }
 }
 
 /// Don't generate types for definitions of this type,
@@ -44,90 +44,93 @@ impl<W: Write> Outputs<W> {
 const SPECIAL_CASED_TYPES: [&str; 2] = ["Bool", "True"];
 
 fn ignore_type(ty: &Type) -> bool {
-  SPECIAL_CASED_TYPES.iter().any(|&x| x == ty.name)
+    SPECIAL_CASED_TYPES.iter().any(|&x| x == ty.name)
 }
 
 pub fn generate_rust_code<W: Write>(
-  outputs: &mut Outputs<W>,
-  definitions: &[Definition],
+    outputs: &mut Outputs<W>,
+    definitions: &[Definition],
 ) -> io::Result<()> {
-  common::write_enums_mod(&mut outputs.common, definitions)?;
-  
-  let metadata = Metadata::new(definitions);
-  
-  structs::write_category_mod(
-    &mut outputs.types,
-    &mut outputs.types_,
-    Category::Types,
-    definitions,
-    &metadata,
-  )?;
-  
-  structs::write_category_mod(
-    &mut outputs.functions,
-    &mut outputs.functions_,
-    Category::Functions,
-    definitions,
-    &metadata,
-  )?;
-  
-  enums::write_enums_mod(
-    &mut outputs.enums,
-    definitions,
-    &metadata,
-  )?;
-  Ok(())
+    common::write_enums_mod(&mut outputs.common, definitions)?;
+
+    let metadata = Metadata::new(definitions);
+
+    structs::write_category_mod(
+        &mut outputs.types,
+        &mut outputs.types_,
+        Category::Types,
+        definitions,
+        &metadata,
+    )?;
+
+    structs::write_category_mod(
+        &mut outputs.functions,
+        &mut outputs.functions_,
+        Category::Functions,
+        definitions,
+        &metadata,
+    )?;
+
+    enums::write_enums_mod(&mut outputs.enums, definitions, &metadata)?;
+    Ok(())
 }
 
 fn write_pyi(
-  tl_dir: PathBuf,
-  definitions: Vec<&Definition>,
-  metadata: &Metadata,
+    tl_dir: PathBuf,
+    definitions: Vec<&Definition>,
+    metadata: &Metadata,
 ) -> io::Result<()> {
-  let base = match definitions[0].category {
-    Category::Types => "TLObject",
-    Category::Functions => "TLRequest",
-  };
-  let mut grouped: HashMap<Option<&str>, Vec<&Definition>> = HashMap::new();
-  
-  for def in definitions {
-    grouped
-      .entry(if def.namespace.is_empty() {
-        None
-      } else {
-        Some(&def.namespace[0])
-      })
-      .or_default()
-      .push(def);
-  }
-  for (namespace, defs) in grouped {
-    let filename = match namespace {
-        None => String::from("__init__.pyi"),
-        Some(ns) => format!("{}.pyi", ns),
+    let base = match definitions[0].category {
+        Category::Types => "TLObject",
+        Category::Functions => "TLRequest",
     };
-    let file_path = tl_dir.join(&filename);
-    let mut file = BufWriter::new(File::create(&file_path)?);
-    writeln!(file, r#"from typing import final, Self, Sequence, Optional
+    let mut grouped: HashMap<Option<&str>, Vec<&Definition>> = HashMap::new();
+
+    for def in definitions {
+        grouped
+            .entry(if def.namespace.is_empty() {
+                None
+            } else {
+                Some(&def.namespace[0])
+            })
+            .or_default()
+            .push(def);
+    }
+    for (namespace, defs) in grouped {
+        let filename = match namespace {
+            None => String::from("__init__.pyi"),
+            Some(ns) => format!("{}.pyi", ns),
+        };
+        let file_path = tl_dir.join(&filename);
+        let mut file = BufWriter::new(File::create(&file_path)?);
+        writeln!(
+            file,
+            r#"from typing import final, Self, Sequence, Optional
 from grammers.tl import {base}, types
-"#)?;
-    for def in defs {
-      let type_name = rustifier::definitions::type_name(def);
-      let params = def.params.iter()
-        .filter(|param| match &param.ty { 
-          ParameterType::Normal { .. } => true,
-          ParameterType::Flags => false,
-        })
-        .map(|param| format!(
-          "\n        {}: {},",
-          rustifier::parameters::py_attr_name(param),
-          rustifier::parameters::py_qual_name(param, metadata),
-        ))
-        .collect::<Vec<_>>()
-        .join("");
-      
-      writeln!(
-        file, 
-        r#"@final
+"#
+        )?;
+        for def in defs {
+            let type_name = rustifier::definitions::type_name(def);
+            let params = def
+                .params
+                .iter()
+                .filter(|param| match &param.ty {
+                    ParameterType::Normal { .. } => true,
+                    ParameterType::Flags => false,
+                })
+                .map(|param| {
+                    format!(
+                        "\n        {}: {},",
+                        rustifier::parameters::py_attr_name(param),
+                        rustifier::parameters::py_qual_name(param, metadata),
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("");
+
+            writeln!(
+                file,
+                r#"@final
 class {type_name}({base}):
     """
     [Read `{name}` docs](https://core.telegram.org/{kind}/{name}).
@@ -142,73 +145,73 @@ class {type_name}({base}):
     ) -> Self: ...
     def to_dict(self) -> dict: ...
 "#,
-        name = def.full_name(),
-        kind = match def.category {
-          Category::Types => "constructor",
-          Category::Functions => "method",
-        },
-        def = def,
-      )?;
+                name = def.full_name(),
+                kind = match def.category {
+                    Category::Types => "constructor",
+                    Category::Functions => "method",
+                },
+                def = def,
+            )?;
+        }
     }
-  }
-  Ok(())
+    Ok(())
 }
 
 pub fn generate_python_code(
-  tl_dir: PathBuf,
-  definitions: &[Definition],
-  layer: i32,
+    tl_dir: PathBuf,
+    definitions: &[Definition],
+    layer: i32,
 ) -> io::Result<()> {
-  let mut allobjects = BufWriter::new(
-    File::create(tl_dir.join("allobjects.py"))?
-  );
-  writeln!(
-    allobjects, 
-    r#""""File generated by TLObjects' generator. All changes will be ERASED"""
+    let mut allobjects = BufWriter::new(File::create(tl_dir.join("allobjects.py"))?);
+    writeln!(
+        allobjects,
+        r#""""File generated by TLObjects' generator. All changes will be ERASED"""
 
 from . import types, functions
 
 LAYER = {layer}
 
 tlobjects = {{"#,
-  )?;
-  for def in definitions {
-    if !ignore_type(&def.ty) {
-      writeln!(
-        allobjects, 
-        "    0x{:x}: {}.{}{},",
-        def.id,
-        match def.category {
-          Category::Types => "types",
-          Category::Functions => "functions",
-        },
-        if def.namespace.is_empty() {
-          "".to_string()
-        } else {
-          def.namespace[0].clone() + "."
-        },
-        rustifier::definitions::type_name(def),
-      )?;
+    )?;
+    for def in definitions {
+        if !ignore_type(&def.ty) {
+            writeln!(
+                allobjects,
+                "    0x{:x}: {}.{}{},",
+                def.id,
+                match def.category {
+                    Category::Types => "types",
+                    Category::Functions => "functions",
+                },
+                if def.namespace.is_empty() {
+                    "".to_string()
+                } else {
+                    def.namespace[0].clone() + "."
+                },
+                rustifier::definitions::type_name(def),
+            )?;
+        }
     }
-  }
-  writeln!(allobjects, "}}")?;
-  allobjects.flush()?;
-  
-  let metadata = Metadata::new(definitions);
-  
-  write_pyi(
-    tl_dir.join("functions"), 
-    definitions.iter()
-      .filter(|def| def.category == Category::Functions)
-      .collect(),
-    &metadata,
-  )?;
-  write_pyi(
-    tl_dir.join("types"), 
-    definitions.iter()
-      .filter(|def| def.category == Category::Types && !ignore_type(&def.ty))
-      .collect(),
-    &metadata,
-  )?;
-  Ok(())
+    writeln!(allobjects, "}}")?;
+    allobjects.flush()?;
+
+    let metadata = Metadata::new(definitions);
+
+    write_pyi(
+        tl_dir.join("functions"),
+        definitions
+            .iter()
+            .filter(|def| def.category == Category::Functions)
+            .collect(),
+        &metadata,
+    )?;
+    write_pyi(
+        tl_dir.join("types"),
+        definitions
+            .iter()
+            .filter(|def| def.category == Category::Types && !ignore_type(&def.ty))
+            .collect(),
+        &metadata,
+    )?;
+    Ok(())
 }

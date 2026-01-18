@@ -7,7 +7,6 @@
 // use pyo3::exceptions::PyValueError;
 // use pyo3::types::PyBytes;
 
-
 /*
 mod aes;
 mod hex;
@@ -23,19 +22,19 @@ mod sha;
 
 #[pyo3::pymodule(name = "crypto")]
 pub mod _crypto {
-  #[pymodule_export]
-  #[allow(non_upper_case_globals)]
-  const __doc__: &str = &"Cryptographic functions for MTProto protocol";
-  
-  #[pymodule_export]
-  #[allow(non_upper_case_globals)]
-  const __package__: &str = &"grammers";
-  
-  #[pymodule_export]
-  use super::auth_key::PyAuthKey;
-  
-  // #[pymodule_export]
-  // use super::deque_buffer::PyDequeBuffer;
+    #[pymodule_export]
+    #[allow(non_upper_case_globals)]
+    const __doc__: &str = &"Cryptographic functions for MTProto protocol";
+
+    #[pymodule_export]
+    #[allow(non_upper_case_globals)]
+    const __package__: &str = &"grammers";
+
+    #[pymodule_export]
+    use super::auth_key::PyAuthKey;
+
+    // #[pymodule_export]
+    // use super::deque_buffer::PyDequeBuffer;
 }
 
 //use factorize::factorize;
