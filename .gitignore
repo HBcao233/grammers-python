@@ -3,4 +3,5 @@ target
 .pytest_cache
 
 python/grammers/tl/allobjects.py
-python/grammers/tl/*.pyi
+python/grammers/tl/types/*.pyi
+python/grammers/tl/functions/*.pyi
