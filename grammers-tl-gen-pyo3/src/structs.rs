@@ -144,6 +144,9 @@ fn write_struct<W: Write>(
 /// ```ignore
 /// #[pyo3::pymethods]
 /// impl PyName {
+///     #[classattr]
+///     const CONSTRUCTOR_ID: u32 = 123;
+/// 
 ///     #[new]
 ///     fn new(
 ///         param: param_type,
@@ -172,6 +175,8 @@ fn write_impl<W: Write>(
     type_name,
   )?;
   
+  writeln!(file, "{indent}    #[classattr]")?;
+  writeln!(file, "{indent}    const CONSTRUCTOR_ID: u32 = {};\n", def.id)?;
   writeln!(file, "{indent}    #[new]")?;
   write!(file, "{indent}    fn new(")?;
   if def.params.len() != 0 {
@@ -275,7 +280,7 @@ fn write_impl<W: Write>(
 ///
 /// ```ignore
 /// impl grammers_tl_types::Identifiable for PyName {
-///     const constructor_id: u32 = 123;
+///     const CONSTRUCTOR_ID: u32 = 123;
 /// }
 /// ```
 fn write_identifiable<W: Write>(
@@ -327,7 +332,7 @@ fn write_serializable<W: Write>(
     }
     Category::Functions => {
       // Functions should always write their `CONSTRUCTOR_ID`.
-      writeln!(file, "{indent}        use grammers_tl_types::Identifiable;")?;
+      // writeln!(file, "{indent}        use grammers_tl_types::Identifiable;")?;
       writeln!(file, "{indent}        Self::CONSTRUCTOR_ID.serialize(buf);")?;
     }
   }

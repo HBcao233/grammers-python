@@ -1,3 +1,6 @@
 target
 .venv
 .pytest_cache
+
+python/grammers/tl/allobjects.py
+python/grammers/tl/*.pyi

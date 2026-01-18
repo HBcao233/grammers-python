@@ -1,12 +1,12 @@
 use std::env;
-use std::fs::File;
-use std::io::{self, BufWriter, Read};
-use std::path::Path;
+use std::fs::{self, File};
+use std::io::{self, BufReader, BufRead, BufWriter, Read};
+use std::path::PathBuf;
 
 use grammers_tl_parser::parse_tl_file;
 use grammers_tl_parser::tl::Definition;
 
-use grammers_tl_gen_pyo3::{Outputs, generate_rust_code};
+use grammers_tl_gen_pyo3::{Outputs, generate_rust_code, generate_python_code};
 
 
 fn load_tl(file: &str) -> io::Result<Vec<Definition>> {
@@ -24,7 +24,52 @@ fn load_tl(file: &str) -> io::Result<Vec<Definition>> {
     .collect())
 }
 
+
+
+fn find_workspace_root() -> Option<PathBuf> {
+    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
+    
+    let mut current = manifest_dir.as_path();
+    
+    loop {
+        let cargo_toml = current.join("Cargo.toml");
+        if cargo_toml.exists() {
+            let content = fs::read_to_string(&cargo_toml).ok()?;
+            // 检查是否包含 [workspace] 定义
+            if content.contains("[workspace]") {
+                return Some(current.to_path_buf());
+            }
+        }
+        
+        // 向上一级目录
+        current = current.parent()?;
+    }
+}
+
+/// Find the `// LAYER #` comment, and return its value if it's valid.
+fn find_layer(file: &str) -> io::Result<Option<i32>> {
+    const LAYER_MARK: &str = "LAYER";
+
+    Ok(BufReader::new(File::open(file)?).lines().find_map(|line| {
+        let line = line.unwrap();
+        if line.trim().starts_with("//") {
+            if let Some(pos) = line.find(LAYER_MARK) {
+                if let Ok(layer) = line[pos + LAYER_MARK.len()..].trim().parse() {
+                    return Some(layer);
+                }
+            }
+        }
+
+        None
+    }))
+}
+
 fn main() -> std::io::Result<()> {
+  let layer = match find_layer("tl/api.tl")? {
+    Some(x) => x,
+    None => panic!("no layer information found in api.tl"),
+  };
+    
   let definitions = {
     let mut definitions = Vec::new();
     definitions.extend(load_tl("tl/api.tl")?);
@@ -32,7 +77,8 @@ fn main() -> std::io::Result<()> {
     definitions
   };
   
-  let output_dir = Path::new(&env::var("OUT_DIR").unwrap()).to_path_buf();
+  let output_dir = PathBuf::from(&env::var("OUT_DIR").unwrap());
+  
   let mut outputs = Outputs {
     common: BufWriter::new(File::create(output_dir.join("generated_common.rs"))?),
     types: BufWriter::new(File::create(output_dir.join("generated_types.rs"))?),
@@ -45,6 +91,10 @@ fn main() -> std::io::Result<()> {
   generate_rust_code(&mut outputs, &definitions)?;
 
   outputs.flush()?;
+  
+  let root = find_workspace_root().unwrap();
+  let tl_dir = root.join("python").join("grammers").join("tl");
+  generate_python_code(tl_dir, &definitions, layer)?;
   
   Ok(())
 }

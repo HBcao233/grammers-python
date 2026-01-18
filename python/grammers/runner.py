@@ -4,24 +4,27 @@ import functools
 import contextvars
 import asyncio
 
+
 class Runner(asyncio.Runner):
     def run_forever(self, *, context=None):
         """Run forever in the embedded event loop, until loo.stop() called.
-        
+
         Args:
             setup: 可选的协程/协程函数，在 run_forever 之前执行（用于启动后台任务）
             context: 可选的上下文
         """
         if events._get_running_loop() is not None:
             raise RuntimeError(
-                "run_forever() cannot be called from a running event loop")
-        
+                'run_forever() cannot be called from a running event loop'
+            )
+
         self._lazy_init()
-        
+
         if context is None:
             context = self._context
-        
-        if (threading.current_thread() is threading.main_thread()
+
+        if (
+            threading.current_thread() is threading.main_thread()
             and signal.getsignal(signal.SIGINT) is signal.default_int_handler
         ):
             sigint_handler = self._on_sigint
@@ -29,9 +32,9 @@ class Runner(asyncio.Runner):
                 signal.signal(signal.SIGINT, sigint_handler)
             except ValueError:
                 sigint_handler = None
-        
+
         self._interrupt_count = 0
-        
+
         try:
             self._loop.run_forever()
         finally:
@@ -76,13 +79,12 @@ def run_forever(*, debug=None, loop_factory=None, setup=None):
             while True:
                 print("working...")
                 await asyncio.sleep(1)
-        
+
         asyncio.create_task(background_task())
         run_forever()
     """
     if events._get_running_loop() is not None:
-        raise RuntimeError(
-            "run_forever() cannot be called from a running event loop")
-    
+        raise RuntimeError('run_forever() cannot be called from a running event loop')
+
     with RunnerForever(debug=debug, loop_factory=loop_factory) as runner:
         return runner.run_forever()

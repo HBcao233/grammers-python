@@ -19,6 +19,8 @@
 
 use std::fmt;
 
+use crate::Metadata;
+
 use grammers_tl_parser::tl::{Definition, Parameter, ParameterType, Type};
 
 /// Get the rusty type name for a certain definition, excluding namespace.
@@ -268,6 +270,71 @@ pub mod types {
     pub fn item_path(ty: &Type) -> String {
         get_path(ty, true)
     }
+    
+    fn py_builtin_type(ty: &Type) -> Option<&'static str> {
+        Some(match ty.name.as_ref() {
+            "Bool" => "bool",
+            "bytes" => "bytes",
+            "double" => "float",
+            "int" => "int",
+            "int128" => "int",
+            "int256" => "int",
+            "long" => "int",
+            "string" => "str",
+            "true" => "bool",
+            "vector" => "Sequence",
+            "Vector" => "Sequence",
+            _ => return None,
+        })
+    }
+    
+    pub fn py_qual_name(ty: &Type, metadata: &Metadata) -> String {
+        if ty.generic_ref {
+            // return ty.name.clone();
+            return "TLRequest".to_string();
+        }
+
+        let btype = py_builtin_type(ty);
+        let mut result = if let Some(name) = btype {
+            name.to_string()
+        } else {
+            let mut result = String::new();
+            if ty.bare {
+                result.push_str("types.");
+            } else {
+                let res = metadata.defs_with_type(ty).iter()
+                  .map(|d| {
+                    let mut res = String::new();
+                    res.push_str("types.");
+                    d.namespace.iter().for_each(|ns| {
+                      res.push_str(ns);
+                      res.push_str(".");
+                    });
+                    res.push_str(&definitions::type_name(d));
+                    res
+                  })
+                  .collect::<Vec<String>>()
+                  .join(" | ");
+                result.push_str(&res);
+            }
+            ty.namespace.iter().for_each(|ns| {
+                result.push_str(ns);
+                result.push_str("::");
+            });
+            
+            result.push_str("Py");
+            result.push_str(&type_name(ty));
+            result
+        };
+
+        if let Some(generic_ty) = &ty.generic_arg {
+            result.push('[');
+            result.push_str(&py_qual_name(generic_ty, metadata));
+            result.push(']');
+        }
+
+        result
+    }
 }
 
 pub mod parameters {
@@ -292,6 +359,26 @@ pub mod parameters {
             }
         }
     }
+    
+    pub fn py_qual_name(param: &Parameter, metadata: &Metadata) -> String {
+        match &param.ty {
+            ParameterType::Flags => "bool".into(),
+            ParameterType::Normal { ty, flag } if flag.is_some() && ty.name == "true" => {
+                "bool".into()
+            }
+            ParameterType::Normal { ty, flag } => {
+                let mut result = String::new();
+                if flag.is_some() {
+                    result.push_str("Optional[");
+                }
+                result.push_str(&types::py_qual_name(ty, metadata));
+                if flag.is_some() {
+                    result.push(']');
+                }
+                result
+            }
+        }
+    }
 
     pub fn attr_name(param: &Parameter) -> String {
         match &param.name[..] {
@@ -300,6 +387,21 @@ pub mod parameters {
             "self" => "is_self".into(),
             "static" => "r#static".into(),
             "type" => "r#type".into(),
+            _ => {
+                let mut result = param.name.clone();
+                result[..].make_ascii_lowercase();
+                result
+            }
+        }
+    }
+    
+    pub fn py_attr_name(param: &Parameter) -> String {
+        match &param.name[..] {
+            "final" => "final".into(),
+            "loop" => "loop".into(),
+            "self" => "is_self".into(),
+            "static" => "static".into(),
+            "type" => "type".into(),
             _ => {
                 let mut result = param.name.clone();
                 result[..].make_ascii_lowercase();
