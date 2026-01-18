@@ -151,7 +151,10 @@ fn write_struct<W: Write>(
 ///             param: param_type,
 ///         }
 ///     }
-///     
+/// 
+///     fn to_bytes(&self) -> Vec<u8> {
+///     }
+/// 
 ///     fn to_dict(&self) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
 ///     }
 /// }
@@ -232,7 +235,18 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
         },
     )?;
     writeln!(file, "{indent}    }}")?;
-
+    
+    // to_bytes
+    writeln!(
+      file, 
+      r#"{indent}    #[pyo3(name = "to_bytes")]
+{indent}    fn py_to_bytes(&self) -> Vec<u8> {{
+{indent}        use grammers_tl_types::Serializable;
+{indent}        self.to_bytes()
+{indent}    }}
+"#,
+    )?;
+    // to_dict
     writeln!(
         file,
         "{indent}    fn to_dict(&self) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {{"

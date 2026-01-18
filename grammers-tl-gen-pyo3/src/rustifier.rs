@@ -301,6 +301,11 @@ pub mod types {
             let mut result = String::new();
             if ty.bare {
                 result.push_str("types.");
+                ty.namespace.iter().for_each(|ns| {
+                    result.push_str(ns);
+                    result.push_str(".");
+                });
+                result.push_str(&type_name(ty));
             } else {
                 let res = metadata
                     .defs_with_type(ty)
@@ -319,13 +324,7 @@ pub mod types {
                     .join(" | ");
                 result.push_str(&res);
             }
-            ty.namespace.iter().for_each(|ns| {
-                result.push_str(ns);
-                result.push_str("::");
-            });
 
-            result.push_str("Py");
-            result.push_str(&type_name(ty));
             result
         };
 
