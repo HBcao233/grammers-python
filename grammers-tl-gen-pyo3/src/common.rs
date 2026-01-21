@@ -23,25 +23,10 @@ fn write_enum_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) ->
     Ok(())
 }
 
-fn write_stubtype_pytlrequest<W: Write>(file: &mut W) -> io::Result<()> {
-    writeln!(
-        file,
-        r#"#[cfg(feature = "stub-gen")]
-impl pyo3_stub_gen::PyStubType for PyTLRequest {{
-    fn type_output() -> pyo3_stub_gen::TypeInfo {{
-        pyo3_stub_gen::TypeInfo {{
-            name: "grammers.tl.TLRequest".to_string(),
-            import: vec!["grammers.tl".into()].into_iter().collect(),
-        }}
-    }}
-}}"#,
-    )
-}
-
 fn write_rpc<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl grammers_tl_types::Serializable for PyTLRequest {{"
+        "impl crate::Serializable for PyTLRequest {{"
     )?;
     writeln!(
         file,
@@ -61,12 +46,6 @@ fn write_rpc<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<(
     writeln!(file, "        }}")?;
     writeln!(file, "    }}")?;
     writeln!(file, "}}")?;
-    writeln!(
-        file,
-        r#"impl grammers_tl_types::RemoteCall for PyTLRequest {{
-    type Return = crate::PyTLObject;
-}}"#
-    )?;
     Ok(())
 }
 
@@ -128,21 +107,6 @@ fn write_into_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) ->
 }}"#
     )?;
     Ok(())
-}
-
-fn write_stubtype_pytlobject<W: Write>(file: &mut W) -> io::Result<()> {
-    writeln!(
-        file,
-        r#"#[cfg(feature = "stub-gen")]
-impl pyo3_stub_gen::PyStubType for PyTLObject {{
-    fn type_output() -> pyo3_stub_gen::TypeInfo {{
-        pyo3_stub_gen::TypeInfo {{
-            name: "grammers.tl.TLObject".to_string(),
-            import: vec!["grammers.tl".into()].into_iter().collect(),
-        }}
-    }}
-}}"#,
-    )
 }
 
 fn write_enum_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
@@ -226,7 +190,7 @@ fn write_into_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> 
 fn write_serialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl grammers_tl_types::Serializable for PyTLObject {{"
+        "impl crate::Serializable for PyTLObject {{"
     )?;
     writeln!(
         file,
@@ -251,13 +215,13 @@ fn write_serialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Re
 fn write_deserialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl grammers_tl_types::Deserializable for PyTLObject {{"
+        "impl crate::Deserializable for PyTLObject {{"
     )?;
     writeln!(
         file,
-        "    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{"
+        "    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {{"
     )?;
-    writeln!(file, "        use grammers_tl_types::Identifiable;")?;
+    writeln!(file, "        use crate::Identifiable;")?;
     writeln!(file, "        let id = u32::deserialize(buf)?;")?;
     writeln!(file, "        match id {{")?;
     for def in definitions {
@@ -273,7 +237,7 @@ fn write_deserialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::
     }
     writeln!(
         file,
-        "            _ => Err(grammers_tl_types::deserialize::Error::UnexpectedConstructor {{ id }}),"
+        "            _ => Err(crate::deserialize::Error::UnexpectedConstructor {{ id }}),"
     )?;
     writeln!(file, "        }}")?;
     writeln!(file, "    }}")?;
@@ -282,12 +246,43 @@ fn write_deserialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::
 }
 
 /// Write the entire module dedicated to enums.
-pub fn write_enums_mod<'a, W: Write>(
+pub fn write_mod<'a, W: Write>(
     file: &'a mut W,
     definitions: &[Definition],
+    layer: i32,
 ) -> io::Result<()> {
+    writeln!(
+        file,
+        r#"/// The schema layer from which the definitions were generated.
+pub const LAYER: i32 = {layer};
+"#
+    )?;
+    writeln!(
+        file,
+        r#"
+/// Return the name from the `.tl` definition corresponding to the provided definition identifier.
+pub fn name_for_id(id: u32) -> &'static str {{
+    match id {{
+        0x1cb5c415 => "vector","#
+    )?;
+    for def in definitions {
+        writeln!(
+            file,
+            r#"        0x{:x} => "{}","#,
+            def.id,
+            def.full_name()
+        )?;
+    }
+    writeln!(
+        file,
+        r#"
+        _ => "(unknown)",
+    }}
+}}
+        "#,
+    )?;
+    
     write_enum_pytlrequest(file, definitions)?;
-    write_stubtype_pytlrequest(file)?;
     write_from_pytlrequest(file, definitions)?;
     write_into_pytlrequest(file, definitions)?;
     write_rpc(file, definitions)?;
@@ -295,7 +290,6 @@ pub fn write_enums_mod<'a, W: Write>(
     writeln!(file)?;
 
     write_enum_pytlobject(file, definitions)?;
-    write_stubtype_pytlobject(file)?;
     write_from_pytlobject(file, definitions)?;
     write_into_pytlobject(file, definitions)?;
     write_serialize(file, definitions)?;

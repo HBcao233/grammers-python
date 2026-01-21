@@ -35,54 +35,6 @@ fn write_enum<W: Write>(
     Ok(())
 }
 
-fn write_stubtype<W: Write>(
-    file: &mut W,
-    indent: &str,
-    ty: &Type,
-    metadata: &Metadata,
-) -> io::Result<()> {
-    let type_name = rustifier::types::type_name(ty);
-    let ns = if metadata.defs_with_type(ty).is_empty() {
-        "".to_string()
-    } else {
-        let d = metadata.defs_with_type(ty)[0];
-        if d.namespace.is_empty() {
-            "".to_string()
-        } else {
-            ".".to_string() + &d.namespace[0]
-        }
-    };
-    let type_hint = metadata
-        .defs_with_type(ty)
-        .iter()
-        .map(|d| {
-            let mut result = String::new();
-            result.push_str("grammers.tl.types.");
-            d.namespace.iter().for_each(|ns| {
-                result.push_str(ns);
-                result.push_str(".");
-            });
-            result.push_str(&rustifier::definitions::type_name(d));
-            result
-        })
-        .collect::<Vec<String>>()
-        .join(" | ");
-    writeln!(
-        file,
-        r#"{indent}#[cfg(feature = "stub-gen")]
-{indent}impl pyo3_stub_gen::PyStubType for Py{} {{
-{indent}    fn type_output() -> pyo3_stub_gen::TypeInfo {{
-{indent}        pyo3_stub_gen::TypeInfo {{
-{indent}            name: "{}".to_string(),
-{indent}            import: vec!["grammers.tl.types{}".into()].into_iter().collect(),
-{indent}        }}
-{indent}    }}
-{indent}}}"#,
-        type_name, type_hint, ns,
-    )?;
-    Ok(())
-}
-
 fn write_from<W: Write>(
     file: &mut W,
     indent: &str,
@@ -162,14 +114,14 @@ fn write_serialize<W: Write>(
     let type_name = rustifier::types::type_name(ty);
     writeln!(
         file,
-        "{indent}impl grammers_tl_types::Serializable for Py{} {{",
+        "{indent}impl crate::Serializable for Py{} {{",
         type_name,
     )?;
     writeln!(
         file,
         "{indent}    fn serialize(&self, buf: &mut impl Extend<u8>) {{"
     )?;
-    writeln!(file, "{indent}        use grammers_tl_types::Identifiable;")?;
+    writeln!(file, "{indent}        use crate::Identifiable;")?;
     writeln!(file, "{indent}        match self {{")?;
     for d in metadata.defs_with_type(ty) {
         writeln!(
@@ -204,14 +156,14 @@ fn write_deserialize<W: Write>(
     let type_name = rustifier::types::type_name(ty);
     writeln!(
         file,
-        "{indent}impl grammers_tl_types::Deserializable for Py{} {{",
+        "{indent}impl crate::Deserializable for Py{} {{",
         type_name,
     )?;
     writeln!(
         file,
-        "{indent}    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{"
+        "{indent}    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {{"
     )?;
-    writeln!(file, "{indent}        use grammers_tl_types::Identifiable;")?;
+    writeln!(file, "{indent}        use crate::Identifiable;")?;
     writeln!(file, "{indent}        let id = u32::deserialize(buf)?;")?;
     writeln!(file, "{indent}        Ok(match id {{")?;
     for d in metadata.defs_with_type(ty) {
@@ -228,7 +180,7 @@ fn write_deserialize<W: Write>(
     }
     writeln!(
         file,
-        "{indent}            _ => return Err(grammers_tl_types::deserialize::Error::UnexpectedConstructor {{ id }}),"
+        "{indent}            _ => return Err(crate::deserialize::Error::UnexpectedConstructor {{ id }}),"
     )?;
     writeln!(file, "{indent}        }})")?;
     writeln!(file, "{indent}    }}")?;
@@ -285,7 +237,6 @@ fn write_definition<W: Write>(
     metadata: &Metadata,
 ) -> io::Result<()> {
     write_enum(file, indent, ty, metadata)?;
-    write_stubtype(file, indent, ty, metadata)?;
     write_from(file, indent, ty, metadata)?;
     write_into(file, indent, ty, metadata)?;
     write_serialize(file, indent, ty, metadata)?;

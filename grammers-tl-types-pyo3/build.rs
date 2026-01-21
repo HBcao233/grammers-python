@@ -85,7 +85,7 @@ fn main() -> std::io::Result<()> {
         enums: BufWriter::new(File::create(output_dir.join("generated_enums.rs"))?),
     };
 
-    generate_rust_code(&mut outputs, &definitions)?;
+    generate_rust_code(&mut outputs, &definitions, layer)?;
 
     outputs.flush()?;
 

@@ -50,8 +50,9 @@ fn ignore_type(ty: &Type) -> bool {
 pub fn generate_rust_code<W: Write>(
     outputs: &mut Outputs<W>,
     definitions: &[Definition],
+    layer: i32,
 ) -> io::Result<()> {
-    common::write_enums_mod(&mut outputs.common, definitions)?;
+    common::write_mod(&mut outputs.common, definitions, layer)?;
 
     let metadata = Metadata::new(definitions);
 

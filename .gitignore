@@ -5,3 +5,6 @@ target
 python/grammers/tl/allobjects.py
 python/grammers/tl/types/*.pyi
 python/grammers/tl/functions/*.pyi
+
+*.session
+/test.*

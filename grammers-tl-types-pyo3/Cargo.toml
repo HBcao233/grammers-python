@@ -5,14 +5,9 @@ edition = { workspace = true }
 
 [dependencies]
 pyo3 = { workspace = true }
-grammers-tl-types = { workspace = true }
-
-pyo3-stub-gen = { optional = true, workspace = true }
 
 [features]
 default = []
-stub-gen = ["pyo3-stub-gen"]
-
 
 [build-dependencies]
 grammers-tl-parser = { git = "https://github.com/Lonami/grammers.git" }

@@ -1,40 +1,41 @@
-use grammers_tl_types as tl;
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3::{Bound, FromPyObject, IntoPyObject, Py, PyAny};
 
-pub type Buffer<'a, 'b> = &'a mut grammers_tl_types::deserialize::Cursor<'b>;
+/// Used by types identifiable by both ends (client-server)
+/// when performing Remote Procedure Calls (RPC) and transmission of objects.
+pub trait Identifiable {
+    /// The unique identifier for the type.
+    const CONSTRUCTOR_ID: u32;
+}
 
-#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pyclass)]
 #[repr(transparent)]
 #[derive(Debug, Clone)]
 #[pyclass]
 pub struct PyRawVec(Vec<crate::PyTLObject>);
 
-impl tl::Serializable for PyRawVec {
+impl crate::Serializable for PyRawVec {
     fn serialize(&self, buf: &mut impl Extend<u8>) {
         (self.0.len() as i32).serialize(buf);
         self.0.iter().for_each(|x| x.serialize(buf));
     }
 }
-impl tl::Deserializable for PyRawVec {
-    fn deserialize(buf: crate::Buffer) -> tl::deserialize::Result<Self> {
+impl crate::Deserializable for PyRawVec {
+    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {
         let len = u32::deserialize(buf)?;
         Ok(Self(
             (0..len)
                 .map(|_| crate::PyTLObject::deserialize(buf))
-                .collect::<tl::deserialize::Result<Vec<crate::PyTLObject>>>()?,
+                .collect::<crate::deserialize::Result<Vec<crate::PyTLObject>>>()?,
         ))
     }
 }
 
-#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pyclass)]
 #[derive(Debug, Clone, PartialEq)]
 #[pyclass(module = "grammers.tl", subclass)]
 pub struct TLObject {}
 
-#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pymethods)]
 #[pymethods]
 impl TLObject {
     #[staticmethod]
@@ -133,12 +134,10 @@ impl TLObject {
     }
 }
 
-#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pyclass)]
 #[pyclass(module = "grammers.tl", subclass)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct TLRequest {}
 
-#[cfg_attr(feature = "stub-gen", pyo3_stub_gen::derive::gen_stub_pymethods)]
 #[pymethods]
 impl TLRequest {
     #[staticmethod]
@@ -242,22 +241,13 @@ impl TLRequest {
 #[derive(Debug, Clone, FromPyObject, IntoPyObject)]
 pub struct PyTLObjectWrapper(crate::PyTLObject);
 
-#[cfg(feature = "stub-gen")]
-impl pyo3_stub_gen::PyStubType for PyTLObjectWrapper {
-    fn type_output() -> pyo3_stub_gen::TypeInfo {
-        pyo3_stub_gen::TypeInfo {
-            name: "grammers.tl.TLObject".to_string(),
-            import: vec!["grammers.tl".into()].into_iter().collect(),
-        }
-    }
-}
-impl tl::Serializable for PyTLObjectWrapper {
+impl crate::Serializable for PyTLObjectWrapper {
     fn serialize(&self, buf: &mut impl Extend<u8>) {
         self.0.serialize(buf);
     }
 }
-impl tl::Deserializable for PyTLObjectWrapper {
-    fn deserialize(buf: crate::Buffer) -> tl::deserialize::Result<Self> {
+impl crate::Deserializable for PyTLObjectWrapper {
+    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {
         let x = crate::PyTLObject::deserialize(buf)?;
         Ok(Self(x))
     }
@@ -267,16 +257,7 @@ impl tl::Deserializable for PyTLObjectWrapper {
 #[derive(Debug, Clone, FromPyObject, IntoPyObject)]
 pub struct PyTLRequestWrapper(crate::PyTLRequest);
 
-#[cfg(feature = "stub-gen")]
-impl pyo3_stub_gen::PyStubType for PyTLRequestWrapper {
-    fn type_output() -> pyo3_stub_gen::TypeInfo {
-        pyo3_stub_gen::TypeInfo {
-            name: "grammers.tl.TLRequest".to_string(),
-            import: vec!["grammers.tl".into()].into_iter().collect(),
-        }
-    }
-}
-impl tl::Serializable for PyTLRequestWrapper {
+impl crate::Serializable for PyTLRequestWrapper {
     fn serialize(&self, buf: &mut impl Extend<u8>) {
         self.0.serialize(buf);
     }

@@ -71,10 +71,6 @@ fn write_struct<W: Write>(
             Category::Functions => "TLRequest",
         },
     )?;
-    writeln!(
-        file,
-        "{indent}#[cfg_attr(feature = \"stub-gen\", pyo3_stub_gen::derive::gen_stub_pyclass)]"
-    )?;
     writeln!(file, "{}pub struct Py{} {{", indent, type_name,)?;
 
     for param in def.params.iter() {
@@ -161,10 +157,6 @@ fn write_struct<W: Write>(
 /// ```
 fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Result<()> {
     let type_name = rustifier::definitions::type_name(def);
-    writeln!(
-        file,
-        "{indent}#[cfg_attr(feature = \"stub-gen\", pyo3_stub_gen::derive::gen_stub_pymethods)]"
-    )?;
     writeln!(file, "{indent}#[pyo3::pymethods]")?;
     writeln!(file, "{}impl Py{} {{", indent, type_name,)?;
 
@@ -241,7 +233,7 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
       file, 
       r#"{indent}    #[pyo3(name = "to_bytes")]
 {indent}    fn py_to_bytes(&self) -> Vec<u8> {{
-{indent}        use grammers_tl_types::Serializable;
+{indent}        use crate::Serializable;
 {indent}        self.to_bytes()
 {indent}    }}
 "#,
@@ -288,14 +280,14 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
 /// Defines the `impl Identifiable` corresponding to the definition:
 ///
 /// ```ignore
-/// impl grammers_tl_types::Identifiable for PyName {
+/// impl crate::Identifiable for PyName {
 ///     const CONSTRUCTOR_ID: u32 = 123;
 /// }
 /// ```
 fn write_identifiable<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Result<()> {
     writeln!(
         file,
-        r#"{indent}impl grammers_tl_types::Identifiable for Py{} {{
+        r#"{indent}impl crate::Identifiable for Py{} {{
 {indent}    const CONSTRUCTOR_ID: u32 = {};
 {indent}}}"#,
         rustifier::definitions::type_name(def),
@@ -307,7 +299,7 @@ fn write_identifiable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
 /// Defines the `impl Serializable` corresponding to the definition:
 ///
 /// ```ignore
-/// impl grammers_tl_types::Serializable for PyName {
+/// impl crate::Serializable for PyName {
 ///     fn serialize(&self, buf: &mut impl Extend<u8>) {
 ///         self.field.serialize(buf);
 ///     }
@@ -317,7 +309,7 @@ fn write_serializable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
     let type_name = rustifier::definitions::type_name(def);
     writeln!(
         file,
-        "{indent}impl grammers_tl_types::Serializable for Py{} {{",
+        "{indent}impl crate::Serializable for Py{} {{",
         type_name,
     )?;
     writeln!(
@@ -336,7 +328,7 @@ fn write_serializable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
         }
         Category::Functions => {
             // Functions should always write their `CONSTRUCTOR_ID`.
-            // writeln!(file, "{indent}        use grammers_tl_types::Identifiable;")?;
+            // writeln!(file, "{indent}        use crate::Identifiable;")?;
             writeln!(file, "{indent}        Self::CONSTRUCTOR_ID.serialize(buf);")?;
         }
     }
@@ -404,7 +396,7 @@ fn write_serializable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
     // wrapper
     writeln!(
         file,
-        r#"{indent}impl grammers_tl_types::Serializable for Py{}Wrapper {{
+        r#"{indent}impl crate::Serializable for Py{}Wrapper {{
 {indent}    fn serialize(&self, buf: &mut impl Extend<u8>) {{
 {indent}        pyo3::Python::attach(|py| self.0.borrow(py).serialize(buf));
 {indent}    }}
@@ -418,8 +410,8 @@ fn write_serializable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
 /// Defines the `impl Deserializable` corresponding to the definition:
 ///
 /// ```ignore
-/// impl grammers_tl_types::Deserializable for PyName {
-///     fn deserialize(buf: grammers_tl_types::deserialize::Buffer) -> grammers_tl_types::deserialize::Result<Self> {
+/// impl crate::Deserializable for PyName {
+///     fn deserialize(buf: crate::deserialize::Buffer) -> crate::deserialize::Result<Self> {
 ///         let field = FieldType::deserialize(buf)?;
 ///         Ok(Name { field })
 ///     }
@@ -434,12 +426,12 @@ fn write_deserializable<W: Write>(
     let type_name = rustifier::definitions::type_name(def);
     writeln!(
         file,
-        "{}impl grammers_tl_types::Deserializable for Py{} {{",
+        "{}impl crate::Deserializable for Py{} {{",
         indent, type_name,
     )?;
     writeln!(
         file,
-        "{}    fn deserialize({}buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{",
+        "{}    fn deserialize({}buf: crate::Buffer) -> crate::deserialize::Result<Self> {{",
         indent,
         if def.params.is_empty() { "_" } else { "" }
     )?;
@@ -524,8 +516,8 @@ fn write_deserializable<W: Write>(
     // wrapper
     writeln!(
         file,
-        r#"{indent}impl grammers_tl_types::Deserializable for Py{name}Wrapper {{
-{indent}    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{
+        r#"{indent}impl crate::Deserializable for Py{name}Wrapper {{
+{indent}    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {{
 {indent}        Ok(Py{name}::deserialize(buf)?.into())
 {indent}    }}
 {indent}}}"#,
