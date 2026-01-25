@@ -1,15 +1,13 @@
+use super::{
+    PeerIdLike, PyDcOption, PyPeerId, PyPeerInfo, PyPeerRef, PyUpdateState, PyUpdatesState,
+};
+use pyo3::exceptions::{PyNotImplementedError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::PyType;
-use pyo3::exceptions::{PyTypeError, PyNotImplementedError};
 use pyo3_async_runtimes::tokio::into_future;
-use super::{PyDcOption, PyPeerId, PeerIdLike, PyPeerInfo, PyPeerRef, PyUpdatesState, PyUpdateState};
 
 #[derive(Clone)]
-#[pyclass(
-    name = "Session",
-    module = "grammers.sessions",
-    subclass
-)]
+#[pyclass(name = "Session", module = "grammers.sessions", subclass)]
 pub struct PySession {}
 
 #[pymethods]
@@ -18,36 +16,38 @@ impl PySession {
     fn new() -> Self {
         Self {}
     }
-    
+
     #[classmethod]
     fn __init_subclass__(cls: &Bound<'_, PyType>) -> PyResult<()> {
         let cls_dict = cls.getattr("__dict__")?;
         let required_methods = [
-            "home_dc_id", "set_home_dc_id",
-            "dc_option", "set_home_dc_id", 
-            "peer", "cache_peer",
-            "updates_state", "set_update_state"
+            "home_dc_id",
+            "set_home_dc_id",
+            "dc_option",
+            "set_home_dc_id",
+            "peer",
+            "cache_peer",
+            "updates_state",
+            "set_update_state",
         ];
         for method in required_methods {
             if !cls_dict.contains(method)? {
-                return Err(PyTypeError::new_err(
-                    format!(
-                        "Can't instantiate abstract class {} without an implementation for abstract method '{}'",
-                        cls.name()?,
-                        method,
-                    )
-                ))
+                return Err(PyTypeError::new_err(format!(
+                    "Can't instantiate abstract class {} without an implementation for abstract method '{}'",
+                    cls.name()?,
+                    method,
+                )));
             }
         }
         Ok(())
     }
-    
+
     async fn home_dc_id(&self) -> PyResult<i32> {
         Err(PyNotImplementedError::new_err(
             "Session subclasses must implement home_dc_id()",
         ))
     }
-    
+
     #[allow(unused_variables)]
     #[pyo3(signature = (dc_id))]
     async fn set_home_dc_id(&self, dc_id: i32) -> PyResult<()> {
@@ -55,7 +55,7 @@ impl PySession {
             "Session subclasses must implement set_home_dc_id()",
         ))
     }
-    
+
     #[allow(unused_variables)]
     #[pyo3(signature = (dc_id))]
     async fn dc_option(&self, dc_id: i32) -> PyResult<Option<PyDcOption>> {
@@ -63,7 +63,7 @@ impl PySession {
             "Session subclasses must implement dc_option()",
         ))
     }
-    
+
     #[allow(unused_variables)]
     #[pyo3(signature = (dc_option))]
     async fn set_dc_option(&self, dc_option: Py<PyDcOption>) -> PyResult<()> {
@@ -71,7 +71,7 @@ impl PySession {
             "Session subclasses must implement set_dc_option()",
         ))
     }
-    
+
     #[allow(unused_variables)]
     #[pyo3(signature = (peer))]
     async fn peer(&self, peer: PeerIdLike) -> PyResult<Option<PyPeerInfo>> {
@@ -79,7 +79,7 @@ impl PySession {
             "Session subclasses must implement peer()",
         ))
     }
-    
+
     #[allow(unused_variables)]
     #[pyo3(signature = (peer_info))]
     async fn cache_peer(&self, peer_info: Py<PyPeerInfo>) -> PyResult<()> {
@@ -87,14 +87,14 @@ impl PySession {
             "Session subclasses must implement cache_peer()",
         ))
     }
-    
+
     #[pyo3(signature = ())]
     async fn updates_state(&self) -> PyResult<PyUpdatesState> {
         Err(PyNotImplementedError::new_err(
             "Session subclasses must implement updates_state()",
         ))
     }
-    
+
     #[allow(unused_variables)]
     #[pyo3(signature = (update))]
     async fn set_update_state(&self, update: Py<PyUpdateState>) -> PyResult<()> {
@@ -103,7 +103,6 @@ impl PySession {
         ))
     }
 }
-
 
 pub struct Session(pub Py<PyAny>);
 impl Clone for Session {
@@ -118,43 +117,64 @@ impl Session {
             into_future(coroutine)
         })?
         .await?;
-        Python::attach(|py| {
-            res.bind(py).extract::<i32>()
+        Python::attach(|py| res.bind(py).extract::<i32>()).map_err(|e| {
+            let cls_name = match Python::attach(|py| {
+                Ok(self.0.bind(py).get_type().qualname()?.extract::<String>()?)
+            }) {
+                Ok(v) => v,
+                Err(e) => return e,
+            };
+            PyTypeError::new_err(format!("{}.home_dc_id(): {}", cls_name, e))
         })
     }
-    
+
     pub async fn set_home_dc_id(&self, dc_id: i32) -> PyResult<()> {
         Python::attach(|py| {
             let coroutine = self.0.bind(py).call_method1("set_home_dc_id", (dc_id,))?;
             into_future(coroutine)
-        })?.await?;
+        })?
+        .await?;
         Ok(())
     }
-    
+
     pub async fn dc_option(&self, dc_id: i32) -> PyResult<Option<PyDcOption>> {
         let res = Python::attach(|py| {
             let coroutine = self.0.bind(py).call_method1("dc_option", (dc_id,))?;
             into_future(coroutine)
-        })?.await?;
+        })?
+        .await?;
         Python::attach(|py| {
             let res = res.bind(py);
             Ok(if res.is_none() {
                 None
             } else {
-                Some(res.cast::<PyDcOption>()?.borrow().clone())
+                let res = res.cast::<PyDcOption>().map_err(|e| {
+                    let cls_name = match Python::attach(|py| {
+                        Ok(self.0.bind(py).get_type().qualname()?.extract::<String>()?)
+                    }) {
+                        Ok(v) => v,
+                        Err(e) => return e,
+                    };
+                    PyTypeError::new_err(format!("{}.dc_option(): {}", cls_name, e))
+                })?;
+                Some(res.borrow().clone())
             })
         })
     }
-    
+
     pub async fn set_dc_option(&self, dc_option: PyDcOption) -> PyResult<()> {
         Python::attach(|py| {
             let dc_option = Py::new(py, dc_option)?;
-            let coroutine = self.0.bind(py).call_method1("set_dc_option", (dc_option,))?;
+            let coroutine = self
+                .0
+                .bind(py)
+                .call_method1("set_dc_option", (dc_option,))?;
             into_future(coroutine)
-        })?.await?;
+        })?
+        .await?;
         Ok(())
     }
-    
+
     pub async fn peer(&self, peer: PyPeerId) -> PyResult<Option<PyPeerInfo>> {
         let res = Python::attach(|py| {
             let peer = Py::new(py, peer)?;
@@ -165,45 +185,70 @@ impl Session {
         Python::attach(|py| {
             let res = res.bind(py);
             Ok(if res.is_none() {
-              None
+                None
             } else {
-              Some(res.cast::<PyPeerInfo>()?.borrow().clone())
+                let res = res.cast::<PyPeerInfo>().map_err(|e| {
+                    let cls_name = match Python::attach(|py| {
+                        Ok(self.0.bind(py).get_type().qualname()?.extract::<String>()?)
+                    }) {
+                        Ok(v) => v,
+                        Err(e) => return e,
+                    };
+                    PyTypeError::new_err(format!("{}.peer(): {}", cls_name, e))
+                })?;
+                Some(res.borrow().clone())
             })
         })
     }
-    
+
     pub async fn peer_ref(&self, peer: PyPeerId) -> PyResult<Option<PyPeerRef>> {
-        Ok(self.peer(peer)
+        Ok(self
+            .peer(peer)
             .await?
             .and_then(|info| info.auth())
             .map(|auth| PyPeerRef { id: peer, auth }))
     }
-    
+
     pub async fn cache_peer(&self, peer_info: PyPeerInfo) -> PyResult<()> {
         Python::attach(|py| {
             let peer_info = Py::new(py, peer_info)?;
             let coroutine = self.0.bind(py).call_method1("cache_peer", (peer_info,))?;
             into_future(coroutine)
-        })?.await?;
+        })?
+        .await?;
         Ok(())
     }
-    
+
     pub async fn updates_state(&self) -> PyResult<PyUpdatesState> {
         let res = Python::attach(|py| {
             let coroutine = self.0.bind(py).call_method0("updates_state")?;
             into_future(coroutine)
-        })?.await?;
+        })?
+        .await?;
         Python::attach(|py| {
-            Ok(res.bind(py).cast::<PyUpdatesState>()?.borrow().clone())
+            let res = res.bind(py).cast::<PyUpdatesState>().map_err(|e| {
+                let cls_name = match Python::attach(|py| {
+                    Ok(self.0.bind(py).get_type().qualname()?.extract::<String>()?)
+                }) {
+                    Ok(v) => v,
+                    Err(e) => return e,
+                };
+                PyTypeError::new_err(format!("{}.updates_state(): {}", cls_name, e))
+            })?;
+            Ok(res.borrow().clone())
         })
     }
-    
+
     pub async fn set_update_state(&self, update: PyUpdateState) -> PyResult<()> {
         Python::attach(|py| {
             let update = Py::new(py, update)?;
-            let coroutine = self.0.bind(py).call_method1("set_update_state", (update,))?;
+            let coroutine = self
+                .0
+                .bind(py)
+                .call_method1("set_update_state", (update,))?;
             into_future(coroutine)
-        })?.await?;
+        })?
+        .await?;
         Ok(())
     }
 }
