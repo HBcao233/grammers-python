@@ -76,9 +76,9 @@ impl<'a> Metadata<'a> {
 
     /// Returns `true` if any of the parameters of `Definition` eventually
     /// contains the same type as the `Definition` itself (meaning it recurses).
-    /*pub fn is_recursive_def(&self, def: &Definition) -> bool {
+    pub fn is_recursive_def(&self, def: &Definition) -> bool {
         self.recursing_defs.contains(&def.id)
-    }*/
+    }
 
     pub fn defs_with_type(&self, ty: &'a Type) -> &Vec<&Definition> {
         &self.defs_with_type[&(&ty.namespace, &ty.name)]

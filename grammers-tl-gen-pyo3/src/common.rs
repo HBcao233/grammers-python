@@ -26,7 +26,7 @@ fn write_enum_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) ->
 fn write_rpc<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl crate::Serializable for PyTLRequest {{"
+        "impl grammers_tl_types::Serializable for PyTLRequest {{"
     )?;
     writeln!(
         file,
@@ -190,7 +190,7 @@ fn write_into_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> 
 fn write_serialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl crate::Serializable for PyTLObject {{"
+        "impl grammers_tl_types::Serializable for PyTLObject {{"
     )?;
     writeln!(
         file,
@@ -215,13 +215,13 @@ fn write_serialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Re
 fn write_deserialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl crate::Deserializable for PyTLObject {{"
+        "impl grammers_tl_types::Deserializable for PyTLObject {{"
     )?;
     writeln!(
         file,
-        "    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {{"
+        "    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{"
     )?;
-    writeln!(file, "        use crate::Identifiable;")?;
+    writeln!(file, "        use grammers_tl_types::Identifiable;")?;
     writeln!(file, "        let id = u32::deserialize(buf)?;")?;
     writeln!(file, "        match id {{")?;
     for def in definitions {
@@ -237,7 +237,7 @@ fn write_deserialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::
     }
     writeln!(
         file,
-        "            _ => Err(crate::deserialize::Error::UnexpectedConstructor {{ id }}),"
+        "            _ => Err(grammers_tl_types::deserialize::Error::UnexpectedConstructor {{ id }}),"
     )?;
     writeln!(file, "        }}")?;
     writeln!(file, "    }}")?;
@@ -245,43 +245,31 @@ fn write_deserialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::
     Ok(())
 }
 
+fn write_from_tl<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
+    for def in definitions {
+        if def.category == Category::Types && !ignore_type(&def.ty) {
+            let tl_qual_name = rustifier::definitions::tl_qual_name(def);
+            writeln!(
+                file,
+                r#"impl From<{tl_qual_name}> for PyTLObject {{
+    fn from(x: {tl_qual_name}) -> Self {{
+        Self::{}(x.into())
+    }}
+}}"#,
+                rustifier::definitions::ns_type_name(def),
+            )?;
+        }
+    }
+    
+    Ok(())
+}
+
 /// Write the entire module dedicated to enums.
 pub fn write_mod<'a, W: Write>(
     file: &'a mut W,
     definitions: &[Definition],
-    layer: i32,
+    _layer: i32,
 ) -> io::Result<()> {
-    writeln!(
-        file,
-        r#"/// The schema layer from which the definitions were generated.
-pub const LAYER: i32 = {layer};
-"#
-    )?;
-    writeln!(
-        file,
-        r#"
-/// Return the name from the `.tl` definition corresponding to the provided definition identifier.
-pub fn name_for_id(id: u32) -> &'static str {{
-    match id {{
-        0x1cb5c415 => "vector","#
-    )?;
-    for def in definitions {
-        writeln!(
-            file,
-            r#"        0x{:x} => "{}","#,
-            def.id,
-            def.full_name()
-        )?;
-    }
-    writeln!(
-        file,
-        r#"
-        _ => "(unknown)",
-    }}
-}}
-        "#,
-    )?;
-    
     write_enum_pytlrequest(file, definitions)?;
     write_from_pytlrequest(file, definitions)?;
     write_into_pytlrequest(file, definitions)?;
@@ -294,6 +282,7 @@ pub fn name_for_id(id: u32) -> &'static str {{
     write_into_pytlobject(file, definitions)?;
     write_serialize(file, definitions)?;
     write_deserialize(file, definitions)?;
+    write_from_tl(file, definitions)?;
 
     Ok(())
 }

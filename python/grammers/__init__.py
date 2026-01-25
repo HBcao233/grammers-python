@@ -32,22 +32,22 @@ class Client(Client):
         return self
 
     async def __aexit__(self, exc_type, exc_value, exc_traceback):
-        await self.end()
+        await self.stop()
         return False
 
     """
-  async def authorize(self):
-    if self.bot_token:
-      return await self.sign_in_bot(self.bot_token)
-    
-    print(f"Welcome to Grammers {__version__}\n")
-    
-    phone = self.phone
-    if callable(phone):
-      phone = phone()
-      if isinstance(phone, Awaitable):
-        phone = await phone
-  """
+    async def authorize(self):
+      if self.bot_token:
+        return await self.sign_in_bot(self.bot_token)
+      
+      print(f"Welcome to Grammers {__version__}\n")
+      
+      phone = self.phone
+      if callable(phone):
+        phone = phone()
+        if isinstance(phone, Awaitable):
+          phone = await phone
+    """
 
     async def idle(self):
         loop = asyncio.get_running_loop()

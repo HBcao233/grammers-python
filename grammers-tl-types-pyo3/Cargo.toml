@@ -5,9 +5,7 @@ edition = { workspace = true }
 
 [dependencies]
 pyo3 = { workspace = true }
-
-[features]
-default = []
+grammers-tl-types = { workspace = true }
 
 [build-dependencies]
 grammers-tl-parser = { git = "https://github.com/Lonami/grammers.git" }

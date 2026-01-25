@@ -233,7 +233,7 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
       file, 
       r#"{indent}    #[pyo3(name = "to_bytes")]
 {indent}    fn py_to_bytes(&self) -> Vec<u8> {{
-{indent}        use crate::Serializable;
+{indent}        use grammers_tl_types::Serializable;
 {indent}        self.to_bytes()
 {indent}    }}
 "#,
@@ -280,14 +280,14 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
 /// Defines the `impl Identifiable` corresponding to the definition:
 ///
 /// ```ignore
-/// impl crate::Identifiable for PyName {
+/// impl grammers_tl_types::Identifiable for PyName {
 ///     const CONSTRUCTOR_ID: u32 = 123;
 /// }
 /// ```
 fn write_identifiable<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Result<()> {
     writeln!(
         file,
-        r#"{indent}impl crate::Identifiable for Py{} {{
+        r#"{indent}impl grammers_tl_types::Identifiable for Py{} {{
 {indent}    const CONSTRUCTOR_ID: u32 = {};
 {indent}}}"#,
         rustifier::definitions::type_name(def),
@@ -299,7 +299,7 @@ fn write_identifiable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
 /// Defines the `impl Serializable` corresponding to the definition:
 ///
 /// ```ignore
-/// impl crate::Serializable for PyName {
+/// impl grammers_tl_types::Serializable for PyName {
 ///     fn serialize(&self, buf: &mut impl Extend<u8>) {
 ///         self.field.serialize(buf);
 ///     }
@@ -309,7 +309,7 @@ fn write_serializable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
     let type_name = rustifier::definitions::type_name(def);
     writeln!(
         file,
-        "{indent}impl crate::Serializable for Py{} {{",
+        "{indent}impl grammers_tl_types::Serializable for Py{} {{",
         type_name,
     )?;
     writeln!(
@@ -328,7 +328,7 @@ fn write_serializable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
         }
         Category::Functions => {
             // Functions should always write their `CONSTRUCTOR_ID`.
-            // writeln!(file, "{indent}        use crate::Identifiable;")?;
+            // writeln!(file, "{indent}        use grammers_tl_types::Identifiable;")?;
             writeln!(file, "{indent}        Self::CONSTRUCTOR_ID.serialize(buf);")?;
         }
     }
@@ -396,7 +396,7 @@ fn write_serializable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
     // wrapper
     writeln!(
         file,
-        r#"{indent}impl crate::Serializable for Py{}Wrapper {{
+        r#"{indent}impl grammers_tl_types::Serializable for Py{}Wrapper {{
 {indent}    fn serialize(&self, buf: &mut impl Extend<u8>) {{
 {indent}        pyo3::Python::attach(|py| self.0.borrow(py).serialize(buf));
 {indent}    }}
@@ -410,8 +410,8 @@ fn write_serializable<W: Write>(file: &mut W, indent: &str, def: &Definition) ->
 /// Defines the `impl Deserializable` corresponding to the definition:
 ///
 /// ```ignore
-/// impl crate::Deserializable for PyName {
-///     fn deserialize(buf: crate::deserialize::Buffer) -> crate::deserialize::Result<Self> {
+/// impl grammers_tl_types::Deserializable for PyName {
+///     fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {
 ///         let field = FieldType::deserialize(buf)?;
 ///         Ok(Name { field })
 ///     }
@@ -426,12 +426,12 @@ fn write_deserializable<W: Write>(
     let type_name = rustifier::definitions::type_name(def);
     writeln!(
         file,
-        "{}impl crate::Deserializable for Py{} {{",
+        "{}impl grammers_tl_types::Deserializable for Py{} {{",
         indent, type_name,
     )?;
     writeln!(
         file,
-        "{}    fn deserialize({}buf: crate::Buffer) -> crate::deserialize::Result<Self> {{",
+        "{}    fn deserialize({}buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{",
         indent,
         if def.params.is_empty() { "_" } else { "" }
     )?;
@@ -516,14 +516,69 @@ fn write_deserializable<W: Write>(
     // wrapper
     writeln!(
         file,
-        r#"{indent}impl crate::Deserializable for Py{name}Wrapper {{
-{indent}    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {{
+        r#"{indent}impl grammers_tl_types::Deserializable for Py{name}Wrapper {{
+{indent}    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{
 {indent}        Ok(Py{name}::deserialize(buf)?.into())
 {indent}    }}
 {indent}}}"#,
         name = type_name,
     )?;
 
+    Ok(())
+}
+
+fn write_from_tl<W: Write>(
+    file: &mut W,
+    indent: &str,
+    def: &Definition,
+    _metadata: &Metadata,
+) -> io::Result<()> {
+    let type_name = rustifier::definitions::type_name(def);
+    let tl_qual_name = rustifier::definitions::tl_qual_name(def);
+    writeln!(
+        file,
+        r#"{indent}impl From<{tl_qual_name}> for Py{type_name} {{
+{indent}    fn from({}x: {tl_qual_name}) -> Self {{
+{indent}        Self {{"#,
+        if def.params.is_empty() {
+          "_"
+        } else { "" },
+    )?;
+    
+    for param in def.params.iter() {
+        match &param.ty {
+            ParameterType::Flags => {}
+            ParameterType::Normal { ty, flag } => {
+                writeln!(
+                    file, 
+                    r#"{indent}            {name}: {{
+{indent}                let v = x.{name};
+{indent}                {into}
+{indent}            }},"#,
+                    name = rustifier::parameters::attr_name(param),
+                    into = if flag.is_some() && ty.name != "true"
+                    {
+                        format!("v.map(|v| {})", rustifier::types::get_into(ty))
+                    } else {
+                        rustifier::types::get_into(ty)
+                    },
+                )?;
+            }
+        }
+    }
+
+    writeln!(
+        file, 
+        r#"{indent}        }}
+{indent}    }}
+{indent}}}
+{indent}impl From<{tl_qual_name}> for Py{type_name}Wrapper {{
+{indent}    fn from(x: {tl_qual_name}) -> Self {{
+{indent}        let x: Py{type_name} = x.into();
+{indent}        x.into()
+{indent}    }}
+{indent}}}"#,
+    )?;
     Ok(())
 }
 
@@ -545,6 +600,7 @@ fn write_definition<'a, W: Write>(
     || def.name == "sendMessage"
     {
         write_deserializable(file, indent, def, metadata)?;
+        write_from_tl(file, indent, def, metadata)?;
     }
     writeln!(file)?;
     Ok(())

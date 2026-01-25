@@ -21,7 +21,7 @@ use std::fmt;
 
 use crate::Metadata;
 
-use grammers_tl_parser::tl::{Definition, Parameter, ParameterType, Type};
+use grammers_tl_parser::tl::{Category, Definition, Parameter, ParameterType, Type};
 
 /// Get the rusty type name for a certain definition, excluding namespace.
 ///
@@ -105,6 +105,21 @@ pub mod definitions {
     pub fn wrap_qual_name(def: &Definition) -> String {
         let mut result = qual_name(def);
         result.push_str("Wrapper");
+        result
+    }
+    
+    pub fn tl_qual_name(def: &Definition) -> String {
+        let mut result = String::new();
+        result.push_str("grammers_tl_types::");
+        result.push_str(match def.category {
+            Category::Types => "types::",
+            Category::Functions => "functions::",
+        });
+        def.namespace.iter().for_each(|ns| {
+            result.push_str(ns);
+            result.push_str("::");
+        });
+        result.push_str(&type_name(def));
         result
     }
 
@@ -334,6 +349,74 @@ pub mod types {
             result.push(']');
         }
 
+        result
+    }
+    
+    fn builtin_into(ty: &Type) -> Option<&'static str> {
+        Some(match ty.name.as_ref() {
+            "Vector" => "v.into_iter().map(Into::into).collect()",
+            _ => return None,
+        })
+    }
+    
+    pub fn get_into(ty: &Type) -> String {
+        if ty.generic_ref {
+            return "crate::PyTLRequestWrapper".to_string();
+        }
+
+        let result = match builtin_into(ty) {
+            Some(v) => v.to_string(),
+            None => "v.into()".to_string(),
+        };
+        /*
+        let btype = 
+        let mut result = if let Some(name) = btype {
+            name.to_string()
+        } else {
+            let mut result = String::new();
+            result.push_str("crate");
+            if ty.bare {
+                result.push_str("::types::");
+            } else {
+                result.push_str("::enums::");
+            }
+            ty.namespace.iter().for_each(|ns| {
+                result.push_str(ns);
+                result.push_str("::");
+            });
+
+            result.push_str("Py");
+            result.push_str(&type_name(ty));
+            result
+        };
+
+        if let Some(generic_ty) = &ty.generic_arg {
+            if btype.is_none() || btype != Some("crate::PyRawVec") {
+                if path {
+                    result.push_str("::");
+                }
+                result.push('<');
+                result.push_str(&get_path(generic_ty, path));
+                result.push('>');
+            }
+        }
+        */
+
+        result
+    }
+}
+
+pub mod enums {
+    use super::*;
+    
+    pub fn tl_qual_name(ty: &Type) -> String {
+        let mut result = String::new();
+        result.push_str("grammers_tl_types::enums::");
+        ty.namespace.iter().for_each(|ns| {
+            result.push_str(ns);
+            result.push_str("::");
+        });
+        result.push_str(&rusty_type_name(&ty.name));
         result
     }
 }

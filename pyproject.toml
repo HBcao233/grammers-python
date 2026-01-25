@@ -7,7 +7,7 @@ build-backend = "maturin"
 [tool.maturin]
 features = ["pyo3/extension-module"]
 module-name = "grammers._rs"
-manifest-path = "Cargo.toml"
+manifest-path = "grammers-python/Cargo.toml"
 python-source = "python"
 
 

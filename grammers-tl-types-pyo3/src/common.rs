@@ -3,32 +3,30 @@ use pyo3::prelude::*;
 use pyo3::types::PyDict;
 use pyo3::{Bound, FromPyObject, IntoPyObject, Py, PyAny};
 
-/// Used by types identifiable by both ends (client-server)
-/// when performing Remote Procedure Calls (RPC) and transmission of objects.
-pub trait Identifiable {
-    /// The unique identifier for the type.
-    const CONSTRUCTOR_ID: u32;
-}
-
 #[repr(transparent)]
 #[derive(Debug, Clone)]
 #[pyclass]
-pub struct PyRawVec(Vec<crate::PyTLObject>);
+pub struct PyRawVec(pub Vec<crate::PyTLObject>);
 
-impl crate::Serializable for PyRawVec {
+impl grammers_tl_types::Serializable for PyRawVec {
     fn serialize(&self, buf: &mut impl Extend<u8>) {
         (self.0.len() as i32).serialize(buf);
         self.0.iter().for_each(|x| x.serialize(buf));
     }
 }
-impl crate::Deserializable for PyRawVec {
-    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {
+impl grammers_tl_types::Deserializable for PyRawVec {
+    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {
         let len = u32::deserialize(buf)?;
         Ok(Self(
             (0..len)
                 .map(|_| crate::PyTLObject::deserialize(buf))
-                .collect::<crate::deserialize::Result<Vec<crate::PyTLObject>>>()?,
+                .collect::<grammers_tl_types::deserialize::Result<Vec<crate::PyTLObject>>>()?,
         ))
+    }
+}
+impl<T: Into<crate::PyTLObject>> From<grammers_tl_types::RawVec<T>> for PyRawVec {
+    fn from(x: grammers_tl_types::RawVec<T>) -> Self {
+        Self(x.0.into_iter().map(|v| v.into()).collect())
     }
 }
 
@@ -241,13 +239,13 @@ impl TLRequest {
 #[derive(Debug, Clone, FromPyObject, IntoPyObject)]
 pub struct PyTLObjectWrapper(crate::PyTLObject);
 
-impl crate::Serializable for PyTLObjectWrapper {
+impl grammers_tl_types::Serializable for PyTLObjectWrapper {
     fn serialize(&self, buf: &mut impl Extend<u8>) {
         self.0.serialize(buf);
     }
 }
-impl crate::Deserializable for PyTLObjectWrapper {
-    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {
+impl grammers_tl_types::Deserializable for PyTLObjectWrapper {
+    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {
         let x = crate::PyTLObject::deserialize(buf)?;
         Ok(Self(x))
     }
@@ -257,7 +255,7 @@ impl crate::Deserializable for PyTLObjectWrapper {
 #[derive(Debug, Clone, FromPyObject, IntoPyObject)]
 pub struct PyTLRequestWrapper(crate::PyTLRequest);
 
-impl crate::Serializable for PyTLRequestWrapper {
+impl grammers_tl_types::Serializable for PyTLRequestWrapper {
     fn serialize(&self, buf: &mut impl Extend<u8>) {
         self.0.serialize(buf);
     }

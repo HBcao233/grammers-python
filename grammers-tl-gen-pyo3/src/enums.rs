@@ -114,14 +114,14 @@ fn write_serialize<W: Write>(
     let type_name = rustifier::types::type_name(ty);
     writeln!(
         file,
-        "{indent}impl crate::Serializable for Py{} {{",
+        "{indent}impl grammers_tl_types::Serializable for Py{} {{",
         type_name,
     )?;
     writeln!(
         file,
         "{indent}    fn serialize(&self, buf: &mut impl Extend<u8>) {{"
     )?;
-    writeln!(file, "{indent}        use crate::Identifiable;")?;
+    writeln!(file, "{indent}        use grammers_tl_types::Identifiable;")?;
     writeln!(file, "{indent}        match self {{")?;
     for d in metadata.defs_with_type(ty) {
         writeln!(
@@ -156,14 +156,14 @@ fn write_deserialize<W: Write>(
     let type_name = rustifier::types::type_name(ty);
     writeln!(
         file,
-        "{indent}impl crate::Deserializable for Py{} {{",
+        "{indent}impl grammers_tl_types::Deserializable for Py{} {{",
         type_name,
     )?;
     writeln!(
         file,
-        "{indent}    fn deserialize(buf: crate::Buffer) -> crate::deserialize::Result<Self> {{"
+        "{indent}    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{"
     )?;
-    writeln!(file, "{indent}        use crate::Identifiable;")?;
+    writeln!(file, "{indent}        use grammers_tl_types::Identifiable;")?;
     writeln!(file, "{indent}        let id = u32::deserialize(buf)?;")?;
     writeln!(file, "{indent}        Ok(match id {{")?;
     for d in metadata.defs_with_type(ty) {
@@ -180,7 +180,7 @@ fn write_deserialize<W: Write>(
     }
     writeln!(
         file,
-        "{indent}            _ => return Err(crate::deserialize::Error::UnexpectedConstructor {{ id }}),"
+        "{indent}            _ => return Err(grammers_tl_types::deserialize::Error::UnexpectedConstructor {{ id }}),"
     )?;
     writeln!(file, "{indent}        }})")?;
     writeln!(file, "{indent}    }}")?;
@@ -189,7 +189,6 @@ fn write_deserialize<W: Write>(
     Ok(())
 }
 
-/*
 fn write_impl_from<W: Write>(
   file: &mut W,
   indent: &str,
@@ -197,7 +196,7 @@ fn write_impl_from<W: Write>(
   metadata: &Metadata,
 ) -> io::Result<()> {
   for d in metadata.defs_with_type(ty) {
-    let qual_name = rustifier::definitions::wrap_qual_name(d);
+    let qual_name = rustifier::definitions::qual_name(d);
     writeln!(
       file,
       "{indent}impl From<{}> for Py{} {{",
@@ -219,16 +218,98 @@ fn write_impl_from<W: Write>(
       "{indent}        Self::{}({})",
       rustifier::definitions::variant_name(d),
       if d.params.is_empty() {
-        ""
+        format!("{} {{}}.into()", rustifier::definitions::qual_name(d))
       } else {
-        "x"
+        "x.into()".to_string()
       },
     )?;
     writeln!(file, "{indent}    }}")?;
     writeln!(file, "{indent}}}")?;
   }
   Ok(())
-}*/
+}
+
+fn write_from_tl<W: Write>(
+    file: &mut W,
+    indent: &str,
+    ty: &Type,
+    metadata: &Metadata,
+) -> io::Result<()> {
+    let tl_qual_name = rustifier::enums::tl_qual_name(ty);
+    writeln!(
+        file,
+        r#"{indent}impl From<{tl_qual_name}> for Py{name} {{
+{indent}    fn from(x: {tl_qual_name}) -> Self {{
+{indent}        use {tl_qual_name} as E;
+{indent}        match x {{"#,
+        name = rustifier::types::type_name(ty),
+    )?;
+    for d in metadata.defs_with_type(ty) {
+        let variant_name = rustifier::definitions::variant_name(d);
+        writeln!(
+            file, 
+            r#"{indent}            E::{variant_name}{} => Self::{variant_name}({}),"#,
+            if d.params.is_empty() {
+                ""
+            } else {
+                "(x)"
+            },
+            if d.params.is_empty() {
+                format!("{} {{}}.into()", rustifier::definitions::qual_name(d))
+            } else {
+                format!("{}.into()", if metadata.is_recursive_def(d) {
+                    "(*x)"
+                } else {
+                    "x"
+                })
+            },
+        )?;
+    }
+    writeln!(
+        file, 
+        r#"{indent}        }}
+{indent}    }}
+{indent}}}"#,
+    )?;
+    
+    writeln!(
+        file,
+        r#"{indent}impl From<{tl_qual_name}> for crate::PyTLObject {{
+{indent}    fn from(x: {tl_qual_name}) -> Self {{
+{indent}        use {tl_qual_name} as E;
+{indent}        match x {{"#,
+    )?;
+    for d in metadata.defs_with_type(ty) {
+        let variant_name = rustifier::definitions::variant_name(d);
+        let ns_type_name = rustifier::definitions::ns_type_name(d);
+        writeln!(
+            file, 
+            r#"{indent}            E::{variant_name}{} => Self::{ns_type_name}({}),"#,
+            if d.params.is_empty() {
+                ""
+            } else {
+                "(x)"
+            },
+            if d.params.is_empty() {
+                format!("{} {{}}.into()", rustifier::definitions::qual_name(d))
+            } else {
+                format!("{}.into()", if metadata.is_recursive_def(d) {
+                    "(*x)"
+                } else {
+                    "x"
+                })
+            },
+        )?;
+    }
+    writeln!(
+        file, 
+        r#"{indent}        }}
+{indent}    }}
+{indent}}}"#,
+    )?;
+    
+    Ok(())
+}
 
 fn write_definition<W: Write>(
     file: &mut W,
@@ -241,7 +322,8 @@ fn write_definition<W: Write>(
     write_into(file, indent, ty, metadata)?;
     write_serialize(file, indent, ty, metadata)?;
     write_deserialize(file, indent, ty, metadata)?;
-    // write_impl_from(file, indent, ty, metadata)?;
+    write_impl_from(file, indent, ty, metadata)?;
+    write_from_tl(file, indent, ty, metadata)?;
     writeln!(file)?;
     Ok(())
 }
