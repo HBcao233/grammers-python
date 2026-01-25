@@ -113,6 +113,19 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "613afe47fcd5fac7ccf1db93babcb082c5994d996f20b8b159f2ad1658eb5724"
 
 [[package]]
+name = "chrono"
+version = "0.4.43"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "fac4744fb15ae8337dc853fee7fb3f4e48c0fbaa23d0afe49c447b4fab126118"
+dependencies = [
+ "iana-time-zone",
+ "js-sys",
+ "num-traits",
+ "wasm-bindgen",
+ "windows-link",
+]
+
+[[package]]
 name = "cipher"
 version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -121,6 +134,12 @@ dependencies = [
  "crypto-common",
  "inout",
 ]
+
+[[package]]
+name = "core-foundation-sys"
+version = "0.8.7"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 
 [[package]]
 name = "core2"
@@ -432,9 +451,27 @@ dependencies = [
 ]
 
 [[package]]
+name = "grammers-client"
+version = "0.8.1"
+source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
+dependencies = [
+ "chrono",
+ "futures-util",
+ "grammers-crypto",
+ "grammers-mtsender",
+ "grammers-session",
+ "grammers-tl-types",
+ "log",
+ "md5",
+ "mime_guess",
+ "pin-project-lite",
+ "tokio",
+]
+
+[[package]]
 name = "grammers-crypto"
 version = "0.8.0"
-source = "git+https://github.com/Lonami/grammers.git#762f41cd97280c171cfae168fc8a05276eb806bc"
+source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
 dependencies = [
  "aes",
  "ctr",
@@ -451,7 +488,7 @@ dependencies = [
 [[package]]
 name = "grammers-mtproto"
 version = "0.8.0"
-source = "git+https://github.com/Lonami/grammers.git#762f41cd97280c171cfae168fc8a05276eb806bc"
+source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
 dependencies = [
  "bytes",
  "crc32fast",
@@ -465,14 +502,38 @@ dependencies = [
 ]
 
 [[package]]
+name = "grammers-mtsender"
+version = "0.8.1"
+source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
+dependencies = [
+ "bytes",
+ "grammers-crypto",
+ "grammers-mtproto",
+ "grammers-session",
+ "grammers-tl-types",
+ "hickory-resolver",
+ "locate-locale",
+ "log",
+ "os_info",
+ "tokio",
+ "tokio-socks",
+ "url",
+]
+
+[[package]]
 name = "grammers-mtsender-pyo3"
 version = "0.1.0"
 dependencies = [
  "grammers-crypto",
  "grammers-mtproto",
+ "grammers-mtsender",
+ "grammers-session",
+ "grammers-session-pyo3",
+ "grammers-tl-types",
  "grammers-tl-types-pyo3",
  "hickory-resolver",
  "log",
+ "pyo3",
  "tokio",
  "tokio-socks",
  "url",
@@ -482,10 +543,15 @@ dependencies = [
 name = "grammers-python"
 version = "0.1.0"
 dependencies = [
+ "chrono",
+ "grammers-client",
  "grammers-crypto",
  "grammers-mtproto",
+ "grammers-mtsender",
  "grammers-mtsender-pyo3",
+ "grammers-session",
  "grammers-session-pyo3",
+ "grammers-tl-types",
  "grammers-tl-types-pyo3",
  "locate-locale",
  "log",
@@ -498,9 +564,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "grammers-session"
+version = "0.8.0"
+source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
+dependencies = [
+ "futures-core",
+ "grammers-tl-types",
+ "log",
+ "tokio",
+]
+
+[[package]]
 name = "grammers-session-pyo3"
 version = "0.1.0"
 dependencies = [
+ "grammers-session",
+ "grammers-tl-types",
  "grammers-tl-types-pyo3",
  "log",
  "pyo3",
@@ -510,7 +589,7 @@ dependencies = [
 [[package]]
 name = "grammers-tl-gen"
 version = "0.8.0"
-source = "git+https://github.com/Lonami/grammers.git#762f41cd97280c171cfae168fc8a05276eb806bc"
+source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
 dependencies = [
  "grammers-tl-parser",
 ]
@@ -525,7 +604,7 @@ dependencies = [
 [[package]]
 name = "grammers-tl-parser"
 version = "1.2.0"
-source = "git+https://github.com/Lonami/grammers.git#762f41cd97280c171cfae168fc8a05276eb806bc"
+source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
 dependencies = [
  "crc32fast",
 ]
@@ -533,7 +612,7 @@ dependencies = [
 [[package]]
 name = "grammers-tl-types"
 version = "0.8.0"
-source = "git+https://github.com/Lonami/grammers.git#762f41cd97280c171cfae168fc8a05276eb806bc"
+source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
 dependencies = [
  "grammers-tl-gen",
  "grammers-tl-parser",
@@ -608,6 +687,30 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6c49c37c09c17a53d937dfbb742eb3a961d65a994e6bcdcf37e7399d0cc8ab5e"
 dependencies = [
  "digest",
+]
+
+[[package]]
+name = "iana-time-zone"
+version = "0.1.64"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "33e57f83510bb73707521ebaffa789ec8caf86f9657cad665b092b581d40e9fb"
+dependencies = [
+ "android_system_properties",
+ "core-foundation-sys",
+ "iana-time-zone-haiku",
+ "js-sys",
+ "log",
+ "wasm-bindgen",
+ "windows-core",
+]
+
+[[package]]
+name = "iana-time-zone-haiku"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f31827a206f56af32e590ba56d5d2d085f558508192593743f16b2306495269f"
+dependencies = [
+ "cc",
 ]
 
 [[package]]
@@ -804,6 +907,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 
 [[package]]
+name = "md5"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae960838283323069879657ca3de837e9f7bbb4c7bf6ea7f1b290d5e9476d2e0"
+
+[[package]]
 name = "memchr"
 version = "2.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -816,6 +925,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a"
 dependencies = [
  "autocfg",
+]
+
+[[package]]
+name = "mime"
+version = "0.3.17"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
+
+[[package]]
+name = "mime_guess"
+version = "2.0.5"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f7c44f8e672c00fe5308fa235f821cb4198414e1c77935c1ab6948d3fd78550e"
+dependencies = [
+ "mime",
+ "unicase",
 ]
 
 [[package]]
@@ -1635,6 +1760,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
 
 [[package]]
+name = "unicase"
+version = "2.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dbc4bc3a9f746d862c45cb89d705aa10f187bb96c76001afab07a0d35ce60142"
+
+[[package]]
 name = "unicode-ident"
 version = "1.0.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1776,10 +1907,63 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "712e227841d057c1ee1cd2fb22fa7e5a5461ae8e48fa2ca79ec42cfc1931183f"
 
 [[package]]
+name = "windows-core"
+version = "0.62.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8e83a14d34d0623b51dce9581199302a221863196a1dde71a7663a4c2be9deb"
+dependencies = [
+ "windows-implement",
+ "windows-interface",
+ "windows-link",
+ "windows-result",
+ "windows-strings",
+]
+
+[[package]]
+name = "windows-implement"
+version = "0.60.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "053e2e040ab57b9dc951b72c264860db7eb3b0200ba345b4e4c3b14f67855ddf"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
+name = "windows-interface"
+version = "0.59.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3f316c4a2570ba26bbec722032c4099d8c8bc095efccdc15688708623367e358"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "windows-link"
 version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f0805222e57f7521d6a62e36fa9163bc891acd422f971defe97d64e70d0a4fe5"
+
+[[package]]
+name = "windows-result"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7781fa89eaf60850ac3d2da7af8e5242a5ea78d1a11c49bf2910bb5a73853eb5"
+dependencies = [
+ "windows-link",
+]
+
+[[package]]
+name = "windows-strings"
+version = "0.5.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7837d08f69c77cf6b07689544538e017c1bfcf57e34b4c0ff58e6c2cd3b37091"
+dependencies = [
+ "windows-link",
+]
 
 [[package]]
 name = "windows-sys"
