@@ -5,9 +5,12 @@ import sys
 sys.modules['grammers._rs.crypto'] = _rs.crypto
 sys.modules['grammers._rs.errors'] = _rs.errors
 sys.modules['grammers._rs.tl'] = _rs.tl
+sys.modules['grammers._rs.sessions'] = _rs.sessions
 
 from . import crypto, errors, tl
 from .tl import TLObject, TLRequest, types, functions
+from .sessions import SqliteSession
+from typing import Optional
 from collections.abc import Awaitable
 import sys
 import asyncio
@@ -17,6 +20,7 @@ __all__ = [
     '_rs',
     'crypto',
     'errors',
+    'sessions',
     'tl',
     'TLObject',
     'TLRequest',
@@ -27,6 +31,39 @@ __all__ = [
 
 
 class Client(Client):
+    def __new__(
+        cls,
+        session: str,
+        api_id: int | str,
+        api_hash: str,
+        *,
+        bot_token: Optional[str] = None,
+        app_version: Optional[str] = None,
+        device_model: Optional[str] = None,
+        system_version: Optional[str] = None,
+        lang_code: Optional[str] = 'en',
+        system_lang_code: Optional[str] = 'en',
+        use_ipv6: bool = False,
+    ):
+        if isinstance(session, str):
+            if not session.endswith('.session'):
+                session = session + '.session'
+            session = SqliteSession(session)
+
+        return super().__new__(
+            cls,
+            session,
+            api_id,
+            api_hash,
+            bot_token=bot_token,
+            app_version=app_version,
+            device_model=device_model,
+            system_version=system_version,
+            lang_code=lang_code,
+            system_lang_code=system_lang_code,
+            use_ipv6=use_ipv6,
+        )
+
     async def __aenter__(self):
         await self.start()
         return self

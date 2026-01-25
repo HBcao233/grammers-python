@@ -5,7 +5,7 @@ mod session;
 // mod storages;
 
 pub use peer::{PyPeerId, PeerIdLike, PyPeerAuth, PyPeerInfo, PyPeerKind, PyChannelKind, PyPeerRef};
-pub use types::{PyDcOption, PyUpdatesState, PyUpdateState};
+pub use types::{PyDcOption, PyChannelState, PyUpdatesState, PyUpdateState};
 pub use session::{PySession, Session};
 
 #[pyo3::pymodule(name = "sessions")]
@@ -32,8 +32,14 @@ pub mod sessions_ {
     use super::PyDcOption;
     
     #[pymodule_export]
+    use super::PyChannelState;
+    
+    #[pymodule_export]
     use super::PySession;
     
-    // #[pymodule_export]
-    // use super::PyMemorySession;
+    #[pymodule_export]
+    use super::PyUpdatesState;
+    
+    #[pymodule_export]
+    use super::PyUpdateState;
 }

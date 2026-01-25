@@ -1,5 +1,6 @@
 use pyo3::prelude::*;
-use pyo3::exceptions::PyNotImplementedError;
+use pyo3::types::PyType;
+use pyo3::exceptions::{PyTypeError, PyNotImplementedError};
 use pyo3_async_runtimes::tokio::into_future;
 use super::{PyDcOption, PyPeerId, PeerIdLike, PyPeerInfo, PyPeerRef, PyUpdatesState, PyUpdateState};
 
@@ -13,6 +14,34 @@ pub struct PySession {}
 
 #[pymethods]
 impl PySession {
+    #[new]
+    fn new() -> Self {
+        Self {}
+    }
+    
+    #[classmethod]
+    fn __init_subclass__(cls: &Bound<'_, PyType>) -> PyResult<()> {
+        let cls_dict = cls.getattr("__dict__")?;
+        let required_methods = [
+            "home_dc_id", "set_home_dc_id",
+            "dc_option", "set_home_dc_id", 
+            "peer", "cache_peer",
+            "updates_state", "set_update_state"
+        ];
+        for method in required_methods {
+            if !cls_dict.contains(method)? {
+                return Err(PyTypeError::new_err(
+                    format!(
+                        "Can't instantiate abstract class {} without an implementation for abstract method '{}'",
+                        cls.name()?,
+                        method,
+                    )
+                ))
+            }
+        }
+        Ok(())
+    }
+    
     async fn home_dc_id(&self) -> PyResult<i32> {
         Err(PyNotImplementedError::new_err(
             "Session subclasses must implement home_dc_id()",

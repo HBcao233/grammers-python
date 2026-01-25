@@ -1,4 +1,3 @@
-import builtins
 import grammers.tl
 import typing
 from . import _rs
@@ -6,45 +5,48 @@ from . import errors
 from . import crypto
 from . import tl
 from . import types, functions
+from . import Session
 
 class Client:
     @property
-    def name(self) -> builtins.str: ...
+    def session(self) -> str: ...
     @property
-    def api_id(self) -> builtins.int: ...
+    def me(self) -> Session: ...
     @property
-    def api_hash(self) -> builtins.str: ...
+    def api_id(self) -> int: ...
     @property
-    def bot_token(self) -> typing.Optional[builtins.str]: ...
+    def api_hash(self) -> str: ...
     @property
-    def use_ipv6(self) -> builtins.bool: ...
+    def bot_token(self) -> typing.Optional[str]: ...
     @property
-    def system_lang_code(self) -> builtins.str: ...
+    def use_ipv6(self) -> bool: ...
     @property
-    def lang_code(self) -> builtins.str: ...
-    
-    async def is_authorized(self) -> builtins.bool: ...
-    async def authorize(self) -> builtins.bool: ...
-        r"""
+    def system_lang_code(self) -> str: ...
+    @property
+    def lang_code(self) -> str: ...
+    async def is_authorized(self) -> bool: ...
+    async def authorize(self) -> bool:
+        """
         Terminal interactive login.
         """
+        ...
+
     async def bot_sign_in(self) -> types.User: ...
     async def sign_out(self) -> types.auth.LoggedOut: ...
     async def disconnect(self) -> None: ...
-    
     def __new__(
         cls,
-        name: builtins.str,
-        api_id: builtins.int | builtins.str,
-        api_hash: builtins.str,
+        session: str,
+        api_id: int | str,
+        api_hash: str,
         *,
-        bot_token: typing.Optional[builtins.str] = None,
-        app_version: typing.Optional[builtins.str] = None,
-        device_model: typing.Optional[builtins.str] = None,
-        system_version: typing.Optional[builtins.str] = None,
-        lang_code: typing.Optional[builtins.str] = 'en',
-        system_lang_code: typing.Optional[builtins.str] = 'en',
-        use_ipv6: builtins.bool = False,
+        bot_token: typing.Optional[str] = None,
+        app_version: typing.Optional[str] = None,
+        device_model: typing.Optional[str] = None,
+        system_version: typing.Optional[str] = None,
+        lang_code: typing.Optional[str] = 'en',
+        system_lang_code: typing.Optional[str] = 'en',
+        use_ipv6: bool = False,
     ) -> Client:
         r"""
         Create client instanse.
