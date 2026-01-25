@@ -2,18 +2,18 @@
 //!
 //! 提供 grammers 各个组件的 Python 绑定
 
-mod utils;
-mod peer;
 mod client;
 mod crypto;
 mod errors;
+mod peer;
+mod utils;
 
 use client::PyClient;
 
 #[pyo3::pymodule]
 mod _rs {
     use pyo3::prelude::*;
-    
+
     #[pymodule_export]
     #[allow(non_upper_case_globals)]
     const __version__: &str = &env!("CARGO_PKG_VERSION");
@@ -33,7 +33,7 @@ mod _rs {
 
     #[pymodule_export]
     use grammers_session_pyo3::sessions_;
-    
+
     #[pymodule_export]
     use super::client::PyClient;
 

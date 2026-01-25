@@ -1,45 +1,47 @@
 mod peer;
-mod types;
 mod session;
+mod types;
 // mod dc_options;
 // mod storages;
 
-pub use peer::{PyPeerId, PeerIdLike, PyPeerAuth, PyPeerInfo, PyPeerKind, PyChannelKind, PyPeerRef};
-pub use types::{PyDcOption, PyChannelState, PyUpdatesState, PyUpdateState};
+pub use peer::{
+    PeerIdLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerKind, PyPeerRef,
+};
 pub use session::{PySession, Session};
+pub use types::{PyChannelState, PyDcOption, PyUpdateState, PyUpdatesState};
 
 #[pyo3::pymodule(name = "sessions")]
 pub mod sessions_ {
     // #[pymodule_export]
     // use super::KNOWN_DC_OPTIONS;
-    
+
     #[pymodule_export]
     use super::PyPeerId;
-    
+
     #[pymodule_export]
     use super::PyPeerAuth;
-    
+
     #[pymodule_export]
     use super::PyPeerInfo;
-    
+
     #[pymodule_export]
     use super::PyPeerKind;
-    
+
     #[pymodule_export]
     use super::PyChannelKind;
-    
+
     #[pymodule_export]
     use super::PyDcOption;
-    
+
     #[pymodule_export]
     use super::PyChannelState;
-    
+
     #[pymodule_export]
     use super::PySession;
-    
+
     #[pymodule_export]
     use super::PyUpdatesState;
-    
+
     #[pymodule_export]
     use super::PyUpdateState;
 }

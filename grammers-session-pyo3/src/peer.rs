@@ -1,5 +1,5 @@
-use pyo3::prelude::*;
 use pyo3::exceptions::{PyTypeError, PyValueError};
+use pyo3::prelude::*;
 
 use grammers_tl_types as tl;
 
@@ -38,7 +38,7 @@ impl PyPeerId {
     #[new]
     fn new(id: i64) -> PyResult<Self> {
         if (1 <= id && id <= 0xffffffffff)
-            || id == SELF_USER_ID 
+            || id == SELF_USER_ID
             || (-999999999999 <= id && id <= -1)
             || (-1997852516352 <= id && id <= -1000000000001)
             || (-4000000000000 <= id && id <= -2002147483649)
@@ -48,7 +48,7 @@ impl PyPeerId {
             Err(PyValueError::new_err("Invalid peer id"))
         }
     }
-    
+
     /// Creates a peer identity for the currently-logged-in user or bot account.
     ///
     /// Internally, this will use a special sentinel value outside of any valid Bot API Dialog ID range.
@@ -56,7 +56,7 @@ impl PyPeerId {
     pub fn self_user() -> PyResult<Self> {
         Ok(Self(SELF_USER_ID))
     }
-    
+
     /// Creates a peer identity for a user or bot account.
     #[staticmethod]
     pub fn user(id: i64) -> PyResult<Self> {
@@ -66,7 +66,7 @@ impl PyPeerId {
             Ok(Self(id))
         }
     }
-    
+
     /// Creates a peer identity for a small group chat.
     #[staticmethod]
     pub fn chat(id: i64) -> PyResult<Self> {
@@ -88,7 +88,7 @@ impl PyPeerId {
             Ok(Self(-(1000000000000 + id)))
         }
     }
-    
+
     fn __repr__(&self) -> String {
         format!("PeerId({})", self.0)
     }
@@ -134,7 +134,9 @@ impl PyPeerId {
 pub struct PeerIdLike(pub PyPeerId);
 impl std::ops::Deref for PeerIdLike {
     type Target = PyPeerId;
-    fn deref(&self) -> &Self::Target { &self.0 }
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
 }
 impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
     type Error = PyErr;
@@ -143,7 +145,9 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
         if let Ok(v) = ob.extract::<i64>() {
             return Ok(Self(PyPeerId(v)));
         }
-        Err(PyTypeError::new_err("peer_id must be int or InputPeer or Peer"))
+        Err(PyTypeError::new_err(
+            "peer_id must be int or InputPeer or Peer",
+        ))
     }
 }
 
@@ -168,7 +172,8 @@ impl PyPeerKind {
             Self::UserSelf => "PeerKind.UserSelf",
             Self::Chat => "PeerKind.Chat",
             Self::Channel => "PeerKind.Channel",
-        }.to_string()
+        }
+        .to_string()
     }
 }
 
@@ -183,12 +188,12 @@ impl PyPeerAuth {
     fn new(access_hash: i64) -> Self {
         Self(access_hash)
     }
-    
+
     #[getter]
     pub fn hash(&self) -> i64 {
         self.0
     }
-    
+
     fn __repr__(&self) -> String {
         format!("PeerAuth({})", self.0)
     }
@@ -228,7 +233,8 @@ impl PyChannelKind {
             Self::Broadcast => "ChannelKind.Broadcast",
             Self::Megagroup => "ChannelKind.Megagroup",
             Self::Gigagroup => "ChannelKind.Gigagroup",
-        }.to_string()
+        }
+        .to_string()
     }
 }
 
@@ -298,7 +304,6 @@ pub struct PyPeerRef {
     /// The authority bound to both the sibling identity and the session of the logged-in user.
     pub auth: PyPeerAuth,
 }
-
 
 impl From<tl::enums::Peer> for PyPeerId {
     #[inline]
@@ -489,7 +494,8 @@ impl<'a> From<&'a tl::types::ChannelForbidden> for PyPeerInfo {
         Self::Channel {
             id: channel.id,
             auth: Some(PyPeerAuth(channel.access_hash)),
-            kind: <PyChannelKind as TryFrom<&'a tl::types::ChannelForbidden>>::try_from(channel).ok(),
+            kind: <PyChannelKind as TryFrom<&'a tl::types::ChannelForbidden>>::try_from(channel)
+                .ok(),
         }
     }
 }

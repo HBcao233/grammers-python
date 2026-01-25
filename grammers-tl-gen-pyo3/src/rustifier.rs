@@ -107,7 +107,7 @@ pub mod definitions {
         result.push_str("Wrapper");
         result
     }
-    
+
     pub fn tl_qual_name(def: &Definition) -> String {
         let mut result = String::new();
         result.push_str("grammers_tl_types::");
@@ -351,14 +351,14 @@ pub mod types {
 
         result
     }
-    
+
     fn builtin_into(ty: &Type) -> Option<&'static str> {
         Some(match ty.name.as_ref() {
             "Vector" => "v.into_iter().map(Into::into).collect()",
             _ => return None,
         })
     }
-    
+
     pub fn get_into(ty: &Type) -> String {
         if ty.generic_ref {
             return "crate::PyTLRequestWrapper".to_string();
@@ -369,7 +369,7 @@ pub mod types {
             None => "v.into()".to_string(),
         };
         /*
-        let btype = 
+        let btype =
         let mut result = if let Some(name) = btype {
             name.to_string()
         } else {
@@ -408,7 +408,7 @@ pub mod types {
 
 pub mod enums {
     use super::*;
-    
+
     pub fn tl_qual_name(ty: &Type) -> String {
         let mut result = String::new();
         result.push_str("grammers_tl_types::enums::");

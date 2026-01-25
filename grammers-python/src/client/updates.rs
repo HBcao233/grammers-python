@@ -4,8 +4,8 @@ use std::collections::VecDeque;
 use std::time::{Duration, Instant};
 
 use grammers_mtsender_pyo3::InvocationError;
-use grammers_session_pyo3::{Session, PyPeerId, PyPeerInfo, PyUpdateState, PyUpdatesState};
 use grammers_session::updates::{MessageBoxes, PrematureEndReason, State, UpdatesLike};
+use grammers_session_pyo3::{PyPeerId, PyPeerInfo, PyUpdateState, PyUpdatesState, Session};
 use grammers_tl_types as tl;
 
 use log::{trace, warn};
@@ -163,14 +163,9 @@ impl UpdateStream {
                     self.message_box.check_deadlines(), // first, as it might trigger differences
                     self.message_box.get_difference(),
                     match self.message_box.get_channel_difference() {
-                        Some(gd) => {
-                            prepare_channel_difference(
-                                gd,
-                                session,
-                                &mut self.message_box,
-                            )
-                            .await.map_err(|e| InvocationError::PyErr(e))?
-                        }
+                        Some(gd) => prepare_channel_difference(gd, session, &mut self.message_box)
+                            .await
+                            .map_err(|e| InvocationError::PyErr(e))?,
                         None => None,
                     },
                 )
@@ -179,7 +174,11 @@ impl UpdateStream {
             if let Some(request) = get_diff {
                 let response = self.client.invoke_tl(&request).await?;
                 let (updates, users, chats) = self.message_box.apply_difference(response);
-                let peers = self.client.build_peer_map(users, chats).await.map_err(|e| InvocationError::PyErr(e))?;
+                let peers = self
+                    .client
+                    .build_peer_map(users, chats)
+                    .await
+                    .map_err(|e| InvocationError::PyErr(e))?;
                 self.extend_update_queue(updates, peers);
                 continue;
             }
@@ -234,13 +233,20 @@ impl UpdateStream {
 
                 let (updates, users, chats) = self.message_box.apply_channel_difference(response);
 
-                let peers = self.client.build_peer_map(users, chats).await.map_err(|e| InvocationError::PyErr(e))?;
+                let peers = self
+                    .client
+                    .build_peer_map(users, chats)
+                    .await
+                    .map_err(|e| InvocationError::PyErr(e))?;
                 self.extend_update_queue(updates, peers);
                 continue;
             }
 
             match timeout_at(deadline.into(), self.updates.recv()).await {
-                Ok(Some(updates)) => self.process_socket_updates(updates).await.map_err(|e| InvocationError::PyErr(e))?,
+                Ok(Some(updates)) => self
+                    .process_socket_updates(updates)
+                    .await
+                    .map_err(|e| InvocationError::PyErr(e))?,
                 Ok(None) => break Err(InvocationError::Dropped),
                 Err(_) => {}
             }
@@ -332,7 +338,7 @@ impl PyClient {
             // pristine state instead.
             MessageBoxes::new()
         };
-        
+
         // Don't bother getting pristine update state if we're not logged in.
         let should_get_state =
             message_box.is_empty() && session.peer(PyPeerId::self_user()?).await?.is_some();

@@ -190,43 +190,39 @@ fn write_deserialize<W: Write>(
 }
 
 fn write_impl_from<W: Write>(
-  file: &mut W,
-  indent: &str,
-  ty: &Type,
-  metadata: &Metadata,
+    file: &mut W,
+    indent: &str,
+    ty: &Type,
+    metadata: &Metadata,
 ) -> io::Result<()> {
-  for d in metadata.defs_with_type(ty) {
-    let qual_name = rustifier::definitions::qual_name(d);
-    writeln!(
-      file,
-      "{indent}impl From<{}> for Py{} {{",
-      qual_name,
-      rustifier::types::type_name(ty),
-    )?;
-    writeln!(
-      file,
-      "{indent}    fn from({}x: {}) -> Self {{",
-      if d.params.is_empty() {
-        "_"
-      } else {
-        ""
-      },
-      qual_name,
-    )?;
-    writeln!(
-      file,
-      "{indent}        Self::{}({})",
-      rustifier::definitions::variant_name(d),
-      if d.params.is_empty() {
-        format!("{} {{}}.into()", rustifier::definitions::qual_name(d))
-      } else {
-        "x.into()".to_string()
-      },
-    )?;
-    writeln!(file, "{indent}    }}")?;
-    writeln!(file, "{indent}}}")?;
-  }
-  Ok(())
+    for d in metadata.defs_with_type(ty) {
+        let qual_name = rustifier::definitions::qual_name(d);
+        writeln!(
+            file,
+            "{indent}impl From<{}> for Py{} {{",
+            qual_name,
+            rustifier::types::type_name(ty),
+        )?;
+        writeln!(
+            file,
+            "{indent}    fn from({}x: {}) -> Self {{",
+            if d.params.is_empty() { "_" } else { "" },
+            qual_name,
+        )?;
+        writeln!(
+            file,
+            "{indent}        Self::{}({})",
+            rustifier::definitions::variant_name(d),
+            if d.params.is_empty() {
+                format!("{} {{}}.into()", rustifier::definitions::qual_name(d))
+            } else {
+                "x.into()".to_string()
+            },
+        )?;
+        writeln!(file, "{indent}    }}")?;
+        writeln!(file, "{indent}}}")?;
+    }
+    Ok(())
 }
 
 fn write_from_tl<W: Write>(
@@ -247,31 +243,30 @@ fn write_from_tl<W: Write>(
     for d in metadata.defs_with_type(ty) {
         let variant_name = rustifier::definitions::variant_name(d);
         writeln!(
-            file, 
+            file,
             r#"{indent}            E::{variant_name}{} => Self::{variant_name}({}),"#,
-            if d.params.is_empty() {
-                ""
-            } else {
-                "(x)"
-            },
+            if d.params.is_empty() { "" } else { "(x)" },
             if d.params.is_empty() {
                 format!("{} {{}}.into()", rustifier::definitions::qual_name(d))
             } else {
-                format!("{}.into()", if metadata.is_recursive_def(d) {
-                    "(*x)"
-                } else {
-                    "x"
-                })
+                format!(
+                    "{}.into()",
+                    if metadata.is_recursive_def(d) {
+                        "(*x)"
+                    } else {
+                        "x"
+                    }
+                )
             },
         )?;
     }
     writeln!(
-        file, 
+        file,
         r#"{indent}        }}
 {indent}    }}
 {indent}}}"#,
     )?;
-    
+
     writeln!(
         file,
         r#"{indent}impl From<{tl_qual_name}> for crate::PyTLObject {{
@@ -283,31 +278,30 @@ fn write_from_tl<W: Write>(
         let variant_name = rustifier::definitions::variant_name(d);
         let ns_type_name = rustifier::definitions::ns_type_name(d);
         writeln!(
-            file, 
+            file,
             r#"{indent}            E::{variant_name}{} => Self::{ns_type_name}({}),"#,
-            if d.params.is_empty() {
-                ""
-            } else {
-                "(x)"
-            },
+            if d.params.is_empty() { "" } else { "(x)" },
             if d.params.is_empty() {
                 format!("{} {{}}.into()", rustifier::definitions::qual_name(d))
             } else {
-                format!("{}.into()", if metadata.is_recursive_def(d) {
-                    "(*x)"
-                } else {
-                    "x"
-                })
+                format!(
+                    "{}.into()",
+                    if metadata.is_recursive_def(d) {
+                        "(*x)"
+                    } else {
+                        "x"
+                    }
+                )
             },
         )?;
     }
     writeln!(
-        file, 
+        file,
         r#"{indent}        }}
 {indent}    }}
 {indent}}}"#,
     )?;
-    
+
     Ok(())
 }
 

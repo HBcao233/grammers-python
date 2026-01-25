@@ -13,8 +13,8 @@ use std::ops::{ControlFlow, Deref};
 use std::{fmt, panic};
 
 use grammers_mtproto::{mtp, transport};
-use grammers_session_pyo3::Session;
 use grammers_session::updates::UpdatesLike;
+use grammers_session_pyo3::Session;
 use grammers_tl_types::{self as tl, enums};
 use tokio::task::AbortHandle;
 use tokio::{
@@ -153,11 +153,7 @@ impl SenderPoolHandle {
 
 impl SenderPool {
     /// Creates a new sender pool with non-[`ConnectionParams::default`] configuration.
-    pub fn new(
-        session: Session,
-        api_id: i32,
-        connection_params: ConnectionParams,
-    ) -> Self {
+    pub fn new(session: Session, api_id: i32, connection_params: ConnectionParams) -> Self {
         let (request_tx, request_rx) = mpsc::unbounded_channel();
         let (updates_tx, updates_rx) = mpsc::unbounded_channel();
 
@@ -326,7 +322,9 @@ impl SenderPoolRunner {
             Err(e) => return Err(e),
         };
 
-        self.update_config(remote_config).await.map_err(|e| InvocationError::PyErr(e))?;
+        self.update_config(remote_config)
+            .await
+            .map_err(|e| InvocationError::PyErr(e))?;
 
         Ok(sender)
     }
@@ -338,16 +336,16 @@ impl SenderPoolRunner {
             .map(|tl::enums::DcOption::Option(option)| option)
             .filter(|option| !option.media_only && !option.tcpo_only && option.r#static)
         {
-            let mut dc_option = self
-                .session
-                .dc_option(option.id)
-                .await?
-                .unwrap_or_else(|| PyDcOption {
-                    id: option.id,
-                    ipv4: SocketAddrV4::new(Ipv4Addr::from_bits(0), 0),
-                    ipv6: SocketAddrV6::new(Ipv6Addr::from_bits(0), 0, 0, 0),
-                    auth_key: None,
-                });
+            let mut dc_option =
+                self.session
+                    .dc_option(option.id)
+                    .await?
+                    .unwrap_or_else(|| PyDcOption {
+                        id: option.id,
+                        ipv4: SocketAddrV4::new(Ipv4Addr::from_bits(0), 0),
+                        ipv6: SocketAddrV6::new(Ipv6Addr::from_bits(0), 0, 0, 0),
+                        auth_key: None,
+                    });
             if option.ipv6 {
                 dc_option.ipv6 = SocketAddrV6::new(
                     option

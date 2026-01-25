@@ -260,7 +260,7 @@ fn write_from_tl<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Resu
             )?;
         }
     }
-    
+
     Ok(())
 }
 

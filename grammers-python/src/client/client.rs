@@ -1,13 +1,13 @@
 use std::sync::{Arc, Mutex};
 
 use grammers_session::updates::UpdatesLike;
+use grammers_tl_types_pyo3 as pytl;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyString;
 use pyo3_async_runtimes::tokio::get_runtime;
 use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
-use grammers_tl_types_pyo3 as pytl;
 
 use super::UpdateStream;
 use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
@@ -37,9 +37,9 @@ pub struct ClientInner {
     pub updates: Option<mpsc::UnboundedReceiver<UpdatesLike>>,
     pub stream_updates: Option<UpdateStream>,
     pub handle: SenderPoolFatHandle,
-    
+
     pub session: Session,
-    
+
     pub api_id: i32,
     pub api_hash: String,
     pub bot_token: Option<String>,
@@ -52,7 +52,7 @@ pub struct ClientInner {
 #[pyclass(name = "Client", module = "grammers", subclass)]
 pub struct PyClient {
     pub inner: Arc<Mutex<ClientInner>>,
-    
+
     #[pyo3(get)]
     pub me: Option<pytl::enums::PyUser>,
 }
@@ -105,9 +105,10 @@ impl PyClient {
             Session(session.unbind())
         } else {
             let cls_name = session.get_type().qualname()?;
-            return Err(PyTypeError::new_err(
-                format!("session expected a Session, got {}", cls_name)
-            ));
+            return Err(PyTypeError::new_err(format!(
+                "session expected a Session, got {}",
+                cls_name
+            )));
         };
         let info = os_info::get();
         let platform = py.import("platform")?;
@@ -155,7 +156,7 @@ impl PyClient {
             Some(x) => x.to_string(),
             None => format!("Grammers {}", env!("CARGO_PKG_VERSION")),
         };
-        
+
         let lang_code = match lang_code {
             Some(x) => x.to_string(),
             #[cfg(not(target_os = "android"))]
@@ -163,7 +164,7 @@ impl PyClient {
             #[cfg(target_os = "android")]
             None => "en".to_string(),
         }
-            .to_ascii_lowercase();
+        .to_ascii_lowercase();
         let system_lang_code = match system_lang_code {
             Some(x) => x.to_string(),
             #[cfg(not(target_os = "android"))]
@@ -171,7 +172,7 @@ impl PyClient {
             #[cfg(target_os = "android")]
             None => "en".to_string(),
         }
-            .to_ascii_lowercase();
+        .to_ascii_lowercase();
 
         let config = ConnectionParams {
             device_model,
@@ -209,7 +210,7 @@ impl PyClient {
             me: None,
         })
     }
-    
+
     #[getter]
     pub fn api_id(&self) -> i32 {
         self.inner.lock().unwrap().api_id
@@ -239,10 +240,18 @@ impl PyClient {
     pub fn lang_code(&self) -> String {
         self.inner.lock().unwrap().lang_code.clone()
     }
-    
+
     #[getter]
     fn session(&self) -> Py<PyAny> {
-        Python::attach(|py| self.inner.lock().unwrap()
-            .session.0.bind(py).clone().unbind())
+        Python::attach(|py| {
+            self.inner
+                .lock()
+                .unwrap()
+                .session
+                .0
+                .bind(py)
+                .clone()
+                .unbind()
+        })
     }
 }

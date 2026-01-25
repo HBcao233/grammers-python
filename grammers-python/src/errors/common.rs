@@ -1,9 +1,9 @@
-use pyo3::{create_exception, PyErr};
 use pyo3::exceptions::{PyException, PyIOError, PyTypeError};
+use pyo3::{PyErr, create_exception};
 
 use grammers_mtsender_pyo3::InvocationError;
 
-use super::{PyRpcError, PyInvalidDCError, PyUserMigrateError};
+use super::{PyInvalidDCError, PyRpcError, PyUserMigrateError};
 
 create_exception!(errors, ClientStoppedError, PyException);
 
@@ -17,17 +17,13 @@ impl From<InvocationError> for InvocationErrorConverter {
 impl From<InvocationErrorConverter> for PyErr {
     fn from(err: InvocationErrorConverter) -> PyErr {
         match err.0 {
-            InvocationError::Rpc(e) => {
-                match e.code {
-                    303 => {
-                        match e.name.as_ref() {
-                            "" => PyUserMigrateError::new_err(e.value, e.caused_by),
-                            _ => PyInvalidDCError::new_err(e.name, e.value, e.caused_by, None),
-                        }
-                    }
-                    _ => PyRpcError::new_err(e.code, e.name, e.value, e.caused_by, None),
-                }
-            }
+            InvocationError::Rpc(e) => match e.code {
+                303 => match e.name.as_ref() {
+                    "" => PyUserMigrateError::new_err(e.value, e.caused_by),
+                    _ => PyInvalidDCError::new_err(e.name, e.value, e.caused_by, None),
+                },
+                _ => PyRpcError::new_err(e.code, e.name, e.value, e.caused_by, None),
+            },
             InvocationError::Io(e) => PyIOError::new_err(format!("{}", e)),
             InvocationError::Deserialize(e) => PyTypeError::new_err(format!("Deserialize: {}", e)),
             InvocationError::Transport(e) => PyTypeError::new_err(format!("Transport: {}", e)),
@@ -37,7 +33,7 @@ impl From<InvocationErrorConverter> for PyErr {
             InvocationError::InvalidDc => PyTypeError::new_err("InvalidDc".to_string()),
             InvocationError::Authentication(e) => {
                 PyTypeError::new_err(format!("Authentication: {}", e))
-            },
+            }
             InvocationError::PyErr(e) => e,
         }
     }

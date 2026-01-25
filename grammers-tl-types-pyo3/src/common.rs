@@ -100,22 +100,22 @@ impl TLObject {
         };
         let dict = self_.call_method0("to_dict")?;
         let result = dict.call_method1("__eq__", (other,))?;
-        
+
         Ok(result.extract()?)
     }
 
     fn to_json(self_: &Bound<'_, Self>) -> PyResult<String> {
         let py = self_.py();
-        
+
         let data = self_.call_method0("to_dict")?;
         let cls_name = self_.get_type().qualname()?;
         data.call_method1("setdefault", ("_", cls_name))?;
-        
+
         let json = py.import("json")?;
         let kwargs = PyDict::new(py);
         kwargs.set_item("ensure_ascii", false)?;
         let result: Bound<'_, PyAny> = json.call_method("dumps", (&data,), Some(&kwargs))?;
-        
+
         Ok(result.extract()?)
     }
 
@@ -202,22 +202,22 @@ impl TLRequest {
         };
         let dict = self_.call_method0("to_dict")?;
         let result = dict.call_method1("__eq__", (other,))?;
-        
+
         Ok(result.extract()?)
     }
 
     fn to_json(self_: &Bound<'_, Self>) -> PyResult<String> {
         let py = self_.py();
-        
+
         let data = self_.call_method0("to_dict")?;
         let cls_name = self_.get_type().qualname()?;
         data.call_method1("setdefault", ("_", cls_name))?;
-        
+
         let json = py.import("json")?;
         let kwargs = PyDict::new(py);
         kwargs.set_item("ensure_ascii", false)?;
         let result: Bound<'_, PyAny> = json.call_method("dumps", (&data,), Some(&kwargs))?;
-        
+
         Ok(result.extract()?)
     }
 
@@ -233,7 +233,6 @@ impl TLRequest {
         ))
     }
 }
-
 
 #[repr(transparent)]
 #[derive(Debug, Clone, FromPyObject, IntoPyObject)]

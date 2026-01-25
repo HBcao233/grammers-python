@@ -1,10 +1,10 @@
 use pyo3::PyResult;
 
-use super::{User, Group, Channel};
+use super::{Channel, Group, User};
 
+use crate::PyClient;
 use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerRef};
 use grammers_tl_types as tl;
-use crate::PyClient;
 // use crate::media::ChatPhoto;
 
 /// A user, group, or broadcast channel.

@@ -230,7 +230,7 @@ pub enum InvocationError {
     /// The request caused the sender to connect to a new datacenter to be performed,
     /// but the Authorization Key generation process failed.
     Authentication(authentication::Error),
-    
+
     PyErr(pyo3::PyErr),
 }
 
@@ -277,7 +277,9 @@ impl From<tl::deserialize::Error> for InvocationError {
     fn from(error: tl::deserialize::Error) -> Self {
         Self::Deserialize(match error {
             tl::deserialize::Error::UnexpectedEof => mtp::DeserializeError::MessageBufferTooSmall,
-            tl::deserialize::Error::UnexpectedConstructor { id } => mtp::DeserializeError::UnexpectedConstructor { id },
+            tl::deserialize::Error::UnexpectedConstructor { id } => {
+                mtp::DeserializeError::UnexpectedConstructor { id }
+            }
         })
     }
 }

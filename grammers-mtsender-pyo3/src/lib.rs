@@ -25,9 +25,9 @@
 
 mod configuration;
 mod errors;
+mod net;
 mod sender;
 mod sender_pool;
-mod net;
 
 pub use configuration::ConnectionParams;
 pub use errors::{InvocationError, ReadError, RpcError};

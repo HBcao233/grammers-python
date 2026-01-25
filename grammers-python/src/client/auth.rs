@@ -1,13 +1,13 @@
+use pyo3::exceptions::{PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::exceptions::{PyValueError, PyRuntimeError};
 
 use grammers_mtsender_pyo3::InvocationError;
 
-use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PyPeerInfo, PyUpdateState, PyUpdatesState};
 use crate::client::PyClient;
 use crate::errors::InvocationErrorConverter;
+use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PyPeerInfo, PyUpdateState, PyUpdatesState};
 use grammers_tl_types_pyo3 as pytl;
-use grammers_tl_types_pyo3::{PyTLRequest, PyTLObject};
+use grammers_tl_types_pyo3::{PyTLObject, PyTLRequest};
 
 #[pymethods]
 impl PyClient {
@@ -23,13 +23,13 @@ impl PyClient {
     /// Terminal interactive login.
     pub async fn authorize(&mut self) -> PyResult<bool> {
         if self.inner.lock().unwrap().bot_token.is_some() {
-          self.me = Some(self.bot_sign_in(None).await?);
-          return Ok(true);
+            self.me = Some(self.bot_sign_in(None).await?);
+            return Ok(true);
         }
-        
+
         Ok(true)
     }
-    
+
     /// Signs in to the bot account associated with this token.
     ///
     /// This is the method you need to call to use the client under a bot account.
@@ -57,17 +57,22 @@ impl PyClient {
     pub async fn bot_sign_in(&self, bot_token: Option<String>) -> PyResult<pytl::enums::PyUser> {
         let token = match bot_token {
             Some(x) => x,
-            None => self.inner.lock().unwrap().bot_token.clone().ok_or_else(|| 
-                PyValueError::new_err("bot_token is not provided.")
-            )?
+            None => self
+                .inner
+                .lock()
+                .unwrap()
+                .bot_token
+                .clone()
+                .ok_or_else(|| PyValueError::new_err("bot_token is not provided."))?,
         };
         let request: PyTLRequest = pytl::functions::auth::PyImportBotAuthorization {
             flags: 0,
             api_id: self.inner.lock().unwrap().api_id,
             api_hash: self.inner.lock().unwrap().api_hash.clone(),
             bot_auth_token: token,
-        }.into();
-        
+        }
+        .into();
+
         let result = match self.invoke_raw(request.clone()).await {
             Ok(x) => x,
             Err(InvocationError::Rpc(err)) if err.code == 303 => {
@@ -77,7 +82,11 @@ impl PyClient {
                 // Disconnect from current DC to cull the now-unused connection.
                 // This also gives a chance for the new home DC to export its authorization
                 // if there's a need to connect back to the old DC after having logged in.
-                self.inner.lock().unwrap().handle.disconnect_from_dc(old_dc_id);
+                self.inner
+                    .lock()
+                    .unwrap()
+                    .handle
+                    .disconnect_from_dc(old_dc_id);
                 session.set_home_dc_id(new_dc_id).await?;
                 self.invoke(request).await?
             }
@@ -85,18 +94,16 @@ impl PyClient {
         };
 
         match result {
-            PyTLObject::auth_Authorization(x) => {
-                self.complete_login(x).await
-            }
-            PyTLObject::auth_AuthorizationSignUpRequired(_) => {
-                Err(PyRuntimeError::new_err("API returned SignUpRequired even though we're logging in as a bot"))
-            }
+            PyTLObject::auth_Authorization(x) => self.complete_login(x).await,
+            PyTLObject::auth_AuthorizationSignUpRequired(_) => Err(PyRuntimeError::new_err(
+                "API returned SignUpRequired even though we're logging in as a bot",
+            )),
             _ => {
                 panic!("no expect API return");
             }
         }
     }
-    
+
     /// Signs out of the account authorized by this client's session.
     ///
     /// If the client was not logged in, this method raise RpcError.
@@ -110,7 +117,7 @@ impl PyClient {
     ///
     /// ```
     /// from grammers import errors
-    /// 
+    ///
     /// try:
     ///     await client.sign_out()
     /// except errors.RpcError:
@@ -122,17 +129,23 @@ impl PyClient {
         let request = pytl::functions::auth::PyLogOut {};
         self.invoke(request.into()).await
     }
-    
+
     pub fn disconnect(&self) {
-      self.inner.lock().unwrap().handle.quit();
+        self.inner.lock().unwrap().handle.quit();
     }
 }
 
 impl PyClient {
-    async fn complete_login(&self, auth: pytl::types::auth::PyAuthorizationWrapper) -> PyResult<pytl::enums::PyUser> {
+    async fn complete_login(
+        &self,
+        auth: pytl::types::auth::PyAuthorizationWrapper,
+    ) -> PyResult<pytl::enums::PyUser> {
         // In the extremely rare case where `Err` happens, there's not much we can do.
         // `message_box` will try to correct its state as updates arrive.
-        let update_state = self.invoke_raw(pytl::functions::updates::PyGetState {}.into()).await.ok();
+        let update_state = self
+            .invoke_raw(pytl::functions::updates::PyGetState {}.into())
+            .await
+            .ok();
 
         let user = Python::attach(|py| auth.0.borrow(py).user.clone());
         let (user_id, bot) = match user {
@@ -140,17 +153,13 @@ impl PyClient {
                 let u = u.0.borrow(py);
                 (u.id, Some(u.bot))
             }),
-            pytl::enums::PyUser::Empty(ref u) => {
-                Python::attach(|py| (u.0.borrow(py).id, None))
-            }
+            pytl::enums::PyUser::Empty(ref u) => Python::attach(|py| (u.0.borrow(py).id, None)),
         };
         let session = self.inner.lock().unwrap().session.clone();
         let auth = match user {
             pytl::enums::PyUser::User(ref u) => Python::attach(|py| {
                 let u = u.0.borrow(py);
-                u.access_hash
-                    .filter(|_| !u.min)
-                    .map(PyPeerAuth::from_hash)
+                u.access_hash.filter(|_| !u.min).map(PyPeerAuth::from_hash)
             }),
             pytl::enums::PyUser::Empty(_) => {
                 let peer = session.peer(PyPeerId::user(user_id)?).await?;
@@ -158,7 +167,7 @@ impl PyClient {
                     Some(p) => p.auth(),
                     None => None,
                 }
-            },
+            }
         };
 
         session

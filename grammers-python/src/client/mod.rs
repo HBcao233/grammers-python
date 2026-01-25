@@ -1,7 +1,7 @@
 mod auth;
+mod chats;
 mod client;
 mod net;
-mod chats;
 mod updates;
 mod utilities;
 pub use client::PyClient;

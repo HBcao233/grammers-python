@@ -147,10 +147,10 @@ fn write_struct<W: Write>(
 ///             param: param_type,
 ///         }
 ///     }
-/// 
+///
 ///     fn to_bytes(&self) -> Vec<u8> {
 ///     }
-/// 
+///
 ///     fn to_dict(&self) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {
 ///     }
 /// }
@@ -227,11 +227,11 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
         },
     )?;
     writeln!(file, "{indent}    }}")?;
-    
+
     // to_bytes
     writeln!(
-      file, 
-      r#"{indent}    #[pyo3(name = "to_bytes")]
+        file,
+        r#"{indent}    #[pyo3(name = "to_bytes")]
 {indent}    fn py_to_bytes(&self) -> Vec<u8> {{
 {indent}        use grammers_tl_types::Serializable;
 {indent}        self.to_bytes()
@@ -540,24 +540,21 @@ fn write_from_tl<W: Write>(
         r#"{indent}impl From<{tl_qual_name}> for Py{type_name} {{
 {indent}    fn from({}x: {tl_qual_name}) -> Self {{
 {indent}        Self {{"#,
-        if def.params.is_empty() {
-          "_"
-        } else { "" },
+        if def.params.is_empty() { "_" } else { "" },
     )?;
-    
+
     for param in def.params.iter() {
         match &param.ty {
             ParameterType::Flags => {}
             ParameterType::Normal { ty, flag } => {
                 writeln!(
-                    file, 
+                    file,
                     r#"{indent}            {name}: {{
 {indent}                let v = x.{name};
 {indent}                {into}
 {indent}            }},"#,
                     name = rustifier::parameters::attr_name(param),
-                    into = if flag.is_some() && ty.name != "true"
-                    {
+                    into = if flag.is_some() && ty.name != "true" {
                         format!("v.map(|v| {})", rustifier::types::get_into(ty))
                     } else {
                         rustifier::types::get_into(ty)
@@ -568,7 +565,7 @@ fn write_from_tl<W: Write>(
     }
 
     writeln!(
-        file, 
+        file,
         r#"{indent}        }}
 {indent}    }}
 {indent}}}

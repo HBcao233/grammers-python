@@ -5,7 +5,7 @@ mod rpcbaseerrors;
 mod rpcerrorlist;
 
 pub use common::{ClientStoppedError, InvocationErrorConverter};
-pub use rpcbaseerrors::{PyRpcError, PyInvalidDCError};
+pub use rpcbaseerrors::{PyInvalidDCError, PyRpcError};
 pub use rpcerrorlist::PyUserMigrateError;
 
 #[pymodule(name = "errors")]
@@ -18,13 +18,13 @@ pub mod _errors {
 
     #[pymodule_export]
     use super::ClientStoppedError;
-    
+
     #[pymodule_export]
     use super::PyRpcError;
-    
+
     #[pymodule_export]
     use super::PyInvalidDCError;
-    
+
     #[pymodule_export]
     use super::PyUserMigrateError;
 

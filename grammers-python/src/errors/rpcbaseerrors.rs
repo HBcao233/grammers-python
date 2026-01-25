@@ -1,6 +1,6 @@
-use pyo3::prelude::*;
 use pyo3::PyErr;
 use pyo3::exceptions::PyException;
+use pyo3::prelude::*;
 
 use grammers_tl_types as tl;
 
@@ -61,15 +61,11 @@ impl PyRpcError {
         };
         let message = match &self.message {
             Some(x) => x,
-            None => &"".to_string()
+            None => &"".to_string(),
         };
         Ok(format!(
             "RpcError {}{}: {}{}{}",
-            self.code, 
-            self.name,
-            message, 
-            caused_by,
-            value,
+            self.code, self.name, message, caused_by, value,
         ))
     }
 
@@ -84,7 +80,7 @@ impl PyRpcError {
         };
         let message = match &self.message {
             Some(x) => x,
-            None => &"".to_string()
+            None => &"".to_string(),
         };
         Ok(format!(
             "RpcError(\n  code={},\n  name={},\n  value={},\n  caused_by={},\n  message={},\n)",
@@ -112,13 +108,13 @@ impl PyInvalidDCError {
     #[new]
     #[pyo3(signature = (name, value=None, caused_by=None, message=None))]
     fn new(
-        name: String, 
-        value: Option<u32>, 
-        caused_by: Option<u32>, 
-        message: Option<String>
+        name: String,
+        value: Option<u32>,
+        caused_by: Option<u32>,
+        message: Option<String>,
     ) -> (Self, PyRpcError) {
         (
-            PyInvalidDCError { },
+            PyInvalidDCError {},
             PyRpcError {
                 code: 303,
                 name: name,

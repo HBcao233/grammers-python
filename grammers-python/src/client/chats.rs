@@ -12,11 +12,11 @@ use grammers_tl_types as tl;
 
 #[pymethods]
 impl PyClient {
-  /*fn get_me<'py>(
-    &self,
-  ) -> PyResult<Bound<'py, PyAny>> {
-    
-  }*/
+    /*fn get_me<'py>(
+      &self,
+    ) -> PyResult<Bound<'py, PyAny>> {
+
+    }*/
 }
 
 impl PyClient {
