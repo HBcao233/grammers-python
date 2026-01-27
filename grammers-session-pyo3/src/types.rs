@@ -21,7 +21,7 @@ use grammers_session::types::{ChannelState, UpdatesState};
 /// This is very similar to Telegram's own `dcOption` type, except it also
 /// contains the permanent authentication key and serves as a stable interface.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "DcOption")]
+#[pyclass(name = "DcOption", module = "grammers.sessions")]
 pub struct PyDcOption {
     /// Datacenter identifier.
     ///
@@ -34,8 +34,10 @@ pub struct PyDcOption {
     #[pyo3(get, set)]
     pub id: i32,
     /// IPv4 address corresponding to this datacenter.
+    #[pyo3(get, set)]
     pub ipv4: PySocketAddrV4,
     /// IPv6 address corresponding to this datacenter. May actually be embedding the [`Self::ipv4`] address.
+    #[pyo3(get, set)]
     pub ipv6: PySocketAddrV6,
     /// Permanent authentication key generated for encrypted communication with this datacenter.
     ///
