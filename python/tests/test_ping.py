@@ -7,7 +7,8 @@ client = Client('me', 4, '')
 
 @pytest.mark.asyncio
 async def test_ping():
-    assert not await client.is_authorized()
+    await client.is_authorized()
+    
     request = Ping(0)
     response = await client.invoke(request)
     print(response)

@@ -97,9 +97,9 @@ impl Group {
                 return channel
                     .access_hash
                     .filter(|_| !channel.min)
-                    .map(PyPeerAuth::from_hash);
+                    .map(PyPeerAuth::new);
             }
-            Chat::ChannelForbidden(channel) => PyPeerAuth::from_hash(channel.access_hash),
+            Chat::ChannelForbidden(channel) => PyPeerAuth::new(channel.access_hash),
         })
     }
 

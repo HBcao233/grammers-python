@@ -125,7 +125,7 @@ impl Channel {
         self.raw
             .access_hash
             .filter(|_| !self.raw.min)
-            .map(PyPeerAuth::from_hash)
+            .map(PyPeerAuth::new)
     }
 
     /// Convert the channel to its reference.

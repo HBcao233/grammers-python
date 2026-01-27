@@ -6,7 +6,9 @@ use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyString;
 use pyo3_async_runtimes::tokio::get_runtime;
+
 use tokio::sync::mpsc;
+use tokio::sync::oneshot;
 use tokio::task::JoinHandle;
 
 use super::UpdateStream;
@@ -33,13 +35,12 @@ impl<'a, 'py> FromPyObject<'a, 'py> for ApiId {
 }
 
 pub struct ClientInner {
-    pub pool_task: Option<JoinHandle<PyResult<()>>>,
+    pub pool_task: Option<JoinHandle<()>>,
     pub updates: Option<mpsc::UnboundedReceiver<UpdatesLike>>,
     pub stream_updates: Option<UpdateStream>,
     pub handle: SenderPoolFatHandle,
 
     pub session: Session,
-
     pub api_id: i32,
     pub api_hash: String,
     pub bot_token: Option<String>,
@@ -101,8 +102,9 @@ impl PyClient {
         system_lang_code: Option<&str>,
         use_ipv6: bool,
     ) -> PyResult<Self> {
+        let (loop_tx, loop_rx) = oneshot::channel::<Py<PyAny>>();
         let session = if session.is_instance_of::<PySession>() {
-            Session(session.unbind())
+            Session::new(session.unbind(), loop_rx)
         } else {
             let cls_name = session.get_type().qualname()?;
             return Err(PyTypeError::new_err(format!(
@@ -183,13 +185,18 @@ impl PyClient {
             proxy_url: None,
             __non_exhaustive: (),
         };
-        let pool = SenderPool::new(session.clone(), api_id.0, config);
+        
+        let pool = SenderPool::new(
+            session.clone(), 
+            api_id.0, 
+            config,
+        );
         let SenderPool {
             runner,
             updates,
             handle,
         } = pool;
-        let pool_task = get_runtime().spawn(runner.run());
+        let pool_task = get_runtime().spawn(runner.run(loop_tx));
 
         let inner = ClientInner {
             pool_task: Some(pool_task),
@@ -241,17 +248,8 @@ impl PyClient {
         self.inner.lock().unwrap().lang_code.clone()
     }
 
-    #[getter]
-    fn session(&self) -> Py<PyAny> {
-        Python::attach(|py| {
-            self.inner
-                .lock()
-                .unwrap()
-                .session
-                .0
-                .bind(py)
-                .clone()
-                .unbind()
-        })
+    #[getter(session)]
+    fn get_session(&self) -> Py<PyAny> {
+        self.inner.lock().unwrap().session.get_inner()
     }
 }

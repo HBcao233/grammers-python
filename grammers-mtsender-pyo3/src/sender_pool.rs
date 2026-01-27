@@ -6,7 +6,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use pyo3::PyResult;
+use pyo3::{Py, PyAny, PyResult, Python};
+use pyo3::types::PyAnyMethods;
 
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 use std::ops::{ControlFlow, Deref};
@@ -153,7 +154,11 @@ impl SenderPoolHandle {
 
 impl SenderPool {
     /// Creates a new sender pool with non-[`ConnectionParams::default`] configuration.
-    pub fn new(session: Session, api_id: i32, connection_params: ConnectionParams) -> Self {
+    pub fn new(
+        session: Session, 
+        api_id: i32, 
+        connection_params: ConnectionParams,
+    ) -> Self {
         let (request_tx, request_rx) = mpsc::unbounded_channel();
         let (updates_tx, updates_rx) = mpsc::unbounded_channel();
 
@@ -181,7 +186,17 @@ impl SenderPoolRunner {
     /// Run the sender pool until [`SenderPoolHandle::quit`] is called or the returned future is dropped.
     ///
     /// Connections will be initiated on-demand whenever the first request to a datacenter is made.
-    pub async fn run(mut self) -> PyResult<()> {
+    pub async fn run(mut self, loop_tx: oneshot::Sender<Py<PyAny>>) {
+        std::thread::spawn(move || {
+            Python::attach(|py| {
+                let asyncio = py.import("asyncio").unwrap();
+                let new_loop = asyncio.call_method0("new_event_loop").unwrap();
+                asyncio.call_method1("set_event_loop", (&new_loop,)).unwrap();
+                loop_tx.send(new_loop.clone().unbind()).unwrap();
+                let _ = new_loop.call_method0("run_forever");
+            });
+        });
+
         loop {
             tokio::select! {
                 biased;
@@ -196,7 +211,7 @@ impl SenderPoolRunner {
                 }
                 request = self.request_rx.recv() => {
                     let flow = if let Some(request) = request {
-                        self.process_request(request).await?
+                        self.process_request(request).await
                     } else {
                         ControlFlow::Break(())
                     };
@@ -210,15 +225,21 @@ impl SenderPoolRunner {
 
         self.connections.clear(); // drop all channels to cause the `run_sender` loops to stop
         self.connection_pool.join_all().await;
-        Ok(())
     }
 
-    async fn process_request(&mut self, request: Request) -> PyResult<ControlFlow<()>> {
+    async fn process_request(&mut self, request: Request) -> ControlFlow<()> {
         match request {
             Request::Invoke { dc_id, body, tx } => {
-                let Some(mut dc_option) = self.session.dc_option(dc_id).await? else {
+                let dc_option = match self.session.dc_option(dc_id).await {
+                    Ok(dc_option) => dc_option,
+                    Err(e) => {
+                        let _ = tx.send(Err(InvocationError::PyErr(e)));
+                        return ControlFlow::Continue(());
+                    },
+                };
+                let Some(mut dc_option) = dc_option else {
                     let _ = tx.send(Err(InvocationError::InvalidDc));
-                    return Ok(ControlFlow::Continue(()));
+                    return ControlFlow::Continue(());
                 };
 
                 let connection = match self
@@ -232,19 +253,32 @@ impl SenderPoolRunner {
                             Ok(t) => t,
                             Err(e) => {
                                 let _ = tx.send(Err(e));
-                                return Ok(ControlFlow::Continue(()));
+                                return ControlFlow::Continue(());
                             }
                         };
 
                         dc_option.auth_key = Some(sender.auth_key());
-                        self.session.set_dc_option(dc_option.clone()).await?;
+                        match self.session.set_dc_option(dc_option.clone()).await {
+                            Ok(_) => {},
+                            Err(e) => {
+                                let _ = tx.send(Err(InvocationError::PyErr(e)));
+                                return ControlFlow::Break(());
+                            }
+                        };
 
                         let (rpc_tx, rpc_rx) = mpsc::unbounded_channel();
+                        let home_dc_id = match self.session.home_dc_id().await {
+                            Ok(x) => x,
+                            Err(e) => {
+                                let _ = tx.send(Err(InvocationError::PyErr(e)));
+                                return ControlFlow::Break(());
+                            },
+                        };
                         let abort_handle = self.connection_pool.spawn(run_sender(
                             sender,
                             rpc_rx,
                             self.updates_tx.clone(),
-                            dc_option.id == self.session.home_dc_id().await?,
+                            dc_option.id == home_dc_id,
                         ));
                         self.connections.push(ConnectionInfo {
                             dc_id,
@@ -255,7 +289,7 @@ impl SenderPoolRunner {
                     }
                 };
                 let _ = connection.rpc_tx.send(Rpc { body, tx });
-                Ok(ControlFlow::Continue(()))
+                ControlFlow::Continue(())
             }
             Request::Disconnect { dc_id } => {
                 self.connections.retain(|connection| {
@@ -266,9 +300,9 @@ impl SenderPoolRunner {
                         true
                     }
                 });
-                Ok(ControlFlow::Continue(()))
+                ControlFlow::Continue(())
             }
-            Request::Quit => Ok(ControlFlow::Break(())),
+            Request::Quit => ControlFlow::Break(()),
         }
     }
 
@@ -281,12 +315,12 @@ impl SenderPoolRunner {
         let addr = || {
             if let Some(proxy) = self.connection_params.proxy_url.clone() {
                 ServerAddr::Proxied {
-                    address: dc_option.ipv4.into(),
+                    address: dc_option.ipv4.clone().into(),
                     proxy,
                 }
             } else {
                 ServerAddr::Tcp {
-                    address: dc_option.ipv4.into(),
+                    address: dc_option.ipv4.clone().into(),
                 }
             }
         };
@@ -342,8 +376,8 @@ impl SenderPoolRunner {
                     .await?
                     .unwrap_or_else(|| PyDcOption {
                         id: option.id,
-                        ipv4: SocketAddrV4::new(Ipv4Addr::from_bits(0), 0),
-                        ipv6: SocketAddrV6::new(Ipv6Addr::from_bits(0), 0, 0, 0),
+                        ipv4: SocketAddrV4::new(Ipv4Addr::from_bits(0), 0).into(),
+                        ipv6: SocketAddrV6::new(Ipv6Addr::from_bits(0), 0, 0, 0).into(),
                         auth_key: None,
                     });
             if option.ipv6 {
@@ -355,7 +389,7 @@ impl SenderPoolRunner {
                     option.port as _,
                     0,
                     0,
-                );
+                ).into();
             } else {
                 dc_option.ipv4 = SocketAddrV4::new(
                     option
@@ -363,14 +397,14 @@ impl SenderPoolRunner {
                         .parse()
                         .expect("Telegram to return a valid IPv4 address"),
                     option.port as _,
-                );
+                ).into();
                 if dc_option.ipv6.ip().to_bits() == 0 {
                     dc_option.ipv6 = SocketAddrV6::new(
                         dc_option.ipv4.ip().to_ipv6_mapped(),
                         dc_option.ipv4.port(),
                         0,
                         0,
-                    )
+                    ).into()
                 }
             }
         }

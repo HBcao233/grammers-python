@@ -41,7 +41,7 @@ impl PyClient {
 
         Ok(PeerMap {
             map: Arc::new(map),
-            session: session,
+            client: self.clone(),
         })
     }
 }

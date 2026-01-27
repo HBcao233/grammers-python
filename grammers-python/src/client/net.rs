@@ -6,7 +6,7 @@ use crate::errors::InvocationErrorConverter;
 use grammers_mtsender_pyo3::InvocationError;
 use grammers_tl_types_pyo3::{PyTLObject, PyTLRequest};
 
-use grammers_tl_types::{Deserializable, RemoteCall};
+use grammers_tl_types::{Deserializable, Serializable, RemoteCall};
 
 #[pymethods]
 impl PyClient {
@@ -29,7 +29,6 @@ impl PyClient {
         dc_id: i32,
         request: PyTLRequest,
     ) -> Result<PyTLObject, InvocationError> {
-        use grammers_tl_types::{Deserializable, Serializable};
         let response = self.do_invoke_in_dc(dc_id, request.to_bytes()).await?;
         PyTLObject::from_bytes(&response).map_err(Into::into)
     }

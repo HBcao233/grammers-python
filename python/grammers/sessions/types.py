@@ -9,3 +9,6 @@ from grammers._rs.sessions import (
     UpdatesState,
     UpdateState,
 )
+from grammers.tl import types
+
+PeerIdLike = int | PeerId | types.InputPeer | types.Peer

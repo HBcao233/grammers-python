@@ -37,9 +37,7 @@ impl PyClient {
         self.disconnect();
         let task = self.inner.lock().unwrap().pool_task.take();
         if let Some(task) = task {
-            if let Ok(res) = task.await {
-                res?;
-            }
+            let _ = task.await;
         }
         Ok(())
     }

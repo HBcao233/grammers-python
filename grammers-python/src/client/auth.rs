@@ -159,7 +159,7 @@ impl PyClient {
         let auth = match user {
             pytl::enums::PyUser::User(ref u) => Python::attach(|py| {
                 let u = u.0.borrow(py);
-                u.access_hash.filter(|_| !u.min).map(PyPeerAuth::from_hash)
+                u.access_hash.filter(|_| !u.min).map(PyPeerAuth::new)
             }),
             pytl::enums::PyUser::Empty(_) => {
                 let peer = session.peer(PyPeerId::user(user_id)?).await?;

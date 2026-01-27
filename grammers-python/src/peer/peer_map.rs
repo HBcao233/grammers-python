@@ -11,10 +11,11 @@ use pyo3::PyResult;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use grammers_session_pyo3::Session;
 use grammers_session_pyo3::{PyPeerId, PyPeerRef};
 
-use crate::peer::{Peer, User};
+use crate::PyClient;
+use crate::peer::Peer;
+// use crate::peer::User;
 
 /// Helper structure to efficiently retrieve peers via their peer.
 ///
@@ -27,7 +28,7 @@ use crate::peer::{Peer, User};
 #[derive(Clone)]
 pub struct PeerMap {
     pub(crate) map: Arc<HashMap<PyPeerId, Peer>>,
-    pub(crate) session: Session,
+    pub(crate) client: PyClient,
 }
 
 impl PeerMap {
@@ -38,9 +39,10 @@ impl PeerMap {
 
     /// Retrieve a non-min `PeerRef` from either the in-memory cache or the session.
     pub async fn get_ref(&self, peer: PyPeerId) -> PyResult<Option<PyPeerRef>> {
+        let session = self.client.inner.lock().unwrap().session.clone();
         match self.map.get(&peer) {
             Some(peer) => peer.to_ref().await,
-            None => self.session.peer_ref(peer).await,
+            None => session.peer_ref(peer).await,
         }
     }
 
@@ -54,6 +56,7 @@ impl PeerMap {
         }
     }
 
+    /*
     pub(crate) fn take_user(&mut self, user_id: i64) -> Option<User> {
         let peer = PyPeerId::user(user_id).unwrap();
         self.take(peer).map(|peer| match peer {
@@ -61,6 +64,7 @@ impl PeerMap {
             _ => unreachable!(),
         })
     }
+    */
 
     /// Iterate over the peers and peers in the map.
     pub fn iter(&self) -> impl Iterator<Item = (PyPeerId, &Peer)> {
@@ -76,7 +80,7 @@ impl PeerMap {
     pub fn handle(&self) -> Self {
         Self {
             map: Arc::clone(&self.map),
-            session: self.session.clone(),
+            client: self.client.clone(),
         }
     }
 }

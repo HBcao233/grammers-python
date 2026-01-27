@@ -5,7 +5,7 @@ use grammers_mtsender_pyo3::InvocationError;
 
 use super::{PyInvalidDCError, PyRpcError, PyUserMigrateError};
 
-create_exception!(errors, ClientStoppedError, PyException);
+create_exception!("grammers.errors", ClientStoppedError, PyException);
 
 pub struct InvocationErrorConverter(pub InvocationError);
 

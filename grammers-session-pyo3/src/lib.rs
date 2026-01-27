@@ -1,8 +1,7 @@
 mod peer;
 mod session;
 mod types;
-// mod dc_options;
-// mod storages;
+pub mod utils;
 
 pub use peer::{
     PeerIdLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerKind, PyPeerRef,

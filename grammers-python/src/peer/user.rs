@@ -111,7 +111,7 @@ impl User {
         let user = self.user()?;
         user.access_hash
             .filter(|_| !user.min)
-            .map(PyPeerAuth::from_hash)
+            .map(PyPeerAuth::new)
     }
 
     /// Convert the user to its reference.

@@ -341,7 +341,8 @@ impl PyClient {
 
         // Don't bother getting pristine update state if we're not logged in.
         let should_get_state =
-            message_box.is_empty() && session.peer(PyPeerId::self_user()?).await?.is_some();
+            message_box.is_empty() 
+            && session.peer(PyPeerId::self_user()?).await?.is_some();
 
         Ok(UpdateStream {
             client: self.clone(),

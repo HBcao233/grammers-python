@@ -30,7 +30,7 @@ pub const SELF_USER_ID: i64 = 1 << 40;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "PeerId")]
+#[pyclass(name = "PeerId", module = "grammers.sessions")]
 pub struct PyPeerId(i64);
 
 #[pymethods]
@@ -94,6 +94,7 @@ impl PyPeerId {
     }
 
     /// Peer kind.
+    #[getter]
     pub fn kind(&self) -> PyPeerKind {
         if 1 <= self.0 && self.0 <= 0xffffffffff {
             PyPeerKind::User
@@ -114,11 +115,13 @@ impl PyPeerId {
     ///
     /// Will return an arbitrary value if [`Self::kind`] is [`PeerKind::UserSelf`].
     /// This value should not be relied on and may change between releases.
+    #[getter]
     pub fn bot_api_dialog_id(&self) -> i64 {
         self.0
     }
 
     /// Unpacked peer identifier. Panics if [`Self::kind`] is [`PeerKind::UserSelf`].
+    #[getter]
     pub fn bare_id(&self) -> PyResult<i64> {
         Ok(match self.kind() {
             PyPeerKind::User => self.0,
@@ -152,7 +155,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "PeerKind")]
+#[pyclass(name = "PeerKind", module = "grammers.sessions")]
 pub enum PyPeerKind {
     /// The peer identity belongs to a [`tl.types.User`]. May also represent [`PeerKind.UserSelf`].
     User,
@@ -179,13 +182,13 @@ impl PyPeerKind {
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "PeerAuth")]
+#[pyclass(name = "PeerAuth", module = "grammers.sessions")]
 pub struct PyPeerAuth(i64);
 
 #[pymethods]
 impl PyPeerAuth {
     #[new]
-    fn new(access_hash: i64) -> Self {
+    pub fn new(access_hash: i64) -> Self {
         Self(access_hash)
     }
 
@@ -196,12 +199,6 @@ impl PyPeerAuth {
 
     fn __repr__(&self) -> String {
         format!("PeerAuth({})", self.0)
-    }
-}
-
-impl PyPeerAuth {
-    pub fn from_hash(access_hash: i64) -> Self {
-        Self(access_hash)
     }
 }
 
@@ -216,7 +213,7 @@ impl Default for PyPeerAuth {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[pyclass(name = "ChannelKind")]
+#[pyclass(name = "ChannelKind", module = "grammers.sessions")]
 pub enum PyChannelKind {
     /// Value used for a channel with its [`tl::types::Channel::broadcast`] flag set to `true`.
     Broadcast = 1,
@@ -240,7 +237,7 @@ impl PyChannelKind {
 
 /// An exploded peer reference along with any known useful information about the peer.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "PeerInfo")]
+#[pyclass(name = "PeerInfo", module = "grammers.sessions")]
 pub enum PyPeerInfo {
     User {
         /// Bare user identifier.
