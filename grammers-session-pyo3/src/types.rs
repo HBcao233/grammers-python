@@ -7,9 +7,9 @@
 // except according to those terms.
 
 //! Session type definitions.
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::PyBytes;
-use pyo3::exceptions::PyTypeError;
 
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 use std::str::FromStr;
@@ -50,41 +50,45 @@ impl PyDcOption {
     #[new]
     #[pyo3(signature = (id, ipv4=None, ipv6=None, auth_key=None))]
     fn new(
-        id: i32, 
-        ipv4: Option<String>, 
-        ipv6: Option<String>, 
+        id: i32,
+        ipv4: Option<String>,
+        ipv6: Option<String>,
         auth_key: Option<[u8; 256]>,
     ) -> PyResult<Self> {
         let (ipv4, ipv6) = match (ipv4, ipv6) {
-            (None, None) => return Err(PyTypeError::new_err(
-                "At least one of ipv4 and ipv6 must be provided."
-            )),
+            (None, None) => {
+                return Err(PyTypeError::new_err(
+                    "At least one of ipv4 and ipv6 must be provided.",
+                ));
+            }
             (Some(ipv4), Some(ipv6)) => {
-                let ipv4: SocketAddrV4 = ipv4.parse().map_err(|_| PyTypeError::new_err(
-                    "fail to parse ipv4 string"
-                ))?;
-                let ipv6: SocketAddrV6 = ipv6.parse().map_err(|_| PyTypeError::new_err(
-                    "fail to parse ipv6 string"
-                ))?;
+                let ipv4: SocketAddrV4 = ipv4
+                    .parse()
+                    .map_err(|_| PyTypeError::new_err("fail to parse ipv4 string"))?;
+                let ipv6: SocketAddrV6 = ipv6
+                    .parse()
+                    .map_err(|_| PyTypeError::new_err("fail to parse ipv6 string"))?;
                 (ipv4, ipv6)
-            },
+            }
             (Some(ipv4), None) => {
-                let ipv4: SocketAddrV4 = ipv4.parse().map_err(|_| PyTypeError::new_err(
-                    "fail to parse ipv4 string"
-                ))?;
+                let ipv4: SocketAddrV4 = ipv4
+                    .parse()
+                    .map_err(|_| PyTypeError::new_err("fail to parse ipv4 string"))?;
                 let ipv6 = SocketAddrV6::new(ipv4.ip().to_ipv6_compatible(), ipv4.port(), 0, 0);
                 (ipv4, ipv6)
-            },
+            }
             (None, Some(ipv6)) => {
-                let ipv6: SocketAddrV6 = ipv6.parse().map_err(|_| PyTypeError::new_err(
-                    "fail to parse ipv6 string"
-                ))?;
+                let ipv6: SocketAddrV6 = ipv6
+                    .parse()
+                    .map_err(|_| PyTypeError::new_err("fail to parse ipv6 string"))?;
                 let ipv4 = SocketAddrV4::new(
-                    ipv6.ip().to_ipv4_mapped().unwrap_or(Ipv4Addr::new(0, 0, 0, 0)),
+                    ipv6.ip()
+                        .to_ipv4_mapped()
+                        .unwrap_or(Ipv4Addr::new(0, 0, 0, 0)),
                     ipv6.port(),
                 );
                 (ipv4, ipv6)
-            },
+            }
         };
         Ok(Self {
             id,
@@ -93,7 +97,7 @@ impl PyDcOption {
             auth_key,
         })
     }
-    
+
     fn __repr__(&self) -> PyResult<String> {
         let auth_key = match self.auth_key {
             None => "None".to_string(),
@@ -114,7 +118,7 @@ impl PyDcOption {
 #[derive(FromPyObject)]
 enum Ipv4Like {
     Tuple([u8; 4]),
-    Str(String)
+    Str(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -135,7 +139,7 @@ impl PySocketAddrV4 {
     pub fn ip(&self) -> Ipv4Addr {
         Ipv4Addr::new(self.a, self.b, self.c, self.d)
     }
-    
+
     pub fn port(&self) -> u16 {
         self.port
     }
@@ -158,12 +162,12 @@ impl PySocketAddrV4 {
             port,
         })
     }
-    
+
     #[getter(ip)]
     fn get_ip(&self) -> String {
         self.ip().to_string()
     }
-    
+
     #[setter(ip)]
     fn set_ip(&mut self, ip: Ipv4Like) -> PyResult<()> {
         let ip = match ip {
@@ -178,11 +182,11 @@ impl PySocketAddrV4 {
         self.d = ip[3];
         Ok(())
     }
-    
+
     fn __repr__(&self) -> String {
         format!("SocketAddrV4(ip={}, port={})", self.get_ip(), self.port)
     }
-    
+
     fn __str__(&self) -> String {
         format!("{}:{}", self.get_ip(), self.port)
     }
@@ -201,10 +205,7 @@ impl From<SocketAddrV4> for PySocketAddrV4 {
 }
 impl From<PySocketAddrV4> for SocketAddrV4 {
     fn from(x: PySocketAddrV4) -> Self {
-        Self::new(
-            Ipv4Addr::new(x.a, x.b, x.c, x.d),
-            x.port,
-        )
+        Self::new(Ipv4Addr::new(x.a, x.b, x.c, x.d), x.port)
     }
 }
 impl From<PySocketAddrV4> for SocketAddr {
@@ -217,7 +218,7 @@ impl From<PySocketAddrV4> for SocketAddr {
 #[derive(FromPyObject)]
 enum Ipv6Like {
     Tuple([u16; 8]),
-    Str(String)
+    Str(String),
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -236,17 +237,10 @@ pub struct PySocketAddrV6 {
 impl PySocketAddrV6 {
     pub fn ip(&self) -> Ipv6Addr {
         Ipv6Addr::new(
-            self.a,
-            self.b,
-            self.c,
-            self.d,
-            self.e,
-            self.f,
-            self.g,
-            self.h,
+            self.a, self.b, self.c, self.d, self.e, self.f, self.g, self.h,
         )
     }
-    
+
     pub fn port(&self) -> u16 {
         self.port
     }
@@ -273,12 +267,12 @@ impl PySocketAddrV6 {
             port,
         })
     }
-    
+
     #[getter(ip)]
     fn get_ip(&self) -> String {
         self.ip().to_string()
     }
-    
+
     #[setter(ip)]
     fn set_ip(&mut self, ip: Ipv6Like) -> PyResult<()> {
         let ip = match ip {
@@ -297,11 +291,11 @@ impl PySocketAddrV6 {
         self.h = ip[7];
         Ok(())
     }
-    
+
     fn __repr__(&self) -> String {
         format!("SocketAddrV6(ip={}, port={})", self.get_ip(), self.port)
     }
-    
+
     fn __str__(&self) -> String {
         format!("[{}]:{}", self.get_ip(), self.port)
     }
@@ -325,10 +319,7 @@ impl From<SocketAddrV6> for PySocketAddrV6 {
 impl From<PySocketAddrV6> for SocketAddrV6 {
     fn from(x: PySocketAddrV6) -> Self {
         Self::new(
-            Ipv6Addr::new(
-                x.a, x.b, x.c, x.d,
-                x.e, x.f, x.g, x.h,
-            ),
+            Ipv6Addr::new(x.a, x.b, x.c, x.d, x.e, x.f, x.g, x.h),
             x.port,
             0,
             0,
@@ -369,25 +360,24 @@ impl PyUpdatesState {
             channels,
         }
     }
-    
+
     fn __repr__(&self) -> String {
-        let channels = self.channels.clone()
+        let channels = self
+            .channels
+            .clone()
             .into_iter()
             .map(|x| x.__repr__())
             .collect::<Vec<String>>()
             .join(",\n");
-        let channels = channels.split('\n')
+        let channels = channels
+            .split('\n')
             .map(|line| format!("  {}", line))
             .collect::<Vec<String>>()
             .join("\n");
         let channels = format!("[\n{}\n]", channels);
         format!(
             "UpdatesState(\n  pts: {},\n  qts: {},\n  date: {},\n  seq: {},\n  channels: {}\n)",
-            self.pts,
-            self.qts,
-            self.date,
-            self.seq,
-            channels,
+            self.pts, self.qts, self.date, self.seq, channels,
         )
     }
 }
@@ -427,12 +417,9 @@ pub struct PyChannelState {
 impl PyChannelState {
     #[new]
     fn new(id: i64, pts: i32) -> Self {
-        Self {
-            id,
-            pts,
-        }
+        Self { id, pts }
     }
-    
+
     pub fn __repr__(&self) -> String {
         format!("ChannelState(\n  id: {},\n  pts: {},\n)", self.id, self.pts)
     }
@@ -488,28 +475,19 @@ impl PyUpdateState {
     fn all(update: PyUpdatesState) -> Self {
         Self::All(update)
     }
-    
+
     #[staticmethod]
     fn primary(pts: i32, date: i32, seq: i32) -> Self {
-        Self::Primary {
-            pts,
-            date,
-            seq,
-        }
+        Self::Primary { pts, date, seq }
     }
-    
+
     #[staticmethod]
     fn secondary(qts: i32) -> Self {
-        Self::Secondary {
-            qts,
-        }
+        Self::Secondary { qts }
     }
-    
+
     #[staticmethod]
     fn channel(id: i64, pts: i32) -> Self {
-        Self::Channel {
-            id, 
-            pts,
-        }
+        Self::Channel { id, pts }
     }
 }

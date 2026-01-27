@@ -7,7 +7,9 @@ pub use peer::{
     PeerIdLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerKind, PyPeerRef,
 };
 pub use session::{PySession, Session};
-pub use types::{PyChannelState, PyDcOption, PySocketAddrV4, PySocketAddrV6, PyUpdateState, PyUpdatesState};
+pub use types::{
+    PyChannelState, PyDcOption, PySocketAddrV4, PySocketAddrV6, PyUpdateState, PyUpdatesState,
+};
 
 #[pyo3::pymodule(name = "sessions")]
 pub mod sessions_ {
@@ -31,10 +33,10 @@ pub mod sessions_ {
 
     #[pymodule_export]
     use super::PyDcOption;
-    
+
     #[pymodule_export]
     use super::PySocketAddrV4;
-    
+
     #[pymodule_export]
     use super::PySocketAddrV6;
 

@@ -185,12 +185,8 @@ impl PyClient {
             proxy_url: None,
             __non_exhaustive: (),
         };
-        
-        let pool = SenderPool::new(
-            session.clone(), 
-            api_id.0, 
-            config,
-        );
+
+        let pool = SenderPool::new(session.clone(), api_id.0, config);
         let SenderPool {
             runner,
             updates,

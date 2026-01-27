@@ -109,9 +109,7 @@ impl User {
     /// Non-min auth stored in the user, if any.
     pub(crate) fn auth(&self) -> Option<PyPeerAuth> {
         let user = self.user()?;
-        user.access_hash
-            .filter(|_| !user.min)
-            .map(PyPeerAuth::new)
+        user.access_hash.filter(|_| !user.min).map(PyPeerAuth::new)
     }
 
     /// Convert the user to its reference.

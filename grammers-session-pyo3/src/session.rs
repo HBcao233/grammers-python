@@ -7,8 +7,8 @@ use pyo3::types::PyType;
 
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use tokio::sync::oneshot;
 use tokio::sync::OnceCell;
+use tokio::sync::oneshot;
 
 use crate::utils::into_future;
 
@@ -132,29 +132,34 @@ impl Session {
             loop_rx: Arc::new(Mutex::new(Some(loop_rx))),
         }
     }
-    
+
     pub fn get_inner(&self) -> Py<PyAny> {
-        Python::attach(|py| {
-            self.inner.bind(py).clone().unbind()
-        })
+        Python::attach(|py| self.inner.bind(py).clone().unbind())
     }
-    
-    async fn event_loop(&self) -> &Py<PyAny> {
-        self.event_loop.get_or_init(|| async {
-            self.loop_rx.lock().await.take().unwrap().await.unwrap()
-        }).await
+
+    pub async fn event_loop(&self) -> &Py<PyAny> {
+        self.event_loop
+            .get_or_init(|| async { self.loop_rx.lock().await.take().unwrap().await.unwrap() })
+            .await
     }
-    
+
     pub async fn home_dc_id(&self) -> PyResult<i32> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner.bind(py).call_method0("home_dc_id")
+            self.inner
+                .bind(py)
+                .call_method0("home_dc_id")
                 .map(|x| x.unbind())
         })?;
         let res = into_future(event_loop, coro).await?;
         Python::attach(|py| res.bind(py).extract::<i32>()).map_err(|e| {
             let cls_name = match Python::attach(|py| {
-                Ok(self.inner.bind(py).get_type().qualname()?.extract::<String>()?)
+                Ok(self
+                    .inner
+                    .bind(py)
+                    .get_type()
+                    .qualname()?
+                    .extract::<String>()?)
             }) {
                 Ok(v) => v,
                 Err(e) => return e,
@@ -166,7 +171,9 @@ impl Session {
     pub async fn set_home_dc_id(&self, dc_id: i32) -> PyResult<()> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner.bind(py).call_method1("set_home_dc_id", (dc_id,))
+            self.inner
+                .bind(py)
+                .call_method1("set_home_dc_id", (dc_id,))
                 .map(|x| x.unbind())
         })?;
         into_future(event_loop, coro).await?;
@@ -176,7 +183,9 @@ impl Session {
     pub async fn dc_option(&self, dc_id: i32) -> PyResult<Option<PyDcOption>> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner.bind(py).call_method1("dc_option", (dc_id,))
+            self.inner
+                .bind(py)
+                .call_method1("dc_option", (dc_id,))
                 .map(|x| x.unbind())
         })?;
         let res = into_future(event_loop, coro).await?;
@@ -187,7 +196,12 @@ impl Session {
             } else {
                 let res = res.cast::<PyDcOption>().map_err(|e| {
                     let cls_name = match Python::attach(|py| {
-                        Ok(self.inner.bind(py).get_type().qualname()?.extract::<String>()?)
+                        Ok(self
+                            .inner
+                            .bind(py)
+                            .get_type()
+                            .qualname()?
+                            .extract::<String>()?)
                     }) {
                         Ok(v) => v,
                         Err(e) => return e,
@@ -203,8 +217,7 @@ impl Session {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let dc_option = Py::new(py, dc_option)?;
-            self
-                .inner
+            self.inner
                 .bind(py)
                 .call_method1("set_dc_option", (dc_option,))
                 .map(|x| x.unbind())
@@ -217,7 +230,9 @@ impl Session {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let peer = Py::new(py, peer)?;
-            self.inner.bind(py).call_method1("peer", (peer,))
+            self.inner
+                .bind(py)
+                .call_method1("peer", (peer,))
                 .map(|x| x.unbind())
         })?;
         let res = into_future(event_loop, coro).await?;
@@ -228,7 +243,12 @@ impl Session {
             } else {
                 let res = res.cast::<PyPeerInfo>().map_err(|e| {
                     let cls_name = match Python::attach(|py| {
-                        Ok(self.inner.bind(py).get_type().qualname()?.extract::<String>()?)
+                        Ok(self
+                            .inner
+                            .bind(py)
+                            .get_type()
+                            .qualname()?
+                            .extract::<String>()?)
                     }) {
                         Ok(v) => v,
                         Err(e) => return e,
@@ -252,7 +272,9 @@ impl Session {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let peer_info = Py::new(py, peer_info)?;
-            self.inner.bind(py).call_method1("cache_peer", (peer_info,))
+            self.inner
+                .bind(py)
+                .call_method1("cache_peer", (peer_info,))
                 .map(|x| x.unbind())
         })?;
         into_future(event_loop, coro).await?;
@@ -262,14 +284,21 @@ impl Session {
     pub async fn updates_state(&self) -> PyResult<PyUpdatesState> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner.bind(py).call_method0("updates_state")
+            self.inner
+                .bind(py)
+                .call_method0("updates_state")
                 .map(|x| x.unbind())
         })?;
         let res = into_future(event_loop, coro).await?;
         Python::attach(|py| {
             let res = res.bind(py).cast::<PyUpdatesState>().map_err(|e| {
                 let cls_name = match Python::attach(|py| {
-                    Ok(self.inner.bind(py).get_type().qualname()?.extract::<String>()?)
+                    Ok(self
+                        .inner
+                        .bind(py)
+                        .get_type()
+                        .qualname()?
+                        .extract::<String>()?)
                 }) {
                     Ok(v) => v,
                     Err(e) => return e,
@@ -284,8 +313,7 @@ impl Session {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let update = Py::new(py, update)?;
-            self
-                .inner
+            self.inner
                 .bind(py)
                 .call_method1("set_update_state", (update,))
                 .map(|x| x.unbind())

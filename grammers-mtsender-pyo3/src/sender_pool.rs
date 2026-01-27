@@ -6,8 +6,8 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use pyo3::{Py, PyAny, PyResult, Python};
 use pyo3::types::PyAnyMethods;
+use pyo3::{Py, PyAny, PyResult, Python};
 
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 use std::ops::{ControlFlow, Deref};
@@ -154,11 +154,7 @@ impl SenderPoolHandle {
 
 impl SenderPool {
     /// Creates a new sender pool with non-[`ConnectionParams::default`] configuration.
-    pub fn new(
-        session: Session, 
-        api_id: i32, 
-        connection_params: ConnectionParams,
-    ) -> Self {
+    pub fn new(session: Session, api_id: i32, connection_params: ConnectionParams) -> Self {
         let (request_tx, request_rx) = mpsc::unbounded_channel();
         let (updates_tx, updates_rx) = mpsc::unbounded_channel();
 
@@ -191,7 +187,9 @@ impl SenderPoolRunner {
             Python::attach(|py| {
                 let asyncio = py.import("asyncio").unwrap();
                 let new_loop = asyncio.call_method0("new_event_loop").unwrap();
-                asyncio.call_method1("set_event_loop", (&new_loop,)).unwrap();
+                asyncio
+                    .call_method1("set_event_loop", (&new_loop,))
+                    .unwrap();
                 loop_tx.send(new_loop.clone().unbind()).unwrap();
                 let _ = new_loop.call_method0("run_forever");
             });
@@ -235,7 +233,7 @@ impl SenderPoolRunner {
                     Err(e) => {
                         let _ = tx.send(Err(InvocationError::PyErr(e)));
                         return ControlFlow::Continue(());
-                    },
+                    }
                 };
                 let Some(mut dc_option) = dc_option else {
                     let _ = tx.send(Err(InvocationError::InvalidDc));
@@ -258,8 +256,10 @@ impl SenderPoolRunner {
                         };
 
                         dc_option.auth_key = Some(sender.auth_key());
-                        match self.session.set_dc_option(dc_option.clone()).await {
-                            Ok(_) => {},
+                        let dc_id = dc_option.id;
+                        let res = self.session.set_dc_option(dc_option).await;
+                        match res {
+                            Ok(_) => {}
                             Err(e) => {
                                 let _ = tx.send(Err(InvocationError::PyErr(e)));
                                 return ControlFlow::Break(());
@@ -272,13 +272,13 @@ impl SenderPoolRunner {
                             Err(e) => {
                                 let _ = tx.send(Err(InvocationError::PyErr(e)));
                                 return ControlFlow::Break(());
-                            },
+                            }
                         };
                         let abort_handle = self.connection_pool.spawn(run_sender(
                             sender,
                             rpc_rx,
                             self.updates_tx.clone(),
-                            dc_option.id == home_dc_id,
+                            dc_id == home_dc_id,
                         ));
                         self.connections.push(ConnectionInfo {
                             dc_id,
@@ -389,7 +389,8 @@ impl SenderPoolRunner {
                     option.port as _,
                     0,
                     0,
-                ).into();
+                )
+                .into();
             } else {
                 dc_option.ipv4 = SocketAddrV4::new(
                     option
@@ -397,14 +398,16 @@ impl SenderPoolRunner {
                         .parse()
                         .expect("Telegram to return a valid IPv4 address"),
                     option.port as _,
-                ).into();
+                )
+                .into();
                 if dc_option.ipv6.ip().to_bits() == 0 {
                     dc_option.ipv6 = SocketAddrV6::new(
                         dc_option.ipv4.ip().to_ipv6_mapped(),
                         dc_option.ipv4.port(),
                         0,
                         0,
-                    ).into()
+                    )
+                    .into()
                 }
             }
         }
