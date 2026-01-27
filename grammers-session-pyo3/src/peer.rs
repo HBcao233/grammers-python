@@ -31,7 +31,7 @@ pub const SELF_USER_ID: i64 = 1 << 40;
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[pyclass(name = "PeerId", module = "grammers.sessions")]
-pub struct PyPeerId(i64);
+pub struct PyPeerId(pub i64);
 
 #[pymethods]
 impl PyPeerId {
@@ -120,6 +120,10 @@ impl PyPeerId {
         self.0
     }
 
+    fn __int__(&self) -> i64 {
+        self.0
+    }
+
     /// Unpacked peer identifier. Panics if [`Self::kind`] is [`PeerKind::UserSelf`].
     #[getter]
     pub fn bare_id(&self) -> PyResult<i64> {
@@ -129,6 +133,20 @@ impl PyPeerId {
             PyPeerKind::Chat => -self.0,
             PyPeerKind::Channel => -self.0 - 1000000000000,
         })
+    }
+
+    fn __eq__(&self, other: &Bound<'_, PyAny>) -> PyResult<bool> {
+        if let Ok(other_peer) = other.cast::<PyPeerId>() {
+            return Ok(self.0 == other_peer.borrow().0);
+        }
+        if let Ok(other_int) = other.extract::<i64>() {
+            return Ok(self.0 == other_int);
+        }
+        Ok(false)
+    }
+
+    fn __hash__(&self) -> i64 {
+        self.0
     }
 }
 
@@ -149,13 +167,20 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
             return Ok(Self(PyPeerId(v)));
         }
         Err(PyTypeError::new_err(
-            "peer_id must be int or InputPeer or Peer",
+            "peer_id must be int, PeerId, InputPeer or Peer",
         ))
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "PeerKind", module = "grammers.sessions")]
+#[pyclass(
+    name = "PeerKind",
+    module = "grammers.sessions",
+    eq,
+    eq_int,
+    frozen,
+    hash
+)]
 pub enum PyPeerKind {
     /// The peer identity belongs to a [`tl.types.User`]. May also represent [`PeerKind.UserSelf`].
     User,
@@ -178,11 +203,15 @@ impl PyPeerKind {
         }
         .to_string()
     }
+
+    fn __int__(&self) -> i64 {
+        *self as i64
+    }
 }
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "PeerAuth", module = "grammers.sessions")]
+#[pyclass(name = "PeerAuth", module = "grammers.sessions", eq, frozen, hash)]
 pub struct PyPeerAuth(i64);
 
 #[pymethods]
@@ -200,6 +229,10 @@ impl PyPeerAuth {
     fn __repr__(&self) -> String {
         format!("PeerAuth({})", self.0)
     }
+
+    fn __int__(&self) -> i64 {
+        self.hash()
+    }
 }
 
 impl Default for PyPeerAuth {
@@ -212,14 +245,45 @@ impl Default for PyPeerAuth {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
-#[pyclass(name = "ChannelKind", module = "grammers.sessions")]
+#[repr(transparent)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+pub struct PeerAuthLike(pub PyPeerAuth);
+impl std::ops::Deref for PeerAuthLike {
+    type Target = PyPeerAuth;
+    fn deref(&self) -> &Self::Target {
+        &self.0
+    }
+}
+impl<'a, 'py> FromPyObject<'a, 'py> for PeerAuthLike {
+    type Error = PyErr;
+
+    fn extract(ob: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
+        if let Ok(v) = ob.extract::<i64>() {
+            return Ok(Self(PyPeerAuth(v)));
+        }
+        let cls_name = ob.get_type().qualname()?;
+        Err(PyTypeError::new_err(format!(
+            "peer_auth expected an int or PeerAuth, got '{}'",
+            cls_name
+        )))
+    }
+}
+
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[pyclass(
+    name = "ChannelKind",
+    module = "grammers.sessions",
+    eq,
+    eq_int,
+    frozen,
+    hash
+)]
 pub enum PyChannelKind {
-    /// Value used for a channel with its [`tl::types::Channel::broadcast`] flag set to `true`.
+    /// Value used for a channel with its [`tl.types.Channel.broadcast`] flag set to `true`.
     Broadcast = 1,
-    /// Value used for a channel with its [`tl::types::Channel::megagroup`] flag set to `true`.
+    /// Value used for a channel with its [`tl.types.Channel.megagroup`] flag set to `true`.
     Megagroup,
-    /// Value used for a channel with its [`tl::types::Channel::gigagroup`] flag set to `true`.
+    /// Value used for a channel with its [`tl.types.Channel.gigagroup`] flag set to `true`.
     Gigagroup,
 }
 
@@ -233,11 +297,15 @@ impl PyChannelKind {
         }
         .to_string()
     }
+
+    fn __int__(&self) -> i64 {
+        *self as i64
+    }
 }
 
 /// An exploded peer reference along with any known useful information about the peer.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "PeerInfo", module = "grammers.sessions")]
+#[pyclass(name = "PeerInfo", module = "grammers.sessions", eq)]
 pub enum PyPeerInfo {
     User {
         /// Bare user identifier.
@@ -273,9 +341,45 @@ pub enum PyPeerInfo {
 
 #[pymethods]
 impl PyPeerInfo {
+    #[staticmethod]
+    #[pyo3(signature = (id, auth=None, bot=None, is_self=None))]
+    fn user(
+        id: i64,
+        auth: Option<PeerAuthLike>,
+        bot: Option<bool>,
+        is_self: Option<bool>,
+    ) -> PyResult<Self> {
+        let _ = PyPeerId::user(id)?;
+        Ok(Self::User {
+            id,
+            auth: auth.map(|x| x.0),
+            bot,
+            is_self,
+        })
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (id))]
+    fn chat(id: i64) -> PyResult<Self> {
+        let _ = PyPeerId::chat(id)?;
+        Ok(Self::Chat { id })
+    }
+
+    #[staticmethod]
+    #[pyo3(signature = (id, auth=None, kind=None))]
+    fn channel(id: i64, auth: Option<PeerAuthLike>, kind: Option<PyChannelKind>) -> PyResult<Self> {
+        let _ = PyPeerId::channel(id)?;
+        Ok(Self::Channel {
+            id,
+            auth: auth.map(|x| x.0),
+            kind,
+        })
+    }
+
     /// Returns the `PeerId` represented by this info.
     ///
     /// The returned [`PeerId::kind()`] will never be [`PeerKind::UserSelf`].
+    #[getter]
     pub fn id(&self) -> PyResult<PyPeerId> {
         Ok(match self {
             PyPeerInfo::User { id, .. } => PyPeerId::user(*id)?,
@@ -284,7 +388,13 @@ impl PyPeerInfo {
         })
     }
 
+    #[getter]
+    pub fn bot_api_dialog_id(&self) -> PyResult<i64> {
+        Ok(self.id()?.bot_api_dialog_id())
+    }
+
     /// Returns the `PeerAuth` stored in this info.
+    #[getter]
     pub fn auth(&self) -> Option<PyPeerAuth> {
         match self {
             PyPeerInfo::User { auth, .. } => *auth,

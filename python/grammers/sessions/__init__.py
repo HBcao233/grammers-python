@@ -6,6 +6,7 @@ from .types import (
     PeerKind,
     ChannelKind,
     DcOption,
+    ChannelState,
     UpdatesState,
     UpdateState,
 )

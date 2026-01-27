@@ -8,6 +8,7 @@ from .types import (
     PeerKind,
     ChannelKind,
     UpdatesState,
+    ChannelState,
     UpdateState,
 )
 from .dc_options import DEFAULT_DC, KNOWN_DC_OPTIONS
@@ -30,12 +31,18 @@ class PeerSubtype(Enum):
     Broadcast = 8
     Gigagroup = 12
 
+    def __int__(self):
+        return self.value
+
 
 class SqliteSession(Session):
     def __new__(cls, *args, **kwargs):
         return super().__new__(cls)
 
     def __init__(self, path: str = ':memory:', pool_size: int = 5):
+        if path == ':memory:':
+            pool_size = 1
+
         self.path = path
         self.pool_size = pool_size
         self._pool = None
@@ -46,12 +53,12 @@ class SqliteSession(Session):
     async def _ensure_pool(self):
         if self._pool is not None:
             return
-        
+
         self._pool = asyncio.Queue(maxsize=self.pool_size)
         for _ in range(self.pool_size):
             conn = sqlite3.connect(self.path, check_same_thread=False)
             await self._pool.put(conn)
-    
+
     @asynccontextmanager
     async def connection(self):
         await self._ensure_pool()
@@ -62,16 +69,16 @@ class SqliteSession(Session):
             await self._pool.put(conn)
 
     async def init(self) -> None:
-        if self._inited:
-            return
-        
         async with self.connection() as conn:
+            if self._inited:
+                conn.commit()
+                return
             res = conn.execute('PRAGMA user_version').fetchone()
             user_version = int(res[0]) if res else 0
             if user_version == 0:
-                self.migrate_v0_to_v1(conn)
+                await self.migrate_v0_to_v1(conn)
                 user_version = VERSION
-    
+
             if user_version == VERSION:
                 conn.execute(f'PRAGMA user_version={int(user_version)}')
                 conn.commit()
@@ -79,17 +86,17 @@ class SqliteSession(Session):
             r = conn.execute('SELECT * FROM dc_home LIMIT 1')
             res = r.fetchone()
             self.home_dc = int(res[0]) if res else DEFAULT_DC
-    
+
             r = conn.execute('SELECT * FROM dc_option')
             res = {}
             for i in r.fetchall():
                 id_ = int(i[0])
                 res[id_] = DcOption(id_, i[1], i[2], i[3])
             self.dc_options = res
-        
+
         self._inited = True
 
-    def migrate_v0_to_v1(self, conn) -> None:
+    async def migrate_v0_to_v1(self, conn) -> None:
         conn.execute("""CREATE TABLE dc_home (
     dc_id INTEGER NOT NULL,
     PRIMARY KEY(dc_id))""")
@@ -134,7 +141,7 @@ class SqliteSession(Session):
     async def set_dc_option(self, dc_option: DcOption) -> None:
         await self.init()
         self.dc_options[dc_option.id] = dc_option
-        
+
         async with self.connection() as conn:
             conn.execute(
                 'INSERT OR REPLACE INTO dc_option VALUES (?, ?, ?, ?)',
@@ -158,7 +165,7 @@ class SqliteSession(Session):
                 case PeerKind.User | PeerKind.UserSelf:
                     return PeerInfo.User(
                         id=res[0],
-                        auth=PeerAuth(res[1]),
+                        auth=PeerAuth(res[1]) if res[1] is not None else None,
                         bot=bool(subtype & PeerSubtype.UserBot.value),
                         is_self=bool(subtype & PeerSubtype.UserSelf.value),
                     )
@@ -188,15 +195,120 @@ class SqliteSession(Session):
             else:
                 r = conn.execute(
                     'SELECT * FROM peer_info WHERE peer_id = ? LIMIT 1',
-                    (peer.bot_api_dialog_id),
+                    (peer.bot_api_dialog_id,),
                 )
+
         return _parse(r.fetchone())
 
-    async def cache_peer(self, peer_info: PeerInfo) -> None:
+    async def cache_peer(self, peer: PeerInfo) -> None:
         await self.init()
+
+        peer_id = peer.bot_api_dialog_id
+        hash_ = peer.auth
+        if hash_ is not None:
+            hash_ = int(hash_)
+        subtype = None
+        match peer:
+            case PeerInfo.User():
+                match (bool(peer.bot), bool(peer.is_self)):
+                    case (True, True):
+                        subtype = PeerSubtype.UserSelfBot
+                    case (True, False):
+                        subtype = PeerSubtype.UserBot
+                    case (False, True):
+                        subtype = PeerSubtype.UserSelf
+            case PeerInfo.Channel():
+                match peer.kind:
+                    case ChannelKind.Megagroup:
+                        subtype = PeerSubtype.Megagroup
+                    case ChannelKind.Broadcast:
+                        subtype = PeerSubtype.Broadcast
+                    case ChannelKind.Gigagroup:
+                        subtype = PeerSubtype.Gigagroup
+
+        if subtype is not None:
+            subtype = int(subtype)
+
+        async with self.connection() as conn:
+            conn.execute(
+                'INSERT OR REPLACE INTO peer_info VALUES (?, ?, ?)',
+                (peer_id, hash_, subtype),
+            )
 
     async def updates_state(self) -> UpdatesState:
         await self.init()
 
+        async with self.connection() as conn:
+            r = conn.execute('SELECT * FROM update_state LIMIT 1')
+            res = r.fetchone()
+            if res is None:
+                return UpdatesState()
+
+            state = UpdatesState(
+                int(res[0]),
+                int(res[1]),
+                int(res[2]),
+                int(res[3]),
+                [],
+            )
+            r = conn.execute('SELECT * FROM channel_state')
+            while res := r.fetchone():
+                state.channels.append(
+                    ChannelState(
+                        int(res[0]),
+                        int(res[1]),
+                    )
+                )
+            return state
+
     async def set_update_state(self, update: UpdateState) -> None:
         await self.init()
+        if isinstance(update, UpdatesState):
+            update = UpdateState.all(update)
+
+        async with self.connection() as conn:
+            match update:
+                case UpdateState.All():
+                    conn.execute('DELETE FROM update_state')
+                    conn.execute(
+                        'INSERT INTO update_state VALUES (?, ?, ?, ?)',
+                        (update.pts, update.qts, update.date, update.seq),
+                    )
+                    conn.execute('DELETE FROM channel_state')
+                    for i in update.channels:
+                        conn.execute(
+                            'INSERT INTO channel_state VALUES (?, ?)',
+                            (i.id, i.pts),
+                        )
+                case UpdateState.Primary():
+                    previous = conn.execute('SELECT * FROM update_state LIMIT 1')
+                    if previous is not None:
+                        conn.execute(
+                            'UPDATE update_state SET pts = ?, date = ?, seq = ?',
+                            (update.pts, update.date, update.seq),
+                        )
+                    else:
+                        conn.execute(
+                            'INSERT INTO update_state VALUES (?, 0, ?, ?)',
+                            (update.pts, update.date, update.seq),
+                        )
+                case UpdateState.Secondary():
+                    previous = conn.execute('SELECT * FROM update_state LIMIT 1')
+                    if previous is not None:
+                        conn.execute('UPDATE update_state SET qts = ?', (update.qts,))
+                    else:
+                        conn.execute(
+                            'INSERT INTO update_state VALUES (0, ?, 0, 0)',
+                            (update.qts,),
+                        )
+                case UpdateState.Channel():
+                    conn.execute(
+                        'INSERT OR REPLACE INTO channel_state VALUES (?, ?)',
+                        (update.id, update.pts),
+                    )
+                case _:
+                    raise TypeError(
+                        f"update expected UpdateState, got '{getattr(update, '__qualname__', type(update).__qualname__)}'"
+                    )
+
+            conn.commit()
