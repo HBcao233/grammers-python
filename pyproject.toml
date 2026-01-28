@@ -7,12 +7,12 @@ build-backend = "maturin"
 features = ["pyo3/extension-module"]
 module-name = "grammers._rs"
 manifest-path = "grammers-python/Cargo.toml"
-python-source = "python"
+python-source = "python/src/"
 
 
 [project]
 name = "grammers"
-version = "0.0.2"
+version = "0.3.0"
 authors = [
   { name = "HBcao233", email = "hbcaoqaq@outlook.com" }
 ]
