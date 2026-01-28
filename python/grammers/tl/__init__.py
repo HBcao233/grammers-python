@@ -5,10 +5,14 @@ sys.modules['grammers._rs.tl.types'] = _rs.tl.types
 sys.modules['grammers._rs.tl.functions'] = _rs.tl.functions
 
 from .tlobject import TLObject, TLRequest
+from .allobjects import LAYER, tlobjects
+
 
 __all__ = [
     'TLObject',
     'TLRequest',
     'types',
     'functions',
+    'LAYER',
+    'tlobjects',
 ]

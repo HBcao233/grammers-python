@@ -1,23 +1,36 @@
 import grammers.tl
-import typing
+from typing import Optional
 from . import _rs
 from . import errors
 from . import crypto
 from . import tl
-from . import types, functions
-from . import Session
+from . import sessions
+from .tl import TLObject, TLRequest, types, functions
+
+__all__ = [
+    '_rs',
+    'crypto',
+    'errors',
+    'sessions',
+    'tl',
+    'TLObject',
+    'TLRequest',
+    'types',
+    'functions',
+    'Client',
+]
 
 class Client:
     @property
     def session(self) -> str: ...
     @property
-    def me(self) -> Session: ...
+    def me(self) -> sessions.Session: ...
     @property
     def api_id(self) -> int: ...
     @property
     def api_hash(self) -> str: ...
     @property
-    def bot_token(self) -> typing.Optional[str]: ...
+    def bot_token(self) -> Optional[str]: ...
     @property
     def use_ipv6(self) -> bool: ...
     @property
@@ -40,12 +53,12 @@ class Client:
         api_id: int | str,
         api_hash: str,
         *,
-        bot_token: typing.Optional[str] = None,
-        app_version: typing.Optional[str] = None,
-        device_model: typing.Optional[str] = None,
-        system_version: typing.Optional[str] = None,
-        lang_code: typing.Optional[str] = 'en',
-        system_lang_code: typing.Optional[str] = 'en',
+        bot_token: Optional[str] = None,
+        app_version: Optional[str] = None,
+        device_model: Optional[str] = None,
+        system_version: Optional[str] = None,
+        lang_code: Optional[str] = 'en',
+        system_lang_code: Optional[str] = 'en',
         use_ipv6: bool = False,
     ) -> Client:
         r"""

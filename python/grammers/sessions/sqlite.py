@@ -14,13 +14,20 @@ from .types import (
 from .dc_options import DEFAULT_DC, KNOWN_DC_OPTIONS
 from enum import Enum
 from contextlib import asynccontextmanager
+from typing import Self, Sequence
 import asyncio
 import sqlite3
-import threading
 import logging
+import base64
+import ipaddress
+import struct
 
+__all__ = ['SqliteSession', 'VERSION', 'PeerSubtype']
 logger = logging.getLogger('SqliteSession')
 VERSION = 1
+
+telethon_format = '>B{}sH256s'
+telethon_version = '1'
 
 
 class PeerSubtype(Enum):
@@ -39,16 +46,62 @@ class SqliteSession(Session):
     def __new__(cls, *args, **kwargs):
         return super().__new__(cls)
 
-    def __init__(self, path: str = ':memory:', pool_size: int = 5):
-        if path == ':memory:':
+    def __init__(
+        self,
+        database: str | sqlite3.Connection = ':memory:',
+        pool_size: int = 5,
+    ) -> None:
+        if isinstance(database, sqlite3.Connection) or database == ':memory:':
             pool_size = 1
 
-        self.path = path
         self.pool_size = pool_size
+        self._database = database
         self._pool = None
         self._inited = False
         self.home_dc: int = DEFAULT_DC
         self.dc_options: dict[int, DcOption] = {}
+
+    @staticmethod
+    def from_telethon_string(
+        string: str,
+        path: str = ':memory:',
+        pool_size: int = 5,
+    ) -> Self:
+        if string[0] != telethon_version:
+            raise ValueError('Invalid telethon string.')
+
+        string = string[1:]
+        ip_len = 4 if 350 <= len(string) <= 352 else 16
+        dc_id, ip, port, auth_key = struct.unpack(
+            telethon_format.format(ip_len),
+            base64.urlsafe_b64decode(string + '=' * (-len(string) % 4)),
+        )
+        ip = ipaddress.ip_address(ip)
+        if ip.version == 4:
+            ipv4 = f'{ip.compressed}:{port}'
+            ipv6 = f'[::ff:{ip.compressed}]:{port}'
+        else:
+            _ipv4 = ipaddress.ip_address(ip.packed[-4:]).compressed
+            ipv4 = f'{_ipv4}:{port}'
+            ipv6 = f'[{ip.compressed}]:{port}'
+
+        conn = sqlite3.connect(path, check_same_thread=False)
+        SqliteSession._init(conn)
+        conn.execute('DELETE FROM dc_home')
+        conn.execute('INSERT INTO dc_home VALUES (?)', (dc_id,))
+        conn.execute(
+            'INSERT OR REPLACE INTO dc_option VALUES (?, ?, ?, ?)',
+            (
+                dc_id,
+                ipv4,
+                ipv6,
+                auth_key,
+            ),
+        )
+        conn.commit()
+
+        session = SqliteSession(conn, 1)
+        return session
 
     async def _ensure_pool(self):
         if self._pool is not None:
@@ -56,7 +109,10 @@ class SqliteSession(Session):
 
         self._pool = asyncio.Queue(maxsize=self.pool_size)
         for _ in range(self.pool_size):
-            conn = sqlite3.connect(self.path, check_same_thread=False)
+            if isinstance(self._database, sqlite3.Connection):
+                conn = self._database
+            else:
+                conn = sqlite3.connect(self._database, check_same_thread=False)
             await self._pool.put(conn)
 
     @asynccontextmanager
@@ -68,35 +124,38 @@ class SqliteSession(Session):
         finally:
             await self._pool.put(conn)
 
+    @staticmethod
+    def _init(conn: sqlite3.Connection) -> (int, Sequence[DcOption]):
+        res = conn.execute('PRAGMA user_version').fetchone()
+        user_version = int(res[0]) if res else 0
+        if user_version == 0:
+            SqliteSession._migrate_v0_to_v1(conn)
+            user_version = VERSION
+
+        r = conn.execute('SELECT * FROM dc_home LIMIT 1')
+        res = r.fetchone()
+        home_dc = int(res[0]) if res else DEFAULT_DC
+
+        r = conn.execute('SELECT * FROM dc_option')
+        dc_options = {}
+        for i in r.fetchall():
+            id_ = int(i[0])
+            dc_options[id_] = DcOption(id_, i[1], i[2], i[3])
+        return (home_dc, dc_options)
+
     async def init(self) -> None:
+        if self._inited:
+            return
+
         async with self.connection() as conn:
-            if self._inited:
-                conn.commit()
-                return
-            res = conn.execute('PRAGMA user_version').fetchone()
-            user_version = int(res[0]) if res else 0
-            if user_version == 0:
-                await self.migrate_v0_to_v1(conn)
-                user_version = VERSION
-
-            if user_version == VERSION:
-                conn.execute(f'PRAGMA user_version={int(user_version)}')
-                conn.commit()
-
-            r = conn.execute('SELECT * FROM dc_home LIMIT 1')
-            res = r.fetchone()
-            self.home_dc = int(res[0]) if res else DEFAULT_DC
-
-            r = conn.execute('SELECT * FROM dc_option')
-            res = {}
-            for i in r.fetchall():
-                id_ = int(i[0])
-                res[id_] = DcOption(id_, i[1], i[2], i[3])
-            self.dc_options = res
+            home_dc, dc_options = SqliteSession._init(conn)
+            self.home_dc = home_dc
+            self.dc_options = dc_options
 
         self._inited = True
 
-    async def migrate_v0_to_v1(self, conn) -> None:
+    @staticmethod
+    def _migrate_v0_to_v1(conn) -> None:
         conn.execute("""CREATE TABLE dc_home (
     dc_id INTEGER NOT NULL,
     PRIMARY KEY(dc_id))""")
@@ -120,6 +179,7 @@ class SqliteSession(Session):
     peer_id INTEGER NOT NULL,
     pts INTEGER NOT NULL,
     PRIMARY KEY (peer_id))""")
+        conn.execute('PRAGMA user_version=1')
         conn.commit()
 
     async def home_dc_id(self) -> int:
