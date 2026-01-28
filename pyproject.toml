@@ -1,5 +1,4 @@
-# pip install ziglang
-# maturin build --release --target aarch64-unknown-linux-gnu --zig
+# maturin build --release --target aarch64-unknown-linux-gnu
 [build-system]
 requires = ["maturin>=1.4,<2.0"]
 build-backend = "maturin"
@@ -13,7 +12,7 @@ python-source = "python"
 
 [project]
 name = "grammers"
-version = "0.0.1"
+version = "0.0.2"
 authors = [
   { name = "HBcao233", email = "hbcaoqaq@outlook.com" }
 ]
@@ -26,10 +25,8 @@ classifiers = [
   "Programming Language :: Python :: Implementation :: CPython",
   "Programming Language :: Python :: 3.12",
 ]
-# dependencies = ["cffi"]
-
-# [project.scripts]
-# cathon = "cathon.cli:main"
+dependencies = []
+optional-dependencies = {}
 
 [project.urls]
 Homepage = "https://github.com/HBcao233/grammers_python"

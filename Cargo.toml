@@ -35,22 +35,9 @@ os_info = { version = "3.14", default-features = false }
 locate-locale = "0.2.0"
 log = "0.4.28"
 
-
-[workspace.dependencies.pyo3]
-version = "0.27"
-features = [
-  # "extension-module", 
-  # "abi3-py310", 
+pyo3 = { version = "0.27", features = [
   "multiple-pymethods", 
   "experimental-async",
-]
-
-[workspace.dependencies.pyo3-log]
-version = "0.13.2"
-
-[workspace.dependencies.pyo3-async-runtimes]
-version = "0.27"
-features = ["tokio-runtime"]
-
-[workspace.dependencies.pyo3-stub-gen]
-version = "0.17.2"
+]}
+pyo3-log = "0.13.2"
+pyo3-async-runtimes = { version = "0.27", features = ["tokio-runtime"] }
