@@ -19,7 +19,6 @@ grammers-crypto = { workspace = true }
 grammers-mtproto = { workspace = true }
 grammers-session = { workspace = true }
 grammers-mtsender = { workspace = true }
-grammers-client = { workspace = true }
 
 chrono = "0.4.42"
 log = { workspace = true }

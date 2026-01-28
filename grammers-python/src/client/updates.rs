@@ -14,7 +14,6 @@ use tokio::time::timeout_at;
 
 use super::PyClient;
 use crate::peer::PeerMap;
-// use grammers_client::update::Update;
 
 /// How long to wait after warning the user that the updates limit was exceeded.
 const UPDATE_LIMIT_EXCEEDED_LOG_COOLDOWN: Duration = Duration::from_secs(300);

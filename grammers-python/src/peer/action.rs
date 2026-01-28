@@ -79,7 +79,7 @@ impl ActionSender {
     /// ```
     /// # use std::time::Duration;
     ///
-    /// # async fn f(peer: grammers_session::types::PeerRef, client: grammers_client::Client) -> Result<(), Box<dyn std::error::Error>> {
+    /// # async fn f(peer: grammers_session::types::PeerRef, client: PyClient) -> Result<(), Box<dyn std::error::Error>> {
     /// use grammers_tl_types as tl;
     ///
     /// let heavy_task = async {
