@@ -252,13 +252,16 @@ class SqliteSession(Session):
                 [],
             )
             r = conn.execute('SELECT * FROM channel_state')
+            channels = []
             while res := r.fetchone():
-                state.channels.append(
+                channels.append(
                     ChannelState(
                         int(res[0]),
                         int(res[1]),
                     )
                 )
+            # `state.channels.append()` cannot modify the value of `state.channels`, Use `state.channels = channels` instead.
+            state.channels = channels
             return state
 
     async def set_update_state(self, update: UpdateState) -> None:
