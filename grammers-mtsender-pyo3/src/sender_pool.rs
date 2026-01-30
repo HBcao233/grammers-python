@@ -236,7 +236,7 @@ impl SenderPoolRunner {
                     }
                 };
                 let Some(mut dc_option) = dc_option else {
-                    let _ = tx.send(Err(InvocationError::InvalidDc));
+                    let _ = tx.send(Err(InvocationError::InvalidDc(dc_id)));
                     return ControlFlow::Continue(());
                 };
 

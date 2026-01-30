@@ -178,6 +178,9 @@ impl RpcError {
             self.name.starts_with(rpc_error)
         } else if let Some(rpc_error) = rpc_error.strip_prefix('*') {
             self.name.ends_with(rpc_error)
+        } else if self.name.contains('*') {
+            let arr = rpc_error.split_once('*').unwrap();
+            self.name.starts_with(arr.0) && self.name.ends_with(arr.1)
         } else {
             self.name == rpc_error
         }
@@ -225,7 +228,7 @@ pub enum InvocationError {
     Dropped,
 
     /// The request was invoked in a datacenter that does not exist or is not known by the session.
-    InvalidDc,
+    InvalidDc(i32),
 
     /// The request caused the sender to connect to a new datacenter to be performed,
     /// but the Authorization Key generation process failed.
@@ -244,7 +247,7 @@ impl fmt::Display for InvocationError {
             Self::Deserialize(err) => write!(f, "request error: {err}"),
             Self::Transport(err) => write!(f, "request error: {err}"),
             Self::Dropped => write!(f, "request error: dropped (cancelled)"),
-            Self::InvalidDc => write!(f, "request error: invalid dc"),
+            Self::InvalidDc(dc_id) => write!(f, "request error: invalid dc (id: {})", dc_id),
             Self::Authentication(err) => write!(f, "request error: {err}"),
             Self::PyErr(err) => write!(f, "pyerr: {err}"),
         }
