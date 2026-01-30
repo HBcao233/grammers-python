@@ -9,6 +9,7 @@ pub use peer::{
 pub use session::{PySession, Session};
 pub use types::{
     PyChannelState, PyDcOption, PySocketAddrV4, PySocketAddrV6, PyUpdateState, PyUpdatesState,
+    UpdateStateLike,
 };
 
 #[pyo3::pymodule(name = "sessions")]

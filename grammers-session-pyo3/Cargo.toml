@@ -9,6 +9,5 @@ grammers-session = { workspace = true }
 grammers-tl-types = { workspace = true }
 
 pyo3 = { workspace = true }
-pyo3-async-runtimes = { workspace = true }
 log = { workspace = true }
 tokio = { workspace = true }

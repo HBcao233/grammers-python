@@ -1,5 +1,6 @@
 use super::{
     PeerIdLike, PyDcOption, PyPeerId, PyPeerInfo, PyPeerRef, PyUpdateState, PyUpdatesState,
+    UpdateStateLike,
 };
 use pyo3::exceptions::{PyNotImplementedError, PyTypeError};
 use pyo3::prelude::*;
@@ -95,7 +96,7 @@ impl PySession {
     }
 
     #[pyo3(signature = ())]
-    async fn updates_state(&self) -> PyResult<PyUpdatesState> {
+    async fn updates_state(&self) -> PyResult<Py<PyUpdatesState>> {
         Err(PyNotImplementedError::new_err(
             "Session subclasses must implement updates_state()",
         ))
@@ -309,10 +310,10 @@ impl Session {
         })
     }
 
-    pub async fn set_update_state(&self, update: PyUpdateState) -> PyResult<()> {
+    pub async fn set_update_state(&self, update: UpdateStateLike) -> PyResult<()> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            let update = Py::new(py, update)?;
+            let update = update.into_pyobject(py)?;
             self.inner
                 .bind(py)
                 .call_method1("set_update_state", (update,))

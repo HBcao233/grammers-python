@@ -7,9 +7,11 @@
 // except according to those terms.
 
 //! Session type definitions.
+
+use pyo3::PyTypeInfo;
 use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
-use pyo3::types::PyBytes;
+use pyo3::types::{PyBytes, PyType};
 
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddr, SocketAddrV4, SocketAddrV6};
 use std::str::FromStr;
@@ -64,10 +66,10 @@ impl PyDcOption {
             (Some(ipv4), Some(ipv6)) => {
                 let ipv4: SocketAddrV4 = ipv4
                     .parse()
-                    .map_err(|_| PyTypeError::new_err("fail to parse ipv4 string"))?;
+                    .map_err(|_| PyTypeError::new_err("fail to parse SocketAddrV4 string"))?;
                 let ipv6: SocketAddrV6 = ipv6
                     .parse()
-                    .map_err(|_| PyTypeError::new_err("fail to parse ipv6 string"))?;
+                    .map_err(|_| PyTypeError::new_err("fail to parse SocketAddrV6 string"))?;
                 (ipv4, ipv6)
             }
             (Some(ipv4), None) => {
@@ -335,7 +337,12 @@ impl From<PySocketAddrV6> for SocketAddr {
 
 /// Full update state needed to process updates in order without gaps.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "UpdatesState", module = "grammers.sessions", eq)]
+#[pyclass(
+    name = "UpdatesState",
+    module = "grammers.sessions",
+    extends = PyUpdateState,
+    eq,
+)]
 pub struct PyUpdatesState {
     /// Primary persistent timestamp value.
     #[pyo3(get, set)]
@@ -357,9 +364,9 @@ pub struct PyUpdatesState {
 #[derive(FromPyObject)]
 enum PyUpdatesStateArg1 {
     Int(i32),
-    Update(PyUpdateState),
     Updates(PyUpdatesState),
 }
+
 #[pymethods]
 impl PyUpdatesState {
     #[new]
@@ -370,25 +377,20 @@ impl PyUpdatesState {
         date: i32,
         seq: i32,
         channels: Vec<PyChannelState>,
-    ) -> PyResult<Self> {
-        Ok(match pts {
-            PyUpdatesStateArg1::Int(pts) => Self {
-                pts,
-                qts,
-                date,
-                seq,
-                channels,
+    ) -> PyResult<(Self, PyUpdateState)> {
+        Ok((
+            match pts {
+                PyUpdatesStateArg1::Int(pts) => Self {
+                    pts,
+                    qts,
+                    date,
+                    seq,
+                    channels,
+                },
+                PyUpdatesStateArg1::Updates(x) => x,
             },
-            PyUpdatesStateArg1::Update(x) => match x {
-                PyUpdateState::All(x) => x,
-                _ => {
-                    return Err(PyTypeError::new_err(
-                        "pts expected an int or UpdateState.All",
-                    ));
-                }
-            },
-            PyUpdatesStateArg1::Updates(x) => x,
-        })
+            PyUpdateState {},
+        ))
     }
 
     fn __repr__(&self) -> String {
@@ -480,13 +482,40 @@ impl From<PyChannelState> for ChannelState {
 
 /// Used in [`crate::Session::set_update_state`] to update parts of the overall [`UpdatesState`].
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "UpdateState", module = "grammers.sessions", eq)]
-pub enum PyUpdateState {
+#[pyclass(name = "UpdateState", module = "grammers.sessions", subclass, eq)]
+pub struct PyUpdateState {}
+
+#[pymethods]
+impl PyUpdateState {
+    #[classattr]
+    #[pyo3(name = "All")]
+    fn all(py: Python<'_>) -> Py<PyType> {
+        PyUpdatesState::type_object(py).unbind()
+    }
+
+    #[classattr]
+    #[pyo3(name = "Primary")]
+    fn primary(py: Python<'_>) -> Py<PyType> {
+        PyUpdateStatePrimary::type_object(py).unbind()
+    }
+
+    #[classattr]
+    #[pyo3(name = "Primary")]
+    fn secondary(py: Python<'_>) -> Py<PyType> {
+        PyUpdateStateSecondary::type_object(py).unbind()
+    }
+
+    #[classattr]
+    #[pyo3(name = "Channel")]
+    fn channel(py: Python<'_>) -> Py<PyType> {
+        PyUpdateStateChannel::type_object(py).unbind()
+    }
+}
+
+pub enum UpdateStateLike {
     // Updates the entirety of the state.
-    #[pyo3(constructor = (_0))]
     All(PyUpdatesState),
     /// Updates only what's known as the "primary" state of the account.
-    #[pyo3(constructor = (pts, date, seq))]
     Primary {
         /// New [`UpdatesState::pts`] value.
         pts: i32,
@@ -496,13 +525,11 @@ pub enum PyUpdateState {
         seq: i32,
     },
     /// Updates only what's known as the "secondary" state of the account.
-    #[pyo3(constructor = (qts))]
     Secondary {
         /// New [`UpdatesState::qts`] value.
         qts: i32,
     },
     /// Updates the state of a single channel.
-    #[pyo3(constructor = (id, pts))]
     Channel {
         /// The [`PeerId::bare_id`] of the channel.
         id: i64,
@@ -510,144 +537,116 @@ pub enum PyUpdateState {
         pts: i32,
     },
 }
+impl<'py> IntoPyObject<'py> for UpdateStateLike {
+    type Target = PyAny;
+    type Output = Bound<'py, PyAny>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> Result<Bound<'py, PyAny>, PyErr> {
+        let base = PyClassInitializer::from(PyUpdateState {});
+        Ok(match self {
+            Self::All(x) => {
+                let x = base.add_subclass(x);
+                Bound::new(py, x)?.into_any()
+            }
+            Self::Primary { pts, date, seq } => {
+                let x = base.add_subclass(PyUpdateStatePrimary { pts, date, seq });
+                Bound::new(py, x)?.into_any()
+            }
+            Self::Secondary { qts } => {
+                let x = base.add_subclass(PyUpdateStateSecondary { qts });
+                Bound::new(py, x)?.into_any()
+            }
+            Self::Channel { id, pts } => {
+                let x = base.add_subclass(PyUpdateStateChannel { id, pts });
+                Bound::new(py, x)?.into_any()
+            }
+        })
+    }
+}
 
-#[derive(FromPyObject)]
-enum PyUpdateStateArg1 {
-    Int(i32),
-    Updates(PyUpdatesState),
-    Update(PyUpdateState),
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[pyclass(
+    name = "Primary",
+    module = "grammers.sessions.UpdateState",
+    extends = PyUpdateState,
+    eq,
+)]
+struct PyUpdateStatePrimary {
+    #[pyo3(get, set)]
+    pts: i32,
+    #[pyo3(get, set)]
+    date: i32,
+    #[pyo3(get, set)]
+    seq: i32,
 }
 
 #[pymethods]
-impl PyUpdateState {
-    #[staticmethod]
-    #[pyo3(signature = (pts=PyUpdateStateArg1::Int(0), qts=0, date=0, seq=0, channels=Vec::new()))]
-    fn all(
-        pts: PyUpdateStateArg1,
-        qts: i32,
-        date: i32,
-        seq: i32,
-        channels: Vec<PyChannelState>,
-    ) -> Self {
-        Self::All(match pts {
-            PyUpdateStateArg1::Int(pts) => PyUpdatesState {
-                pts,
-                qts,
-                date,
-                seq,
-                channels,
-            },
-            PyUpdateStateArg1::Updates(x) => x,
-            PyUpdateStateArg1::Update(x) => return x,
-        })
-    }
-
-    #[staticmethod]
-    #[pyo3(signature = (pts=0, date=0, seq=0))]
-    fn primary(pts: i32, date: i32, seq: i32) -> Self {
-        Self::Primary { pts, date, seq }
-    }
-
-    #[staticmethod]
-    #[pyo3(signature = (qts=0))]
-    fn secondary(qts: i32) -> Self {
-        Self::Secondary { qts }
-    }
-
-    #[staticmethod]
-    #[pyo3(signature = (id=0, pts=0))]
-    fn channel(id: i64, pts: i32) -> Self {
-        Self::Channel { id, pts }
-    }
-
-    #[getter]
-    fn pts(&self) -> Option<i32> {
-        match self {
-            Self::All(x) => Some(x.pts),
-            Self::Primary { pts, .. } => Some(*pts),
-            Self::Secondary { .. } => None,
-            Self::Channel { pts, .. } => Some(*pts),
-        }
-    }
-
-    #[getter]
-    fn qts(&self) -> Option<i32> {
-        match self {
-            Self::All(x) => Some(x.qts),
-            Self::Primary { .. } => None,
-            Self::Secondary { qts } => Some(*qts),
-            Self::Channel { .. } => None,
-        }
-    }
-
-    #[getter]
-    fn date(&self) -> Option<i32> {
-        match self {
-            Self::All(x) => Some(x.date),
-            Self::Primary { date, .. } => Some(*date),
-            Self::Secondary { .. } => None,
-            Self::Channel { .. } => None,
-        }
-    }
-
-    #[getter]
-    fn seq(&self) -> Option<i32> {
-        match self {
-            Self::All(x) => Some(x.seq),
-            Self::Primary { seq, .. } => Some(*seq),
-            Self::Secondary { .. } => None,
-            Self::Channel { .. } => None,
-        }
-    }
-
-    #[getter]
-    fn channels(&self) -> Option<Vec<PyChannelState>> {
-        match self {
-            Self::All(x) => Some(x.channels.clone()),
-            Self::Primary { .. } => None,
-            Self::Secondary { .. } => None,
-            Self::Channel { .. } => None,
-        }
-    }
-
-    #[getter]
-    fn id(&self) -> Option<i64> {
-        match self {
-            Self::All(_) => None,
-            Self::Primary { .. } => None,
-            Self::Secondary { .. } => None,
-            Self::Channel { id, .. } => Some(*id),
-        }
+impl PyUpdateStatePrimary {
+    #[new]
+    #[pyo3(signature = (pts, date, seq))]
+    fn new(pts: i32, date: i32, seq: i32) -> (Self, PyUpdateState) {
+        (Self { pts, date, seq }, PyUpdateState {})
     }
 
     fn __repr__(&self) -> String {
-        match self {
-            Self::All(x) => {
-                let update = x.__repr__();
-                let update = update
-                    .split('\n')
-                    .enumerate()
-                    .map(|(index, line)| {
-                        if index == 0 {
-                            line.to_string()
-                        } else {
-                            format!("  {}", line)
-                        }
-                    })
-                    .collect::<Vec<String>>()
-                    .join("\n");
-                format!("UpdateState.All(\n  {}\n)", update)
-            }
-            Self::Primary { pts, date, seq } => {
-                format!(
-                    "UpdateState.Primary(\n  pts={},\n  date={},\n  seq={},\n)",
-                    pts, date, seq
-                )
-            }
-            Self::Secondary { qts } => format!("UpdateState.Secondary(qts={})", qts),
-            Self::Channel { id, pts } => {
-                format!("UpdateState.Channel(\n  id={},\n  pts={},\n)", id, pts)
-            }
-        }
+        format!(
+            "UpdateState.Primary(\n  pts={},\n  date={},\n  seq={},\n)",
+            self.pts, self.date, self.seq,
+        )
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[pyclass(
+    name = "Secondary",
+    module = "grammers.sessions.UpdateState",
+    extends = PyUpdateState,
+    eq,
+)]
+struct PyUpdateStateSecondary {
+    #[pyo3(get, set)]
+    qts: i32,
+}
+
+#[pymethods]
+impl PyUpdateStateSecondary {
+    #[new]
+    #[pyo3(signature = (qts))]
+    fn new(qts: i32) -> (Self, PyUpdateState) {
+        (Self { qts }, PyUpdateState {})
+    }
+
+    fn __repr__(&self) -> String {
+        format!("UpdateState.Secondary(pts={})", self.qts,)
+    }
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+#[pyclass(
+    name = "Channel",
+    module = "grammers.sessions.UpdateState",
+    extends = PyUpdateState,
+    eq,
+)]
+struct PyUpdateStateChannel {
+    #[pyo3(get, set)]
+    id: i64,
+    #[pyo3(get, set)]
+    pts: i32,
+}
+
+#[pymethods]
+impl PyUpdateStateChannel {
+    #[new]
+    #[pyo3(signature = (id, pts))]
+    fn new(id: i64, pts: i32) -> (Self, PyUpdateState) {
+        (Self { id, pts }, PyUpdateState {})
+    }
+
+    fn __repr__(&self) -> String {
+        format!(
+            "UpdateState.Channel(\n  id={},\n  pts={},\n)",
+            self.id, self.pts,
+        )
     }
 }
