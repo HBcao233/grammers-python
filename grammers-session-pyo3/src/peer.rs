@@ -2,6 +2,7 @@ use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
 use grammers_tl_types as tl;
+use grammers_tl_types_pyo3 as pytl;
 
 /// Sentinel value used to represent the self-user
 /// when its true `PeerId` is unknown.
@@ -36,7 +37,8 @@ pub struct PyPeerId(pub i64);
 #[pymethods]
 impl PyPeerId {
     #[new]
-    fn new(id: i64) -> PyResult<Self> {
+    fn new(id: PeerIdLike) -> PyResult<Self> {
+        let id = id.0;
         if (1 <= id && id <= 0xffffffffff)
             || id == SELF_USER_ID
             || (-999999999999 <= id && id <= -1)
@@ -152,19 +154,58 @@ impl PyPeerId {
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-pub struct PeerIdLike(pub PyPeerId);
-impl std::ops::Deref for PeerIdLike {
-    type Target = PyPeerId;
-    fn deref(&self) -> &Self::Target {
-        &self.0
-    }
-}
+pub struct PeerIdLike(pub i64);
 impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
     type Error = PyErr;
 
     fn extract(ob: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
         if let Ok(v) = ob.extract::<i64>() {
-            return Ok(Self(PyPeerId(v)));
+            return Ok(Self(v));
+        }
+        if let Ok(v) = ob.extract::<PyPeerId>() {
+            return Ok(Self(v.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyPeerUser>() {
+            return Ok(Self(PyPeerId::user(v.user_id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyPeerChat>() {
+            return Ok(Self(PyPeerId::chat(v.chat_id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyPeerChannel>() {
+            return Ok(Self(PyPeerId::channel(v.channel_id)?.0));
+        }
+        if let Ok(_) = ob.extract::<pytl::types::PyInputPeerSelf>() {
+            return Ok(Self(PyPeerId::self_user()?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyInputPeerUser>() {
+            return Ok(Self(PyPeerId::user(v.user_id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyInputPeerChat>() {
+            return Ok(Self(PyPeerId::chat(v.chat_id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyInputPeerChannel>() {
+            return Ok(Self(PyPeerId::channel(v.channel_id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyUserEmpty>() {
+            return Ok(Self(PyPeerId::user(v.id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyUser>() {
+            return Ok(Self(PyPeerId::user(v.id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyChatEmpty>() {
+            return Ok(Self(PyPeerId::chat(v.id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyChat>() {
+            return Ok(Self(PyPeerId::chat(v.id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyChatForbidden>() {
+            return Ok(Self(PyPeerId::chat(v.id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyChannel>() {
+            return Ok(Self(PyPeerId::channel(v.id)?.0));
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyChannelForbidden>() {
+            return Ok(Self(PyPeerId::channel(v.id)?.0));
         }
         Err(PyTypeError::new_err(
             "peer_id must be int, PeerId, InputPeer or Peer",

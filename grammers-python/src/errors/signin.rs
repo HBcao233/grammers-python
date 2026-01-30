@@ -1,6 +1,6 @@
+use pyo3::PyErr;
 use pyo3::create_exception;
 use pyo3::exceptions::PyException;
-use pyo3::PyErr;
 
 create_exception!(
     grammers.errors,

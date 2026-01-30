@@ -145,7 +145,7 @@ impl PyClient {
                 };
                 let release = match platform.call_method0("release") {
                     Err(_) => "".to_string(),
-                    Ok(x) => x.extract::<String>().unwrap_or("".to_string())
+                    Ok(x) => x.extract::<String>().unwrap_or("".to_string()),
                 };
                 format!("{} {}", system, release)
             }

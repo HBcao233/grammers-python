@@ -10,8 +10,8 @@ use grammers_tl_types_pyo3 as pytl;
 use crate::client::PyClient;
 use crate::errors::PyInvocationError;
 use crate::errors::signin::{
-    PyInvalidCodeError, PyInvalidPasswordError, PyPasswordRequiredError, PyPaymentRequiredError,
-    PySignUpRequiredError, SignInError, PasswordRequiredError
+    PasswordRequiredError, PyInvalidCodeError, PyInvalidPasswordError, PyPasswordRequiredError,
+    PyPaymentRequiredError, PySignUpRequiredError, SignInError,
 };
 use crate::utils::extract_password_parameters;
 
@@ -90,10 +90,12 @@ impl PyClient {
 
         let user = match self.sign_in(login_token, code).await {
             Ok(user) => user,
-            Err(e) => return if Python::attach(|py| e.is_instance_of::<PasswordRequiredError>(py)) {
-                self._check_password(None).await
-            } else {
-                Err(e)
+            Err(e) => {
+                return if Python::attach(|py| e.is_instance_of::<PasswordRequiredError>(py)) {
+                    self._check_password(None).await
+                } else {
+                    Err(e)
+                };
             }
         };
 
@@ -400,10 +402,8 @@ impl PyClient {
             Ok(tl::enums::auth::Authorization::Authorization(x)) => self.complete_login(x).await,
             Ok(tl::enums::auth::Authorization::SignUpRequired(_x)) => {
                 Err(PySignUpRequiredError::new())
-            },
-            Err(err) if err.is("PASSWORD_HASH_INVALID") => {
-                Err(PyInvalidPasswordError::new())
-            },
+            }
+            Err(err) if err.is("PASSWORD_HASH_INVALID") => Err(PyInvalidPasswordError::new()),
             Err(error) => Err(PyInvocationError::new(error)),
         }
     }
@@ -449,7 +449,9 @@ impl PyClient {
             None => self.get_password_information().await?,
         };
         let password_info: pytl::types::account::PyPassword = match password_info {
-            pytl::enums::account::PyPassword::Password(x) => Python::attach(|py| x.0.borrow(py).clone()),
+            pytl::enums::account::PyPassword::Password(x) => {
+                Python::attach(|py| x.0.borrow(py).clone())
+            }
         };
         let hint = password_info.hint.clone();
 

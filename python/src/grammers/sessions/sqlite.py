@@ -220,6 +220,9 @@ class SqliteSession(Session):
         peer = PeerId(peer)
 
         def _parse(res):
+            if res is None:
+                return None
+
             subtype = res[2]
             match peer.kind:
                 case PeerKind.User | PeerKind.UserSelf:
@@ -326,7 +329,7 @@ class SqliteSession(Session):
 
     async def set_update_state(self, update: UpdateState) -> None:
         await self.init()
-        
+
         async with self.connection() as conn:
             match update:
                 case UpdateState.All():
