@@ -8,7 +8,7 @@ mod errors;
 mod peer;
 mod utils;
 
-use client::PyClient;
+use client::{PyClient, PyLoginToken};
 
 #[pyo3::pymodule]
 mod _rs {
@@ -35,7 +35,10 @@ mod _rs {
     use grammers_session_pyo3::sessions_;
 
     #[pymodule_export]
-    use super::client::PyClient;
+    use super::PyLoginToken;
+
+    #[pymodule_export]
+    use super::PyClient;
 
     #[pymodule_init]
     fn init(_m: &Bound<'_, PyModule>) -> PyResult<()> {

@@ -2,12 +2,11 @@ mod common;
 mod macros;
 mod rpcbaseerrors;
 mod rpcerrorlist;
+pub mod signin;
 
-pub use common::{
-    DeserializeError, DroppedError, InvalidCodeError, InvalidPasswordError,
-    InvocationErrorConverter, PasswordRequiredError, SignInError, SignUpRequiredError,
-    TransportError,
-};
+pub use common::PyInvocationError;
+use common::{DeserializeError, DroppedError, TransportError};
+
 pub use rpcbaseerrors::{
     PyAuthKeyError, PyBadRequestError, PyFloodError, PyForbiddenError, PyInvalidDCError,
     PyNotFoundError, PyRpcError, PyServerError, PyTimedOutError, PyUnauthorizedError,
@@ -26,19 +25,22 @@ pub mod _errors {
     use super::TransportError;
 
     #[pymodule_export]
-    use super::SignInError;
+    use super::signin::SignInError;
 
     #[pymodule_export]
-    use super::SignUpRequiredError;
+    use super::signin::PaymentRequiredError;
 
     #[pymodule_export]
-    use super::PasswordRequiredError;
+    use super::signin::SignUpRequiredError;
 
     #[pymodule_export]
-    use super::InvalidCodeError;
+    use super::signin::PasswordRequiredError;
 
     #[pymodule_export]
-    use super::InvalidPasswordError;
+    use super::signin::InvalidCodeError;
+
+    #[pymodule_export]
+    use super::signin::InvalidPasswordError;
 
     // ===== rpcbaseerrors =====
     #[pymodule_export]

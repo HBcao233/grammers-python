@@ -1,16 +1,28 @@
-from .sessions import SqliteSession
-from grammers._rs import Client
-from typing import Awaitable, Optional
+from ..sessions import Session, SqliteSession
+from .. import tl
+from grammers._rs import Client, LoginToken
+from typing import Callable, Protocol, Awaitable, Optional
+from getpass import getpass
 import asyncio
-import signal 
+import signal
+
+__all__ = ['Client', 'LoginToken']
+
+
+class PasswordCallback(Protocol):
+    def __call__(self, hint: str) -> str | Awaitable[str]: ...
+
 
 class Client(Client):
     def __new__(
         cls,
-        session: str,
+        session: str | Session,
         api_id: int | str,
         api_hash: str,
         *,
+        phone: Optional[str | Callable[[], str | Awaitable[str]]] = None,
+        code: Optional[Callable[[], str | int | Awaitable[str | int]]] = None,
+        password: Optional[str | PasswordCallback] = None,
         bot_token: Optional[str] = None,
         app_version: Optional[str] = None,
         device_model: Optional[str] = None,
@@ -24,11 +36,46 @@ class Client(Client):
                 session = session + '.session'
             session = SqliteSession(session)
 
+        if phone is None:
+
+            def phone():
+                first_empty = True
+                while True:
+                    res = input('Please enter your phone: ')
+                    if res:
+                        confirm = input('confirm? (y/n)').lower()
+                        if confirm == 'y':
+                            return res
+                    else:
+                        print('No input.')
+                        if first_empty:
+                            first_empty = False
+                        else:
+                            raise ValueError('Cancelled')
+
+        if code is None:
+
+            def code():
+                return input('Please enter the code you received: ')
+        elif not callable(code):
+            raise ValueError(
+                'The code parameter needs to be a callable '
+                'function that returns the code you received by Telegram.'
+            )
+
+        if password is None:
+
+            def password(hint: str):
+                return getpass(f'Please enter your password (hint: {hint}): ')
+
         return super().__new__(
             cls,
             session,
             api_id,
             api_hash,
+            phone=phone,
+            code=code,
+            password=password,
             bot_token=bot_token,
             app_version=app_version,
             device_model=device_model,
@@ -46,19 +93,22 @@ class Client(Client):
         await self.stop()
         return False
 
-    """
-    async def authorize(self):
-      if self.bot_token:
-        return await self.sign_in_bot(self.bot_token)
-      
-      print(f"Welcome to Grammers {__version__}\n")
-      
-      phone = self.phone
-      if callable(phone):
-        phone = phone()
-        if isinstance(phone, Awaitable):
-          phone = await phone
-    """
+    async def __call__(self, request: tl.TLRequest) -> tl.TLObject:
+        """
+        Invoke a raw API call. This directly sends the request to Telegram's servers.
+
+        Using function definitions corresponding to a different layer is likely to cause the
+        responses to the request to not be understood.
+
+        # Examples
+
+        ```
+        from grammers import functions
+
+        await client(functions.Ping(ping_id=0))
+        ```
+        """
+        return await self.invoke(request)
 
     async def idle(self):
         loop = asyncio.get_running_loop()

@@ -326,9 +326,7 @@ class SqliteSession(Session):
 
     async def set_update_state(self, update: UpdateState) -> None:
         await self.init()
-        if isinstance(update, UpdatesState):
-            update = UpdateState.all(update)
-
+        
         async with self.connection() as conn:
             match update:
                 case UpdateState.All():

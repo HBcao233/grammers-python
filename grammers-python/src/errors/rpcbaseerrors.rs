@@ -64,7 +64,11 @@ impl PyRpcError {
             None => "".to_string(),
             Some(x) => format!("with value: {}", x),
         };
-        let more = vec![self.name.clone(), caused_by, value].join(", ");
+        let more = vec![self.name.clone(), caused_by, value]
+            .into_iter()
+            .filter(|x| !x.is_empty())
+            .collect::<Vec<String>>()
+            .join(", ");
         let more = if more.is_empty() {
             "".to_string()
         } else {

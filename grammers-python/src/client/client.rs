@@ -4,11 +4,9 @@ use grammers_session::updates::UpdatesLike;
 use grammers_tl_types_pyo3 as pytl;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3::types::PyString;
 use pyo3_async_runtimes::tokio::get_runtime;
 
-use tokio::sync::mpsc;
-use tokio::sync::oneshot;
+use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
 
 use super::UpdateStream;
@@ -35,22 +33,26 @@ impl<'a, 'py> FromPyObject<'a, 'py> for ApiId {
 }
 
 pub struct ClientInner {
-    pub pool_task: Option<JoinHandle<()>>,
-    pub updates: Option<mpsc::UnboundedReceiver<UpdatesLike>>,
-    pub stream_updates: Option<UpdateStream>,
-    pub handle: SenderPoolFatHandle,
+    pub(crate) pool_task: Option<JoinHandle<()>>,
+    pub(crate) updates: Option<mpsc::UnboundedReceiver<UpdatesLike>>,
+    pub(crate) stream_updates: Option<UpdateStream>,
+    pub(crate) handle: SenderPoolFatHandle,
 
-    pub session: Session,
-    pub api_id: i32,
-    pub api_hash: String,
-    pub bot_token: Option<String>,
-    use_ipv6: bool,
-    system_lang_code: String,
-    lang_code: String,
+    pub(crate) session: Session,
+    pub(crate) api_id: i32,
+    pub(crate) api_hash: String,
+    pub(crate) bot_token: Option<String>,
+    pub(crate) use_ipv6: bool,
+    pub(crate) system_lang_code: String,
+    pub(crate) lang_code: String,
+
+    pub(crate) phone: Py<PyAny>,
+    pub(crate) code: Py<PyAny>,
+    pub(crate) password: Py<PyAny>,
 }
 
 #[derive(Clone)]
-#[pyclass(name = "Client", module = "grammers", subclass)]
+#[pyclass(name = "Client", module = "grammers", subclass, dict)]
 pub struct PyClient {
     pub inner: Arc<Mutex<ClientInner>>,
 
@@ -80,12 +82,15 @@ impl PyClient {
         api_id,
         api_hash,
         *,
+        phone,
+        code,
+        password,
         bot_token=None,
         app_version=None,
         device_model=None,
         system_version=None,
-        lang_code="en",
-        system_lang_code="en",
+        lang_code=None,
+        system_lang_code=None,
         use_ipv6=false,
     ))]
     pub fn new<'py>(
@@ -94,6 +99,9 @@ impl PyClient {
         api_id: ApiId,
         api_hash: &str,
         // *,
+        phone: Py<PyAny>,
+        code: Py<PyAny>,
+        password: Py<PyAny>,
         bot_token: Option<&str>,
         app_version: Option<&str>,
         device_model: Option<&str>,
@@ -112,45 +120,33 @@ impl PyClient {
                 cls_name
             )));
         };
-        let info = os_info::get();
         let platform = py.import("platform")?;
 
         let device_model = match device_model {
             Some(x) => x.to_string(),
             None => {
-                let os_type = format!("{}", info.os_type());
-                let os_type: &str = os_type.as_str();
-                let bitness = format!("{}", info.bitness());
-                let bitness: &str = bitness.as_str();
-
-                let implementation: Bound<'py, PyAny> = platform
-                    .call_method0("python_implementation")
-                    .unwrap_or(PyString::new(py, os_type).into_any());
-                let implementation = implementation
-                    .extract::<String>()
-                    .unwrap_or(os_type.to_string());
-
-                let version: Bound<'py, PyAny> = platform
-                    .call_method0("python_implementation")
-                    .unwrap_or(PyString::new(py, bitness).into_any());
-                let version = version.extract::<String>().unwrap_or(bitness.to_string());
+                let implementation = match platform.call_method0("python_implementation") {
+                    Err(_) => "Python".to_string(),
+                    Ok(x) => x.extract().unwrap_or("Python".to_string()),
+                };
+                let version = match platform.call_method0("python_version") {
+                    Err(_) => "".to_string(),
+                    Ok(x) => x.extract().unwrap_or("".to_string()),
+                };
                 format!("{} {}", implementation, version)
             }
         };
         let system_version = match system_version {
             Some(x) => x.to_string(),
             None => {
-                let v = format!("{}", info.version());
-                let v: &str = v.as_str();
-                let system: Bound<'py, PyAny> = platform
-                    .call_method0("system")
-                    .unwrap_or(PyString::new(py, v).into_any());
-                let system = system.extract::<String>().unwrap_or(v.to_string());
-
-                let release: Bound<'py, PyAny> = platform
-                    .call_method0("release")
-                    .unwrap_or(PyString::new(py, "").into_any());
-                let release = release.extract::<String>().unwrap_or("".to_string());
+                let system = match platform.call_method0("system") {
+                    Err(_) => "".to_string(),
+                    Ok(x) => x.extract::<String>().unwrap_or("".to_string()),
+                };
+                let release = match platform.call_method0("release") {
+                    Err(_) => "".to_string(),
+                    Ok(x) => x.extract::<String>().unwrap_or("".to_string())
+                };
                 format!("{} {}", system, release)
             }
         };
@@ -161,17 +157,11 @@ impl PyClient {
 
         let lang_code = match lang_code {
             Some(x) => x.to_string(),
-            #[cfg(not(target_os = "android"))]
-            None => locate_locale::user(),
-            #[cfg(target_os = "android")]
             None => "en".to_string(),
         }
         .to_ascii_lowercase();
         let system_lang_code = match system_lang_code {
             Some(x) => x.to_string(),
-            #[cfg(not(target_os = "android"))]
-            None => locate_locale::system(),
-            #[cfg(target_os = "android")]
             None => "en".to_string(),
         }
         .to_ascii_lowercase();
@@ -200,9 +190,11 @@ impl PyClient {
             stream_updates: None,
             handle,
             session: session,
-            // name: name.to_string(),
             api_id: api_id.0,
             api_hash: api_hash.to_string(),
+            phone,
+            code,
+            password,
             bot_token: bot_token.map(|x| x.to_string()),
             use_ipv6,
             system_lang_code: system_lang_code.to_string(),
@@ -247,5 +239,38 @@ impl PyClient {
     #[getter(session)]
     fn get_session(&self) -> Py<PyAny> {
         self.inner.lock().unwrap().session.get_inner()
+    }
+
+    #[getter]
+    pub fn phone(&self) -> Py<PyAny> {
+        Python::attach(|py| self.inner.lock().unwrap().phone.bind(py).clone().unbind())
+    }
+
+    #[getter]
+    pub fn code(&self) -> Py<PyAny> {
+        Python::attach(|py| self.inner.lock().unwrap().code.bind(py).clone().unbind())
+    }
+
+    #[getter]
+    pub fn password(&self) -> Py<PyAny> {
+        Python::attach(|py| {
+            self.inner
+                .lock()
+                .unwrap()
+                .password
+                .bind(py)
+                .clone()
+                .unbind()
+        })
+    }
+}
+
+impl PyClient {
+    pub fn session(&self) -> Session {
+        self.inner.lock().unwrap().session.clone()
+    }
+
+    pub fn handle(&self) -> SenderPoolFatHandle {
+        self.inner.lock().unwrap().handle.clone()
     }
 }

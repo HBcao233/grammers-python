@@ -13,7 +13,85 @@ use std::time::SystemTime;
 
 use chrono::{DateTime, Utc};
 */
-// use grammers_tl_types as tl;
+use pyo3::call::PyCallArgs;
+use pyo3::types::PyAnyMethods;
+use pyo3::{Py, PyAny, PyErr, PyResult, Python};
+
+use grammers_session_pyo3::utils::into_future;
+use grammers_tl_types as tl;
+
+use std::sync::OnceLock;
+
+static PY_INSPECT: OnceLock<Py<PyAny>> = OnceLock::new();
+static PY_ASYNCIO: OnceLock<Py<PyAny>> = OnceLock::new();
+
+pub fn inspect() -> PyResult<Py<PyAny>> {
+    match PY_INSPECT.get() {
+        Some(x) => Ok(Python::attach(|py| x.bind(py).clone().unbind())),
+        None => {
+            let (v1, v2) = Python::attach(|py| {
+                let x = py.import("inspect")?.into_any();
+                Ok::<_, PyErr>((x.clone().unbind(), x.unbind()))
+            })?;
+            PY_INSPECT.set(v1).unwrap();
+            Ok(v2)
+        }
+    }
+}
+
+pub fn asyncio() -> PyResult<Py<PyAny>> {
+    match PY_ASYNCIO.get() {
+        Some(x) => Ok(Python::attach(|py| x.bind(py).clone().unbind())),
+        None => {
+            let (v1, v2) = Python::attach(|py| {
+                let x = py.import("asyncio")?.into_any();
+                Ok::<_, PyErr>((x.clone().unbind(), x.unbind()))
+            })?;
+            PY_ASYNCIO.set(v1).unwrap();
+            Ok(v2)
+        }
+    }
+}
+
+pub fn event_loop() -> PyResult<Py<PyAny>> {
+    let asyncio = asyncio()?;
+    Python::attach(|py| asyncio.call_method0(py, "get_running_loop"))
+}
+
+pub fn maybe_call0(obj: Py<PyAny>) -> PyResult<Py<PyAny>> {
+    Python::attach(|py| {
+        if obj.bind(py).is_callable() {
+            obj.call0(py)
+        } else {
+            Ok(obj)
+        }
+    })
+}
+
+pub fn maybe_call1<'py, A>(py: Python<'py>, obj: Py<PyAny>, args: A) -> PyResult<Py<PyAny>>
+where
+    A: PyCallArgs<'py>,
+{
+    if obj.bind(py).is_callable() {
+        obj.call1(py, args)
+    } else {
+        Ok(obj)
+    }
+}
+
+pub async fn maybe_awaitable(obj: Py<PyAny>) -> PyResult<Py<PyAny>> {
+    let inspect = inspect()?;
+    let is_awaitable = Python::attach(|py| {
+        let x = inspect.bind(py).call_method1("isawaitable", (&obj,))?;
+        x.extract()
+    })?;
+    let event_loop = event_loop()?;
+    if is_awaitable {
+        into_future(&event_loop, obj).await
+    } else {
+        Ok(obj)
+    }
+}
 
 /*
 // This atomic isn't for anything critical, just to generate unique IDs without locks.
@@ -47,6 +125,7 @@ pub(crate) fn generate_random_ids(n: usize) -> Vec<i64> {
 pub(crate) fn date(date: i32) -> DateTime<Utc> {
     DateTime::<Utc>::from_timestamp(date as i64, 0).expect("date out of range")
 }
+*/
 
 pub(crate) fn extract_password_parameters(
     current_algo: &tl::enums::PasswordKdfAlgo,
@@ -63,7 +142,7 @@ pub(crate) fn extract_password_parameters(
         tl::enums::PasswordKdfAlgo::Sha256Sha256Pbkdf2Hmacsha512iter100000Sha256ModPow(alg) => alg,
     };
     (salt1, salt2, p, g)
-}*/
+}
 
 /*
 pub(crate) fn peer_from_message(message: &tl::enums::Message) -> Option<tl::enums::Peer> {

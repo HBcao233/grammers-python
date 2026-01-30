@@ -1,3 +1,13 @@
+// Copyright 2020 - developers of the `grammers` project.
+//
+// Licensed under the Apache License, Version 2.0 <LICENSE-APACHE or
+// https://www.apache.org/licenses/LICENSE-2.0> or the MIT license
+// <LICENSE-MIT or https://opensource.org/licenses/MIT>, at your
+// option. This file may not be copied, modified, or distributed
+// except according to those terms.
+
+//! Methods to deal with and offer access to updates.
+
 use pyo3::prelude::*;
 
 use std::collections::VecDeque;
@@ -5,7 +15,7 @@ use std::time::{Duration, Instant};
 
 use grammers_mtsender_pyo3::InvocationError;
 use grammers_session::updates::{MessageBoxes, PrematureEndReason, State, UpdatesLike};
-use grammers_session_pyo3::{PyPeerId, PyPeerInfo, PyUpdateState, PyUpdatesState, Session};
+use grammers_session_pyo3::{PyPeerId, PyPeerInfo, PyUpdatesState, Session, UpdateStateLike};
 use grammers_tl_types as tl;
 
 use log::{trace, warn};
@@ -135,7 +145,7 @@ impl UpdateStream {
                         .lock()
                         .unwrap()
                         .session
-                        .set_update_state(PyUpdateState::All(PyUpdatesState {
+                        .set_update_state(UpdateStateLike::All(PyUpdatesState {
                             pts: state.pts,
                             qts: state.qts,
                             date: state.date,
@@ -309,7 +319,7 @@ impl UpdateStream {
     /// This is **not** automatically done on drop.
     pub async fn sync_update_state(&self) -> PyResult<()> {
         let session = self.client.inner.lock().unwrap().session.clone();
-        let update = PyUpdateState::All(self.message_box.session_state().into());
+        let update = UpdateStateLike::All(self.message_box.session_state().into());
         session.set_update_state(update).await
     }
 }
@@ -329,7 +339,7 @@ impl PyClient {
         updates: mpsc::UnboundedReceiver<UpdatesLike>,
         configuration: UpdatesConfiguration,
     ) -> PyResult<UpdateStream> {
-        let session = &self.inner.lock().unwrap().session;
+        let session = self.session();
         let message_box = if configuration.catch_up {
             MessageBoxes::load(session.updates_state().await?.into())
         } else {

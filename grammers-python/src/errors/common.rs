@@ -9,22 +9,16 @@ use super::rpcbaseerrors::{
     PyNotFoundError, PyRpcError, PyServerError, PyTimedOutError, PyUnauthorizedError,
 };
 use super::rpcerrorlist::*;
-use grammers_tl_types_pyo3 as pytl;
 
-create_exception!("grammers.errors", DroppedError, PyException);
-create_exception!("grammers.errors", DeserializeError, PyException);
-create_exception!("grammers.errors", TransportError, PyException);
+create_exception!(grammers.errors, DroppedError, PyException);
+create_exception!(grammers.errors, DeserializeError, PyException);
+create_exception!(grammers.errors, TransportError, PyException);
 
-pub struct InvocationErrorConverter(pub InvocationError);
+pub struct PyInvocationError {}
 
-impl From<InvocationError> for InvocationErrorConverter {
-    fn from(x: InvocationError) -> Self {
-        InvocationErrorConverter(x)
-    }
-}
-impl From<InvocationErrorConverter> for PyErr {
-    fn from(err: InvocationErrorConverter) -> PyErr {
-        match err.0 {
+impl PyInvocationError {
+    pub fn new(err: InvocationError) -> PyErr {
+        match err {
             InvocationError::Rpc(e) => match e.code {
                 303 => if e.is("FILE_MIGRATE_*"){
                     PyFileMigrateError::new_err(e.name, e.value, e.caused_by)
@@ -1119,147 +1113,5 @@ impl From<InvocationErrorConverter> for PyErr {
             }
             InvocationError::PyErr(e) => e,
         }
-    }
-}
-
-#[pyclass(name = "SignInError", module = "grammers.errors", extends = PyException, subclass)]
-pub struct SignInError {
-    #[pyo3(get)]
-    message: String,
-}
-
-#[pymethods]
-impl SignInError {
-    #[new]
-    fn new(message: String) -> Self {
-        SignInError { message }
-    }
-
-    fn __str__(&self) -> String {
-        self.message.clone()
-    }
-
-    fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
-        let cls_name = slf.get_type().qualname()?;
-        let message = slf.getattr("message")?;
-        Ok(format!("{}(message={})", cls_name, message))
-    }
-}
-/*
-impl SignInError {
-    pub fn new_err(message: &str) -> PyErr {
-        PyErr::new::<SignInError, _>((message.to_string(),))
-    }
-}*/
-
-#[pyclass(name = "SignUpRequiredError", module = "grammers.errors", extends = SignInError)]
-pub struct SignUpRequiredError {}
-
-#[pymethods]
-impl SignUpRequiredError {
-    #[new]
-    fn new() -> (Self, SignInError) {
-        (
-            SignUpRequiredError {},
-            SignInError {
-                message: "Sign-up with an official client is required. (Third-party applications cannot sign up for Telegram.)".into()
-            }
-        )
-    }
-}
-impl SignUpRequiredError {
-    pub fn new_err() -> PyErr {
-        PyErr::new::<SignUpRequiredError, _>(())
-    }
-}
-
-#[pyclass(name = "PasswordRequiredError", module = "grammers.errors", extends = SignInError)]
-pub struct PasswordRequiredError {
-    #[pyo3(get)]
-    pub password_token: Py<pytl::types::account::PyPassword>,
-}
-
-#[pymethods]
-impl PasswordRequiredError {
-    #[new]
-    fn new(password_token: Py<pytl::types::account::PyPassword>) -> (Self, SignInError) {
-        (
-            PasswordRequiredError { password_token },
-            SignInError {
-                message: "The account has 2FA enabled, and the password is required.".into(),
-            },
-        )
-    }
-
-    fn __repr__(&self) -> PyResult<String> {
-        let password_token = Python::attach(|py| {
-            let p = self.password_token.bind(py);
-            pytl::TLObject::pretty_format(&p, Some(1))
-        })?;
-        Ok(format!(
-            "PasswordRequiredError(\n  password_token={},\n  message={},\n)",
-            password_token, "'The account has 2FA enabled, and the password is required.'",
-        ))
-    }
-}
-impl PasswordRequiredError {
-    pub fn new_err(password_token: Py<pytl::types::account::PyPassword>) -> PyErr {
-        PyErr::new::<PasswordRequiredError, _>((password_token,))
-    }
-}
-
-#[pyclass(name = "InvalidCodeError", module = "grammers.errors", extends = SignInError)]
-pub struct InvalidCodeError {}
-
-#[pymethods]
-impl InvalidCodeError {
-    #[new]
-    fn new() -> (Self, SignInError) {
-        (
-            Self {},
-            SignInError {
-                message: "The code used to complete login was not valid.".into(),
-            },
-        )
-    }
-}
-impl InvalidCodeError {
-    pub fn new_err() -> PyErr {
-        PyErr::new::<InvalidCodeError, _>(())
-    }
-}
-
-#[pyclass(name = "InvalidPasswordError", module = "grammers.errors", extends = SignInError)]
-pub struct InvalidPasswordError {
-    #[pyo3(get)]
-    pub password_token: Py<pytl::types::account::PyPassword>,
-}
-
-#[pymethods]
-impl InvalidPasswordError {
-    #[new]
-    fn new(password_token: Py<pytl::types::account::PyPassword>) -> (Self, SignInError) {
-        (
-            InvalidPasswordError { password_token },
-            SignInError {
-                message: "The code used to complete login was not valid.".into(),
-            },
-        )
-    }
-
-    fn __repr__(&self) -> PyResult<String> {
-        let password_token = Python::attach(|py| {
-            let p = self.password_token.bind(py);
-            pytl::TLObject::pretty_format(&p, Some(1))
-        })?;
-        Ok(format!(
-            "InvalidPasswordError(\n  password_token={},\n  message={},\n)",
-            password_token, "'The code used to complete login was not valid.'",
-        ))
-    }
-}
-impl InvalidPasswordError {
-    pub fn new_err(password_token: Py<pytl::types::account::PyPassword>) -> PyErr {
-        PyErr::new::<InvalidPasswordError, _>((password_token,))
     }
 }

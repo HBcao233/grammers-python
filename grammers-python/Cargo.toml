@@ -24,11 +24,9 @@ chrono = "0.4.42"
 log = { workspace = true }
 sha1 = { workspace = true }
 pyo3 = { workspace = true }
-pyo3-log = {workspace = true }
+pyo3-log = { workspace = true }
 pyo3-async-runtimes = { workspace = true }
 tokio = { workspace = true }
-os_info = { workspace = true }
-locate-locale = { workspace = true }
 
 [features]
 default = []

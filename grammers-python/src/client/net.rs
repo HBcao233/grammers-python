@@ -6,20 +6,20 @@ use grammers_tl_types_pyo3::{PyTLObject, PyTLRequest};
 use grammers_tl_types::{Deserializable, RemoteCall, Serializable};
 
 use super::PyClient;
-use crate::errors::InvocationErrorConverter;
+use crate::errors::PyInvocationError;
 
 #[pymethods]
 impl PyClient {
     pub async fn invoke(&self, request: PyTLRequest) -> PyResult<PyTLObject> {
         self.invoke_raw(request)
             .await
-            .map_err(|e| InvocationErrorConverter(e).into())
+            .map_err(PyInvocationError::new)
     }
 
     pub async fn invoke_in_dc(&self, dc_id: i32, request: PyTLRequest) -> PyResult<PyTLObject> {
         self.invoke_raw_in_dc(dc_id, request)
             .await
-            .map_err(|e| InvocationErrorConverter(e).into())
+            .map_err(PyInvocationError::new)
     }
 }
 
@@ -34,8 +34,8 @@ impl PyClient {
     }
 
     pub async fn invoke_raw(&self, request: PyTLRequest) -> Result<PyTLObject, InvocationError> {
-        let session = self.inner.lock().unwrap().session.clone();
-        let dc_id = session
+        let dc_id = self
+            .session()
             .home_dc_id()
             .await
             .map_err(|e| InvocationError::PyErr(e))?;
@@ -55,8 +55,8 @@ impl PyClient {
         &self,
         request: &R,
     ) -> Result<R::Return, InvocationError> {
-        let session = &self.inner.lock().unwrap().session;
-        let dc_id = session
+        let dc_id = self
+            .session()
             .home_dc_id()
             .await
             .map_err(|e| InvocationError::PyErr(e))?;
@@ -68,7 +68,8 @@ impl PyClient {
         dc_id: i32,
         request_body: Vec<u8>,
     ) -> Result<Vec<u8>, InvocationError> {
-        let handle = self.inner.lock().unwrap().handle.clone();
-        handle.invoke_in_dc(dc_id, request_body.clone()).await
+        self.handle()
+            .invoke_in_dc(dc_id, request_body.clone())
+            .await
     }
 }
