@@ -19163,7 +19163,7 @@ class StoryFwdHeader(TLObject):
     def __new__(
         cls,
         modified: bool,
-        from: Optional[types.PeerUser | types.PeerChat | types.PeerChannel],
+        _from: Optional[types.PeerUser | types.PeerChat | types.PeerChannel],
         from_name: Optional[str],
         story_id: Optional[int],
     ) -> Self: ...

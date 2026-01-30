@@ -1,5 +1,5 @@
-from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from typing import final, Self
+from grammers.tl import TLObject
 
 @final
 class CollectibleInfo(TLObject):

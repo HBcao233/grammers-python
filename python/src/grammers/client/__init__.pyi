@@ -1,30 +1,13 @@
-import grammers.tl
 from typing import Optional
-from . import _rs
-from . import errors
-from . import crypto
 from . import tl
-from . import sessions
-from .tl import TLObject, TLRequest, types, functions
-
-__all__ = [
-    '_rs',
-    'crypto',
-    'errors',
-    'sessions',
-    'tl',
-    'TLObject',
-    'TLRequest',
-    'types',
-    'functions',
-    'Client',
-]
+from .tl import types
+from .sessions import Session
 
 class Client:
     @property
     def session(self) -> str: ...
     @property
-    def me(self) -> sessions.Session: ...
+    def me(self) -> Session: ...
     @property
     def api_id(self) -> int: ...
     @property
@@ -76,7 +59,7 @@ class Client:
                 The *api_hash* part of the Telegram API key, as string.
                 E.g.: "0123456789abcdef0123456789abcdef".
         """
-    async def invoke(self, request: grammers.tl.TLRequest) -> grammers.tl.TLObject: ...
+    async def invoke(self, request: tl.TLRequest) -> tl.TLObject: ...
     async def start(self) -> None:
         r"""
         Start login in to telegram

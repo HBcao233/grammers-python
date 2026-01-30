@@ -99,7 +99,7 @@ fn write_struct<W: Write>(
 {indent}pub struct Py{name}Wrapper(pub pyo3::Py<Py{name}>);
 {indent}impl Clone for Py{name}Wrapper {{
 {indent}    fn clone(&self) -> Self {{
-{indent}        pyo3::Python::attach(|py| self.0.borrow(py).clone()).into()
+{indent}        pyo3::Python::attach(|py| self.0.bind(py).clone().unbind()).into()
 {indent}    }}
 {indent}}}
 {indent}impl From<pyo3::Py<Py{name}>> for Py{name}Wrapper {{
@@ -564,6 +564,7 @@ fn write_from_tl<W: Write>(
         }
     }
 
+    // pytl to tl
     writeln!(
         file,
         r#"{indent}        }}
@@ -576,6 +577,47 @@ fn write_from_tl<W: Write>(
 {indent}    }}
 {indent}}}"#,
     )?;
+    writeln!(
+        file,
+        r#"{indent}impl From<Py{type_name}> for {tl_qual_name} {{
+{indent}    fn from({}x: Py{type_name}) -> Self {{
+{indent}        Self {{"#,
+        if def.params.is_empty() { "_" } else { "" },
+    )?;
+
+    for param in def.params.iter() {
+        match &param.ty {
+            ParameterType::Flags => {}
+            ParameterType::Normal { ty, flag } => {
+                writeln!(
+                    file,
+                    r#"{indent}            {name}: {{
+{indent}                let v = x.{name};
+{indent}                {into}
+{indent}            }},"#,
+                    name = rustifier::parameters::attr_name(param),
+                    into = if flag.is_some() && ty.name != "true" {
+                        format!("v.map(|v| {})", rustifier::types::get_into(ty))
+                    } else {
+                        rustifier::types::get_into(ty)
+                    },
+                )?;
+            }
+        }
+    }
+    writeln!(
+        file,
+        r#"{indent}        }}
+{indent}    }}
+{indent}}}
+{indent}impl From<Py{type_name}Wrapper> for {tl_qual_name} {{
+{indent}    fn from(x: Py{type_name}Wrapper) -> Self {{
+{indent}        let x = pyo3::Python::attach(|py| x.0.borrow(py).clone());
+{indent}        x.into()
+{indent}    }}
+{indent}}}"#,
+    )?;
+
     Ok(())
 }
 

@@ -223,7 +223,13 @@ pub mod types {
             "long" => "i64",
             "string" => "String",
             "true" => "bool",
-            "vector" => "crate::PyRawVec",
+            "vector" => match type_name(&ty.generic_arg.as_ref().unwrap()).as_ref() {
+                "IpPort" => "crate::PyRawVec_enums_IpPort",
+                "FutureSalt" => "crate::PyRawVec_types_FutureSalt",
+                "TlsBlock" => "crate::PyRawVec_enums_TlsBlock",
+                "AccessPointRule" => "crate::PyRawVec_enums_AccessPointRule",
+                _ => unreachable!(),
+            },
             "Vector" => "Vec",
             _ => return None,
         })
@@ -261,7 +267,7 @@ pub mod types {
         };
 
         if let Some(generic_ty) = &ty.generic_arg {
-            if btype.is_none() || btype != Some("crate::PyRawVec") {
+            if ty.name != "vector".to_string() {
                 if path {
                     result.push_str("::");
                 }
@@ -486,6 +492,7 @@ pub mod parameters {
             "self" => "is_self".into(),
             "static" => "static".into(),
             "type" => "type".into(),
+            "from" => "_from".into(),
             _ => {
                 let mut result = param.name.clone();
                 result[..].make_ascii_lowercase();

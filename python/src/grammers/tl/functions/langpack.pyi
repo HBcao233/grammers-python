@@ -1,5 +1,5 @@
-from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from typing import final, Self, Sequence
+from grammers.tl import TLRequest
 
 @final
 class GetLangPack(TLRequest):

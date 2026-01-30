@@ -1,7 +1,11 @@
 mod common;
 mod generated;
+pub mod utils;
 
-pub use common::{PyRawVec, PyTLObjectWrapper, PyTLRequestWrapper, TLObject, TLRequest};
+pub use common::{
+    PyRawVec_enums_AccessPointRule, PyRawVec_enums_IpPort, PyRawVec_enums_TlsBlock,
+    PyRawVec_types_FutureSalt, PyTLObjectWrapper, PyTLRequestWrapper, TLObject, TLRequest,
+};
 pub use generated::{PyTLObject, PyTLRequest, enums, functions, types};
 use generated::{functions_, types_};
 

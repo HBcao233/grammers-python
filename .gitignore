@@ -2,9 +2,9 @@ target
 .venv
 .pytest_cache
 
-python/grammers/tl/allobjects.py
-python/grammers/tl/types/*.pyi
-python/grammers/tl/functions/*.pyi
+python/src/grammers/tl/allobjects.py
+python/src/grammers/tl/types/*.pyi
+python/src/grammers/tl/functions/*.pyi
 
 *.session
 /test.*

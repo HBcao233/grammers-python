@@ -231,14 +231,14 @@ fn write_from_tl<W: Write>(
     ty: &Type,
     metadata: &Metadata,
 ) -> io::Result<()> {
+    let type_name = rustifier::types::type_name(ty);
     let tl_qual_name = rustifier::enums::tl_qual_name(ty);
     writeln!(
         file,
-        r#"{indent}impl From<{tl_qual_name}> for Py{name} {{
+        r#"{indent}impl From<{tl_qual_name}> for Py{type_name} {{
 {indent}    fn from(x: {tl_qual_name}) -> Self {{
 {indent}        use {tl_qual_name} as E;
 {indent}        match x {{"#,
-        name = rustifier::types::type_name(ty),
     )?;
     for d in metadata.defs_with_type(ty) {
         let variant_name = rustifier::definitions::variant_name(d);
@@ -292,6 +292,38 @@ fn write_from_tl<W: Write>(
                         "x"
                     }
                 )
+            },
+        )?;
+    }
+    writeln!(
+        file,
+        r#"{indent}        }}
+{indent}    }}
+{indent}}}"#,
+    )?;
+
+    // pytl to tl
+    writeln!(
+        file,
+        r#"{indent}impl From<Py{type_name}> for {tl_qual_name} {{
+{indent}    fn from(x: Py{type_name}) -> Self {{
+{indent}        use Py{type_name} as E;
+{indent}        match x {{"#,
+    )?;
+    for d in metadata.defs_with_type(ty) {
+        let variant_name = rustifier::definitions::variant_name(d);
+        writeln!(
+            file,
+            r#"{indent}            E::{variant_name}({}x) => Self::{variant_name}{},"#,
+            if d.params.is_empty() { "_" } else { "" },
+            if d.params.is_empty() {
+                ""
+            } else {
+                if metadata.is_recursive_def(d) {
+                    "(Box::new(x.into()))"
+                } else {
+                    "(x.into())"
+                }
             },
         )?;
     }

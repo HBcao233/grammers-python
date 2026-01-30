@@ -1,4 +1,4 @@
-from typing import final, Self, Sequence, Optional
+from typing import final, Self
 from grammers.tl import TLRequest, types
 
 @final
