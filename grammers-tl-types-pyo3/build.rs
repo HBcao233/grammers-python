@@ -62,6 +62,9 @@ fn find_layer(file: &str) -> io::Result<Option<i32>> {
 }
 
 fn main() -> std::io::Result<()> {
+    println!("cargo:rerun-if-changed=tl/");
+    println!("cargo:rerun-if-changed=build.rs");
+    
     let layer = match find_layer("tl/api.tl")? {
         Some(x) => x,
         None => panic!("no layer information found in api.tl"),

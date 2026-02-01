@@ -250,7 +250,7 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
     let param_values = def.params.iter()
         .filter(|param| if let ParameterType::Normal { .. } = param.ty { true } else { false })
         .map(|param| format!(
-            "{}            dict.set_item(\"{name}\", {name})?;",
+            "\n{}            dict.set_item(\"{name}\", {name})?;",
             indent,
             name = rustifier::parameters::attr_name(param)
         ))

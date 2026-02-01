@@ -1,7 +1,7 @@
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyMapping, PySequence};
-use pyo3::{Bound, Py, PyAny};
+use pyo3::exceptions::PyTypeError;
+use pyo3::types::{PyString, PyBytes, PyDict, PyMapping, PySequence};
 
 use grammers_tl_types as tl;
 
@@ -143,6 +143,7 @@ impl<T: From<crate::enums::PyAccessPointRule>> From<PyRawVec_enums_AccessPointRu
     }
 }
 
+
 #[derive(Debug, Clone, PartialEq)]
 #[pyclass(module = "grammers.tl", subclass)]
 pub struct TLObject {}
@@ -150,27 +151,51 @@ pub struct TLObject {}
 #[pymethods]
 impl TLObject {
     #[staticmethod]
-    #[pyo3(signature = (obj, indent=Some(0)))]
+    #[pyo3(signature = (obj, indent))]
     pub fn pretty_format(obj: &Bound<'_, PyAny>, indent: Option<usize>) -> PyResult<String> {
-        let _d;
-        let (d, cls_name) = if obj.is_instance_of::<TLObject>() {
+        if indent.is_some() && indent > Some(20) {
+            return Ok("...".to_string());
+        }
+        
+        let d;
+        let (obj, cls_name) = if obj.is_instance_of::<TLObject>() {
             let cls_name = obj.get_type().qualname()?;
-            _d = obj.call_method0("to_dict")?;
-            (&_d, cls_name.extract()?)
+            d = obj.call_method0("to_dict")?;
+            (&d, cls_name.extract()?)
         } else {
             (obj, "TLObject".to_string())
         };
         
-        let indent = indent.unwrap_or(0);
-        Ok(if let Ok(dict) = d.cast::<PyMapping>() {
+        let next_indent = match indent {
+            None => None,
+            Some(x) => Some(x + 1),
+        };
+        let current_indent = match indent {
+            None => "",
+            Some(x) => &FORMAT_INDENT.repeat(x + 1),
+        };
+        let closing_indent = match indent {
+            None => "",
+            Some(x) => &FORMAT_INDENT.repeat(x),
+        };
+        let newline_or_empty = match indent {
+            None => "",
+            Some(_) => "\n",
+        };
+        let comma_newline_or_space = match indent {
+            None => ", ",
+            Some(_) => ",\n",
+        };
+
+        let result = if let Ok(dict) = obj.cast::<PyMapping>() {
             let class_name = match dict.get_item("_") {
                 Err(_) => cls_name,
                 Ok(x) => x.extract().unwrap_or(cls_name),
             };
-    
-            // 获取所有非"_"的键值对
+
             let mut attrs: Vec<(String, Bound<'_, PyAny>)> = Vec::new();
-            for key in dict.keys()? {
+            let keys = dict.keys()?;
+            for key in keys.iter() {
                 if let Ok(key_str) = key.extract::<String>() {
                     let value = dict.get_item(key)?;
                     if key_str != "_" {
@@ -178,45 +203,72 @@ impl TLObject {
                     }
                 }
             }
-    
+
             if attrs.is_empty() {
                 return Ok(format!("{}()", class_name));
             }
-    
-            let mut result = String::new();
-            result.push_str(&format!("{}(\n", class_name));
-    
-            let current_indent = FORMAT_INDENT.repeat(indent + 1);
-            let closing_indent = FORMAT_INDENT.repeat(indent);
-    
-            for (key, value) in attrs {
-                let value = TLObject::pretty_format(&value, Some(indent + 1))?;
-                let value = if key == "phone" {
-                    crate::utils::mask_phone(&value)
-                } else {
-                    value
-                };
-                result.push_str(&format!("{}{}={},\n", current_indent, key, value));
-            }
-    
-            result.push_str(&format!("{})", closing_indent));
-            result
-        } else if let Ok(seq) = d.cast::<PySequence>() {
-            let mut result = String::new();
-            result.push_str("[\n");
 
-            let current_indent = FORMAT_INDENT.repeat(indent + 1);
-            let closing_indent = FORMAT_INDENT.repeat(indent);
+            let result = attrs.iter()
+                .map(|(key, value)| {
+                    let value = TLObject::pretty_format(&value, next_indent)?;
+                    let value = if key == "phone" {
+                        crate::utils::mask_phone(&value)
+                    } else {
+                        value
+                    };
+                    Ok(format!(
+                        "{}{}={}",
+                        current_indent,
+                        key,
+                        value,
+                    ))
+                })
+                .collect::<PyResult<Vec<String>>>()?
+                .join(comma_newline_or_space) + newline_or_empty;
 
-            for value in seq.to_list()?.iter() {
-                let value = TLObject::pretty_format(&value, Some(indent + 1))?;
-                result.push_str(&format!("{}{},\n", current_indent, value));
+            format!(
+                "{}({}{}{})",
+                class_name,
+                newline_or_empty,
+                result,
+                closing_indent,
+            )
+        } else if obj.is_instance_of::<PyString>() {
+            obj.repr()?.to_string()
+        } else if let Ok(seq) = obj.cast::<PySequence>() {
+            let len = seq.len()?;
+            if len == 0 {
+                return Ok("[]".to_string());
             }
-            result.push_str(&format!("{}]", closing_indent));
-            result
+
+            let result = (0..len)
+                .map(|i| {
+                    let value = seq.get_item(i)?;
+                    let value = TLObject::pretty_format(&value, next_indent)?;
+                    Ok(format!(
+                        "{}{}",
+                        current_indent,
+                        value,
+                    ))
+                })
+                .collect::<PyResult<Vec<String>>>()?
+                .join(comma_newline_or_space) + newline_or_empty;
+
+            format!(
+                "[{}{}{}]", 
+                newline_or_empty,
+                result,
+                closing_indent
+            )
         } else {
             obj.repr()?.to_string()
-        })
+        };
+        
+        Ok(result)
+    }
+
+    fn __str__(slf: &Bound<'_, Self>) -> PyResult<String> {
+        TLObject::pretty_format(slf, Some(0))
     }
 
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
@@ -236,6 +288,22 @@ impl TLObject {
         Ok(result.extract()?)
     }
 
+    #[staticmethod]
+    fn json_default(obj: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
+        if obj.is_instance_of::<PyBytes>() {
+            return Ok(obj.repr()?.into_any().unbind());
+        }
+        if obj.is_instance_of::<TLObject>() || obj.is_instance_of::<TLRequest>() {
+            return Ok(obj.call_method0("to_dict")?.unbind());
+        }
+
+        let cls_name = obj.get_type().qualname()?;
+        Err(PyTypeError::new_err(format!(
+            "Object of type {} is not JSON serializable",
+            cls_name,
+        )))
+    }
+
     fn to_json(slf: &Bound<'_, Self>) -> PyResult<String> {
         let py = slf.py();
 
@@ -246,6 +314,9 @@ impl TLObject {
         let json = py.import("json")?;
         let kwargs = PyDict::new(py);
         kwargs.set_item("ensure_ascii", false)?;
+        let default_fn = slf.getattr("json_default")?;
+        kwargs.set_item("default", default_fn)?;
+
         let result: Bound<'_, PyAny> = json.call_method("dumps", (&data,), Some(&kwargs))?;
 
         Ok(result.extract()?)
@@ -270,32 +341,39 @@ pub struct TLRequest {}
 
 #[pymethods]
 impl TLRequest {
+    fn __str__(slf: &Bound<'_, Self>) -> PyResult<String> {
+        TLObject::pretty_format(slf, Some(0))
+    }
+    
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
         TLObject::pretty_format(slf, None)
     }
 
-    fn __eq__(self_: Bound<'_, Self>, other: &Bound<'_, PyAny>) -> PyResult<bool> {
+    fn __eq__(slf: Bound<'_, Self>, other: &Bound<'_, PyAny>) -> PyResult<bool> {
         let other = if other.is_instance_of::<TLRequest>() {
             other.call_method0("to_dict")?
         } else {
             return Ok(false);
         };
-        let dict = self_.call_method0("to_dict")?;
+        let dict = slf.call_method0("to_dict")?;
         let result = dict.call_method1("__eq__", (other,))?;
 
         Ok(result.extract()?)
     }
 
-    fn to_json(self_: &Bound<'_, Self>) -> PyResult<String> {
-        let py = self_.py();
+    fn to_json(slf: &Bound<'_, Self>) -> PyResult<String> {
+        let py = slf.py();
 
-        let data = self_.call_method0("to_dict")?;
-        let cls_name = self_.get_type().qualname()?;
+        let data = slf.call_method0("to_dict")?;
+        let cls_name = slf.get_type().qualname()?;
         data.call_method1("setdefault", ("_", cls_name))?;
 
         let json = py.import("json")?;
         let kwargs = PyDict::new(py);
         kwargs.set_item("ensure_ascii", false)?;
+        let default_fn = slf.getattr("json_default")?;
+        kwargs.set_item("default", default_fn)?;
+
         let result: Bound<'_, PyAny> = json.call_method("dumps", (&data,), Some(&kwargs))?;
 
         Ok(result.extract()?)
