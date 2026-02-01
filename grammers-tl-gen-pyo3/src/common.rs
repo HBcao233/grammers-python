@@ -5,10 +5,10 @@ use grammers_tl_parser::tl::{Category, Definition};
 use crate::ignore_type;
 use crate::rustifier;
 
-fn write_enum_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
+fn write_enum_tlrequest<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(file, "#[allow(non_camel_case_types)]")?;
     writeln!(file, "#[derive(Debug, Clone)]")?;
-    writeln!(file, "pub enum PyTLRequest {{")?;
+    writeln!(file, "pub enum TLRequestLike {{")?;
     for def in definitions {
         if def.category == Category::Functions {
             writeln!(
@@ -26,7 +26,7 @@ fn write_enum_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) ->
 fn write_rpc<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl grammers_tl_types::Serializable for PyTLRequest {{"
+        "impl grammers_tl_types::Serializable for TLRequestLike {{"
     )?;
     writeln!(
         file,
@@ -49,10 +49,10 @@ fn write_rpc<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<(
     Ok(())
 }
 
-fn write_from_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
+fn write_from_tlrequest<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        r#"impl pyo3::FromPyObject<'_, '_> for PyTLRequest {{
+        r#"impl pyo3::FromPyObject<'_, '_> for TLRequestLike {{
     type Error = pyo3::PyErr;
     fn extract(obj: pyo3::Borrowed<'_, '_, pyo3::PyAny>) -> Result<Self, pyo3::PyErr> {{
         use pyo3::types::{{PyAnyMethods, PyTypeMethods}};"#
@@ -80,10 +80,10 @@ fn write_from_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) ->
     Ok(())
 }
 
-fn write_into_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
+fn write_into_tlrequest<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        r#"impl<'py> pyo3::IntoPyObject<'py> for PyTLRequest {{
+        r#"impl<'py> pyo3::IntoPyObject<'py> for TLRequestLike {{
     type Target = pyo3::PyAny;
     type Output = pyo3::Bound<'py, pyo3::PyAny>;
     type Error = pyo3::PyErr;
@@ -109,10 +109,10 @@ fn write_into_pytlrequest<W: Write>(file: &mut W, definitions: &[Definition]) ->
     Ok(())
 }
 
-fn write_enum_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
+fn write_enum_tlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(file, "#[allow(non_camel_case_types)]")?;
     writeln!(file, "#[derive(Debug, Clone)]")?;
-    writeln!(file, "pub enum PyTLObject {{")?;
+    writeln!(file, "pub enum TLObjectLike {{")?;
     for def in definitions {
         if def.category == Category::Types && !ignore_type(&def.ty) {
             writeln!(
@@ -127,10 +127,10 @@ fn write_enum_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> 
     Ok(())
 }
 
-fn write_from_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
+fn write_from_tlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        r#"impl pyo3::FromPyObject<'_, '_> for PyTLObject {{
+        r#"impl pyo3::FromPyObject<'_, '_> for crate::TLObjectLike {{
     type Error = pyo3::PyErr;
     fn extract(obj: pyo3::Borrowed<'_, '_, pyo3::PyAny>) -> Result<Self, pyo3::PyErr> {{
         use pyo3::types::{{PyAnyMethods, PyTypeMethods}};"#
@@ -158,10 +158,10 @@ fn write_from_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> 
     Ok(())
 }
 
-fn write_into_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
+fn write_into_tlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        r#"impl<'py> pyo3::IntoPyObject<'py> for PyTLObject {{
+        r#"impl<'py> pyo3::IntoPyObject<'py> for TLObjectLike {{
     type Target = pyo3::PyAny;
     type Output = pyo3::Bound<'py, pyo3::PyAny>;
     type Error = pyo3::PyErr;
@@ -190,7 +190,7 @@ fn write_into_pytlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> 
 fn write_serialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl grammers_tl_types::Serializable for PyTLObject {{"
+        "impl grammers_tl_types::Serializable for TLObjectLike {{"
     )?;
     writeln!(
         file,
@@ -215,7 +215,7 @@ fn write_serialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Re
 fn write_deserialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl grammers_tl_types::Deserializable for PyTLObject {{"
+        "impl grammers_tl_types::Deserializable for TLObjectLike {{"
     )?;
     writeln!(
         file,
@@ -251,7 +251,7 @@ fn write_from_tl<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Resu
             let tl_qual_name = rustifier::definitions::tl_qual_name(def);
             writeln!(
                 file,
-                r#"impl From<{tl_qual_name}> for PyTLObject {{
+                r#"impl From<{tl_qual_name}> for TLObjectLike {{
     fn from(x: {tl_qual_name}) -> Self {{
         Self::{}(x.into())
     }}
@@ -270,16 +270,16 @@ pub fn write_mod<'a, W: Write>(
     definitions: &[Definition],
     _layer: i32,
 ) -> io::Result<()> {
-    write_enum_pytlrequest(file, definitions)?;
-    write_from_pytlrequest(file, definitions)?;
-    write_into_pytlrequest(file, definitions)?;
+    write_enum_tlrequest(file, definitions)?;
+    write_from_tlrequest(file, definitions)?;
+    write_into_tlrequest(file, definitions)?;
     write_rpc(file, definitions)?;
 
     writeln!(file)?;
 
-    write_enum_pytlobject(file, definitions)?;
-    write_from_pytlobject(file, definitions)?;
-    write_into_pytlobject(file, definitions)?;
+    write_enum_tlobject(file, definitions)?;
+    write_from_tlobject(file, definitions)?;
+    write_into_tlobject(file, definitions)?;
     write_serialize(file, definitions)?;
     write_deserialize(file, definitions)?;
     write_from_tl(file, definitions)?;

@@ -58,7 +58,7 @@ fn write_struct<W: Write>(
     writeln!(file, "{indent}#[derive(Debug, Clone)]")?;
     writeln!(
         file,
-        "{}#[pyo3::pyclass(name = \"{}\", module = \"grammers.tl{}\", extends = crate::{})]",
+        "{}#[pyo3::pyclass(name = \"{}\", module = \"grammers.tl{}\", extends = crate::{}, subclass, dict)]",
         indent,
         type_name,
         if def.namespace.is_empty() {
@@ -115,7 +115,7 @@ fn write_struct<W: Write>(
 {indent}        }}).into()
 {indent}    }}
 {indent}}}
-{indent}impl From<Py{name}> for crate::Py{base} {{
+{indent}impl From<Py{name}> for crate::{base}Like {{
 {indent}    fn from(x: Py{name}) -> Self {{
 {indent}        Self::{ns_name}(x.into())
 {indent}    }}
@@ -232,48 +232,49 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
     writeln!(
         file,
         r#"{indent}    #[pyo3(name = "to_bytes")]
-{indent}    fn py_to_bytes(&self) -> Vec<u8> {{
+{indent}    pub fn py_to_bytes(&self) -> Vec<u8> {{
 {indent}        use grammers_tl_types::Serializable;
 {indent}        self.to_bytes()
 {indent}    }}
 "#,
     )?;
+    
     // to_dict
+    let param_keys = def.params.iter()
+        .filter(|param| if let ParameterType::Normal { .. } = param.ty { true } else { false })
+        .map(|param| 
+            rustifier::parameters::attr_name(param)
+        )
+        .collect::<Vec<String>>()
+        .join(", ");
+    let param_values = def.params.iter()
+        .filter(|param| if let ParameterType::Normal { .. } = param.ty { true } else { false })
+        .map(|param| format!(
+            "{}            dict.set_item(\"{name}\", {name})?;",
+            indent,
+            name = rustifier::parameters::attr_name(param)
+        ))
+        .collect::<Vec<String>>()
+        .join("");
     writeln!(
         file,
-        "{indent}    fn to_dict(&self) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {{"
+        r#"{indent}    pub fn to_dict(&self) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {{
+{indent}        self.clone().into_dict()
+{indent}    }}
+{indent}}}
+{indent}impl Py{type_name} {{
+{indent}    pub fn into_dict(self) -> pyo3::PyResult<pyo3::Py<pyo3::types::PyDict>> {{
+{indent}        let Py{type_name} {{ {param_keys} }} = self;
+{indent}        pyo3::Python::attach(|py| {{
+{indent}            use pyo3::types::PyDictMethods;
+{indent}            let dict = pyo3::types::PyDict::new(py);
+{indent}            dict.set_item("_", "{type_name}")?;{param_values}
+{indent}            Ok(dict.unbind())
+{indent}        }})
+{indent}    }}
+{indent}}}"#
     )?;
-    writeln!(file, "{indent}        pyo3::Python::attach(|py| {{")?;
-    writeln!(file, "{indent}            use pyo3::types::PyDictMethods;")?;
-    writeln!(
-        file,
-        "{indent}            let dict = pyo3::types::PyDict::new(py);"
-    )?;
-    writeln!(
-        file,
-        "{indent}            dict.set_item(\"_\", \"{}\")?;",
-        type_name,
-    )?;
-    for param in def.params.iter() {
-        match &param.ty {
-            ParameterType::Flags => {
-                // Flags are computed on-the-fly, not stored
-            }
-            ParameterType::Normal { .. } => {
-                let attr_name = rustifier::parameters::attr_name(param);
-                writeln!(
-                    file,
-                    "{indent}            dict.set_item(\"{name}\", self.{name}.clone())?;",
-                    name = attr_name,
-                )?;
-            }
-        }
-    }
-    writeln!(file, "{indent}            Ok(dict.into())")?;
-    writeln!(file, "{indent}        }})")?;
-    writeln!(file, "{indent}    }}")?;
 
-    writeln!(file, "{indent}}}")?;
     Ok(())
 }
 
@@ -621,6 +622,31 @@ fn write_from_tl<W: Write>(
     Ok(())
 }
 
+fn write_rpc<W: Write>(
+    file: &mut W,
+    indent: &str,
+    def: &Definition,
+    _metadata: &Metadata,
+) -> io::Result<()> {
+    writeln!(
+        file,
+        "{}impl grammers_tl_types::RemoteCall for Py{} {{",
+        indent,
+        // get_generic_param_list(def, ": crate::RemoteCall"),
+        rustifier::definitions::type_name(def),
+        // get_generic_param_list(def, ""),
+    )?;
+    writeln!(
+        file,
+        "{}    type Return = {};",
+        indent,
+        rustifier::types::qual_name_obj(&def.ty),
+        // if def.ty.generic_ref { "::Return" } else { "" },
+    )?;
+    writeln!(file, "{indent}}}")?;
+    Ok(())
+}
+
 /// Writes an entire definition as Rust code (`struct` and `impl`).
 fn write_definition<'a, W: Write>(
     file: &'a mut W,
@@ -641,6 +667,11 @@ fn write_definition<'a, W: Write>(
         write_deserializable(file, indent, def, metadata)?;
         write_from_tl(file, indent, def, metadata)?;
     }
+    
+    if def.category == Category::Functions {
+        write_rpc(file, indent, def, metadata)?;
+    }
+    
     writeln!(file)?;
     Ok(())
 }

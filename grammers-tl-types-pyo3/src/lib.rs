@@ -4,9 +4,10 @@ pub mod utils;
 
 pub use common::{
     PyRawVec_enums_AccessPointRule, PyRawVec_enums_IpPort, PyRawVec_enums_TlsBlock,
-    PyRawVec_types_FutureSalt, PyTLObjectWrapper, PyTLRequestWrapper, TLObject, TLRequest,
+    PyRawVec_types_FutureSalt
 };
-pub use generated::{PyTLObject, PyTLRequest, enums, functions, types};
+pub use common::{TLObject, TLRequest};
+pub use generated::{TLObjectLike, TLRequestLike, enums, functions, types};
 use generated::{functions_, types_};
 
 use grammers_tl_types::deserialize::Cursor;

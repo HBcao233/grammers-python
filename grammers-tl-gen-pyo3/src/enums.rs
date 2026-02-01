@@ -269,7 +269,7 @@ fn write_from_tl<W: Write>(
 
     writeln!(
         file,
-        r#"{indent}impl From<{tl_qual_name}> for crate::PyTLObject {{
+        r#"{indent}impl From<{tl_qual_name}> for crate::TLObjectLike {{
 {indent}    fn from(x: {tl_qual_name}) -> Self {{
 {indent}        use {tl_qual_name} as E;
 {indent}        match x {{"#,

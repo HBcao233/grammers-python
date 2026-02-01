@@ -239,10 +239,14 @@ pub mod types {
     // name and item paths so this method is used for both:
     // 1. use `::<...>` instead of `<...>` to specify type arguments
     // 2. missing angle brackets in associated item path
-    fn get_path(ty: &Type, path: bool) -> String {
+    fn get_path(ty: &Type, path: bool, obj: bool) -> String {
         if ty.generic_ref {
             // return ty.name.clone();
-            return "crate::PyTLRequestWrapper".to_string();
+            return if obj {
+                "crate::TLObjectLike"
+            } else {
+                "crate::TLRequestLike"
+            }.to_string();
         }
 
         let btype = builtin_type(ty, path);
@@ -272,7 +276,7 @@ pub mod types {
                     result.push_str("::");
                 }
                 result.push('<');
-                result.push_str(&get_path(generic_ty, path));
+                result.push_str(&get_path(generic_ty, path, obj));
                 result.push('>');
             }
         }
@@ -285,11 +289,15 @@ pub mod types {
     }
 
     pub fn qual_name(ty: &Type) -> String {
-        get_path(ty, false)
+        get_path(ty, false, false)
+    }
+    
+    pub fn qual_name_obj(ty: &Type) -> String {
+        get_path(ty, false, true)
     }
 
     pub fn item_path(ty: &Type) -> String {
-        get_path(ty, true)
+        get_path(ty, true, false)
     }
 
     fn py_builtin_type(ty: &Type) -> Option<&'static str> {
@@ -367,7 +375,7 @@ pub mod types {
 
     pub fn get_into(ty: &Type) -> String {
         if ty.generic_ref {
-            return "crate::PyTLRequestWrapper".to_string();
+            return "crate::TLRequestLike".to_string();
         }
 
         let result = match builtin_into(ty) {
