@@ -108,7 +108,7 @@ impl PyDcOption {
             })?,
         };
         Ok(format!(
-            "DcOption(\n  id={},\n  ipv4={},\n  ipv6={},\n  auth_key={}\n)",
+            "DcOption(\n    id={},\n    ipv4={},\n    ipv6={},\n    auth_key={}\n)",
             self.id,
             self.ipv4.__repr__(),
             self.ipv6.__repr__(),
@@ -413,7 +413,7 @@ impl PyUpdatesState {
             format!("[\n{}  \n]", channels)
         };
         format!(
-            "UpdatesState(\n  pts: {},\n  qts: {},\n  date: {},\n  seq: {},\n  channels: {}\n)",
+            "UpdatesState(\n    pts: {},\n    qts: {},\n    date: {},\n    seq: {},\n    channels: {}\n)",
             self.pts, self.qts, self.date, self.seq, channels,
         )
     }
@@ -460,7 +460,7 @@ impl PyChannelState {
     }
 
     pub fn __repr__(&self) -> String {
-        format!("ChannelState(\n  id: {},\n  pts: {},\n)", self.id, self.pts)
+        format!("ChannelState(id: {}, pts: {})", self.id, self.pts)
     }
 }
 impl From<ChannelState> for PyChannelState {
@@ -590,7 +590,7 @@ impl PyUpdateStatePrimary {
 
     fn __repr__(&self) -> String {
         format!(
-            "UpdateState.Primary(\n  pts={},\n  date={},\n  seq={},\n)",
+            "UpdateState.Primary(\n    pts={},\n    date={},\n    seq={},\n)",
             self.pts, self.date, self.seq,
         )
     }
@@ -645,7 +645,7 @@ impl PyUpdateStateChannel {
 
     fn __repr__(&self) -> String {
         format!(
-            "UpdateState.Channel(\n  id={},\n  pts={},\n)",
+            "UpdateState.Channel(id={}, pts={})",
             self.id, self.pts,
         )
     }

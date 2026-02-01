@@ -165,6 +165,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
         if let Ok(v) = ob.extract::<PyPeerId>() {
             return Ok(Self(v.0));
         }
+        // Peer
         if let Ok(v) = ob.extract::<pytl::types::PyPeerUser>() {
             return Ok(Self(PyPeerId::user(v.user_id)?.0));
         }
@@ -174,6 +175,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
         if let Ok(v) = ob.extract::<pytl::types::PyPeerChannel>() {
             return Ok(Self(PyPeerId::channel(v.channel_id)?.0));
         }
+        // InputPeer
         if let Ok(_) = ob.extract::<pytl::types::PyInputPeerSelf>() {
             return Ok(Self(PyPeerId::self_user()?.0));
         }
@@ -186,6 +188,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
         if let Ok(v) = ob.extract::<pytl::types::PyInputPeerChannel>() {
             return Ok(Self(PyPeerId::channel(v.channel_id)?.0));
         }
+        // Entity
         if let Ok(v) = ob.extract::<pytl::types::PyUserEmpty>() {
             return Ok(Self(PyPeerId::user(v.id)?.0));
         }
@@ -207,8 +210,26 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
         if let Ok(v) = ob.extract::<pytl::types::PyChannelForbidden>() {
             return Ok(Self(PyPeerId::channel(v.id)?.0));
         }
+        // FullEntity
+        if let Ok(v) = ob.extract::<pytl::types::PyUserFull>() {
+             return Ok(Self(PyPeerId::user(v.id)?.0))
+        }
+        if let Ok(v) = ob.extract::<pytl::types::messages::PyChatFull>() {
+            let py = ob.py();
+            return Ok(Self(match v.full_chat {
+                pytl::enums::PyChatFull::Full(x) => PyPeerId::chat(x.0.borrow(py).id)?.0,
+                pytl::enums::PyChatFull::ChannelFull(x) => PyPeerId::channel(x.0.borrow(py).id)?.0,
+            }))
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyChatFull>() {
+             return Ok(Self(PyPeerId::chat(v.id)?.0))
+        }
+        if let Ok(v) = ob.extract::<pytl::types::PyChannelFull>() {
+             return Ok(Self(PyPeerId::channel(v.id)?.0))
+        }
+        let cls_name = ob.get_type().qualname()?;
         Err(PyTypeError::new_err(
-            "peer_id must be int, PeerId, InputPeer or Peer",
+            format!("expected PeerIdLike, got '{}'", cls_name)
         ))
     }
 }
@@ -446,11 +467,23 @@ impl PyPeerInfo {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[pyclass(name = "PeerRef", module = "grammers.sessions")]
 pub struct PyPeerRef {
     /// The peer identity.
     pub id: PyPeerId,
     /// The authority bound to both the sibling identity and the session of the logged-in user.
     pub auth: PyPeerAuth,
+}
+
+#[pymethods]
+impl PyPeerRef {
+    #[new]
+    fn new(id: PeerIdLike, auth: PeerAuthLike) -> Self {
+        Self {
+            id: PyPeerId(id.0),
+            auth: auth.0,
+        }
+    }
 }
 
 impl From<tl::enums::Peer> for PyPeerId {
