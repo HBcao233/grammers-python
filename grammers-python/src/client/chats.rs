@@ -4,9 +4,9 @@ use pyo3::prelude::*;
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::peer::PyUser;
 use crate::peer::Peer;
 use crate::peer::PyPeerMap;
+use crate::peer::PyUser;
 
 use super::PyClient;
 use crate::errors::PyInvocationError;
@@ -35,13 +35,11 @@ impl PyClient {
             .map_err(PyInvocationError::new)?;
 
         match res.pop() {
-            Some(user) => Python::attach(|py|
-                Py::new(py, PyUser::new(self, user))
-            ),
+            Some(user) => Python::attach(|py| Py::new(py, PyUser::new(self, user))),
             None => Err(PyIndexError::new_err("list index out of range")),
         }
     }
-    
+
     /// Resolves a username into the peer that owns it, if any.
     ///
     /// Note that this method is expensive to call, and can quickly cause long flood waits.
@@ -57,15 +55,12 @@ impl PyClient {
             username: username.into(),
             referer: None,
         };
-        let tl::types::contacts::ResolvedPeer { 
-            peer,
-            users,
-            chats,
-        } = match self.invoke(&request).await {
-            Ok(tl::enums::contacts::ResolvedPeer::Peer(p)) => p,
-            Err(err) if err.is("USERNAME_NOT_OCCUPIED") => return Ok(None),
-            Err(err) => return Err(PyInvocationError::new(err)),
-        };
+        let tl::types::contacts::ResolvedPeer { peer, users, chats } =
+            match self.invoke(&request).await {
+                Ok(tl::enums::contacts::ResolvedPeer::Peer(p)) => p,
+                Err(err) if err.is("USERNAME_NOT_OCCUPIED") => return Ok(None),
+                Err(err) => return Err(PyInvocationError::new(err)),
+            };
 
         let res = match peer {
             tl::enums::Peer::User(tl::types::PeerUser { user_id }) => users
@@ -89,7 +84,6 @@ impl PyClient {
         };
         Ok(res)
     }
-    
 }
 
 impl PyClient {

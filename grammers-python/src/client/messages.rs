@@ -8,9 +8,7 @@ use super::PyClient;
 
 #[derive(Clone)]
 #[pyclass(name = "HistoryMessageIter", module = "grammers.client")]
-pub struct PyHistoryMessageIter {
-    
-}
+pub struct PyHistoryMessageIter {}
 
 #[pymethods]
 impl PyHistoryMessageIter {
@@ -26,7 +24,7 @@ impl PyHistoryMessageIter {
     fn __anext__(slf: &Bound<'_, Self>) -> PyResult<Py<PyAny>> {
         Ok(slf.getattr("next")?.unbind())
     }
-    
+
     async fn next(&self) -> PyResult<Py<PyAny>> {
         todo!()
     }
@@ -39,9 +37,9 @@ impl PyClient {
         entity: EntityLike,
         message: InputMessageLike,
     ) -> pytl::types::PyMessage {
-        
+
     }*/
-    
+
     // edit_message
     // delete_messages
     // forward_messages
@@ -101,6 +99,6 @@ impl PyClient {
         min_id: usize,
         hash: usize,
     ) -> {
-        
+
     }*/
 }

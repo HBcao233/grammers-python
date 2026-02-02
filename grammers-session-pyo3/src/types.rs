@@ -644,9 +644,6 @@ impl PyUpdateStateChannel {
     }
 
     fn __repr__(&self) -> String {
-        format!(
-            "UpdateState.Channel(id={}, pts={})",
-            self.id, self.pts,
-        )
+        format!("UpdateState.Channel(id={}, pts={})", self.id, self.pts,)
     }
 }

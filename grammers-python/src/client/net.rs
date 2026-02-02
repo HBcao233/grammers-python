@@ -12,17 +12,19 @@ use crate::errors::PyInvocationError;
 impl PyClient {
     #[pyo3(name = "invoke")]
     async fn py_invoke(&self, request: TLRequestLike) -> PyResult<TLObjectLike> {
-        let dc_id = self
-            .session()
-            .home_dc_id()
-            .await?;
+        let dc_id = self.session().home_dc_id().await?;
         self.py_invoke_in_dc(dc_id, request).await
     }
 
     #[pyo3(name = "invoke_in_dc")]
     async fn py_invoke_in_dc(&self, dc_id: i32, request: TLRequestLike) -> PyResult<TLObjectLike> {
-        let response = self.do_invoke_in_dc(dc_id, request.to_bytes()).await.map_err(PyInvocationError::new)?;
-        TLObjectLike::from_bytes(&response).map_err(Into::into).map_err(PyInvocationError::new)
+        let response = self
+            .do_invoke_in_dc(dc_id, request.to_bytes())
+            .await
+            .map_err(PyInvocationError::new)?;
+        TLObjectLike::from_bytes(&response)
+            .map_err(Into::into)
+            .map_err(PyInvocationError::new)
     }
 }
 
@@ -36,10 +38,7 @@ impl PyClient {
         R::Return::from_bytes(&response).map_err(Into::into)
     }
 
-    pub async fn invoke<R: RemoteCall>(
-        &self,
-        request: &R,
-    ) -> Result<R::Return, InvocationError> {
+    pub async fn invoke<R: RemoteCall>(&self, request: &R) -> Result<R::Return, InvocationError> {
         let dc_id = self
             .session()
             .home_dc_id()

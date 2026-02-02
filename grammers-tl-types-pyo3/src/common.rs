@@ -1,7 +1,7 @@
 use pyo3::exceptions::PyNotImplementedError;
-use pyo3::prelude::*;
 use pyo3::exceptions::PyTypeError;
-use pyo3::types::{PyString, PyBytes, PyDict, PyMapping, PySequence, PyDateTime};
+use pyo3::prelude::*;
+use pyo3::types::{PyBytes, PyDateTime, PyDict, PyMapping, PySequence, PyString};
 
 use grammers_tl_types as tl;
 
@@ -143,7 +143,6 @@ impl<T: From<crate::enums::PyAccessPointRule>> From<PyRawVec_enums_AccessPointRu
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
 #[pyclass(module = "grammers.tl", subclass)]
 pub struct TLObject {}
@@ -156,7 +155,7 @@ impl TLObject {
         if indent.is_some() && indent > Some(20) {
             return Ok("...".to_string());
         }
-        
+
         let d;
         let (obj, cls_name) = if obj.is_instance_of::<TLObject>() {
             let cls_name = obj.get_type().qualname()?;
@@ -165,7 +164,7 @@ impl TLObject {
         } else {
             (obj, "TLObject".to_string())
         };
-        
+
         let next_indent = match indent {
             None => None,
             Some(x) => Some(x + 1),
@@ -208,7 +207,8 @@ impl TLObject {
                 return Ok(format!("{}()", class_name));
             }
 
-            let result = attrs.iter()
+            let result = attrs
+                .iter()
                 .map(|(key, value)| {
                     let value = TLObject::pretty_format(&value, next_indent)?;
                     let value = if key == "phone" {
@@ -216,22 +216,15 @@ impl TLObject {
                     } else {
                         value
                     };
-                    Ok(format!(
-                        "{}{}={}",
-                        current_indent,
-                        key,
-                        value,
-                    ))
+                    Ok(format!("{}{}={}", current_indent, key, value,))
                 })
                 .collect::<PyResult<Vec<String>>>()?
-                .join(comma_newline_or_space) + newline_or_empty;
+                .join(comma_newline_or_space)
+                + newline_or_empty;
 
             format!(
                 "{}({}{}{})",
-                class_name,
-                newline_or_empty,
-                result,
-                closing_indent,
+                class_name, newline_or_empty, result, closing_indent,
             )
         } else if obj.is_instance_of::<PyString>() {
             obj.repr()?.to_string()
@@ -245,25 +238,17 @@ impl TLObject {
                 .map(|i| {
                     let value = seq.get_item(i)?;
                     let value = TLObject::pretty_format(&value, next_indent)?;
-                    Ok(format!(
-                        "{}{}",
-                        current_indent,
-                        value,
-                    ))
+                    Ok(format!("{}{}", current_indent, value,))
                 })
                 .collect::<PyResult<Vec<String>>>()?
-                .join(comma_newline_or_space) + newline_or_empty;
+                .join(comma_newline_or_space)
+                + newline_or_empty;
 
-            format!(
-                "[{}{}{}]", 
-                newline_or_empty,
-                result,
-                closing_indent
-            )
+            format!("[{}{}{}]", newline_or_empty, result, closing_indent)
         } else {
             obj.repr()?.to_string()
         };
-        
+
         Ok(result)
     }
 
@@ -354,7 +339,7 @@ impl TLRequest {
     fn __str__(slf: &Bound<'_, Self>) -> PyResult<String> {
         TLObject::pretty_format(slf, Some(0))
     }
-    
+
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
         TLObject::pretty_format(slf, None)
     }

@@ -238,22 +238,38 @@ fn write_impl<W: Write>(file: &mut W, indent: &str, def: &Definition) -> io::Res
 {indent}    }}
 "#,
     )?;
-    
+
     // to_dict
-    let param_keys = def.params.iter()
-        .filter(|param| if let ParameterType::Normal { .. } = param.ty { true } else { false })
-        .map(|param| 
-            rustifier::parameters::attr_name(param)
-        )
+    let param_keys = def
+        .params
+        .iter()
+        .filter(|param| {
+            if let ParameterType::Normal { .. } = param.ty {
+                true
+            } else {
+                false
+            }
+        })
+        .map(|param| rustifier::parameters::attr_name(param))
         .collect::<Vec<String>>()
         .join(", ");
-    let param_values = def.params.iter()
-        .filter(|param| if let ParameterType::Normal { .. } = param.ty { true } else { false })
-        .map(|param| format!(
-            "\n{}            dict.set_item(\"{name}\", {name})?;",
-            indent,
-            name = rustifier::parameters::attr_name(param)
-        ))
+    let param_values = def
+        .params
+        .iter()
+        .filter(|param| {
+            if let ParameterType::Normal { .. } = param.ty {
+                true
+            } else {
+                false
+            }
+        })
+        .map(|param| {
+            format!(
+                "\n{}            dict.set_item(\"{name}\", {name})?;",
+                indent,
+                name = rustifier::parameters::attr_name(param)
+            )
+        })
         .collect::<Vec<String>>()
         .join("");
     writeln!(
@@ -667,11 +683,11 @@ fn write_definition<'a, W: Write>(
         write_deserializable(file, indent, def, metadata)?;
         write_from_tl(file, indent, def, metadata)?;
     }
-    
+
     if def.category == Category::Functions {
         write_rpc(file, indent, def, metadata)?;
     }
-    
+
     writeln!(file)?;
     Ok(())
 }

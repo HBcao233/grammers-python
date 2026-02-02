@@ -246,7 +246,8 @@ pub mod types {
                 "crate::TLObjectLike"
             } else {
                 "crate::TLRequestLike"
-            }.to_string();
+            }
+            .to_string();
         }
 
         let btype = builtin_type(ty, path);
@@ -291,7 +292,7 @@ pub mod types {
     pub fn qual_name(ty: &Type) -> String {
         get_path(ty, false, false)
     }
-    
+
     pub fn qual_name_obj(ty: &Type) -> String {
         get_path(ty, false, true)
     }

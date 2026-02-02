@@ -1,6 +1,6 @@
 use super::{
-    PeerIdLike, PyDcOption, PyPeerId, PyPeerInfo, PyPeerRef, PyUpdateState, PyUpdatesState,
-    UpdateStateLike, PeerInfoLike,
+    PeerIdLike, PeerInfoLike, PyDcOption, PyPeerId, PyPeerInfo, PyPeerRef, PyUpdateState,
+    PyUpdatesState, UpdateStateLike,
 };
 use pyo3::exceptions::{PyNotImplementedError, PyTypeError};
 use pyo3::prelude::*;

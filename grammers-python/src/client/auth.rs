@@ -4,14 +4,14 @@ use pyo3::prelude::*;
 
 use grammers_crypto::two_factor_auth::{calculate_2fa, check_p_and_g};
 use grammers_mtsender_pyo3::InvocationError;
-use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PeerInfoLike, PyUpdatesState, UpdateStateLike};
+use grammers_session_pyo3::{PeerInfoLike, PyPeerAuth, PyPeerId, PyUpdatesState, UpdateStateLike};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
 use crate::client::PyClient;
 use crate::errors::PyInvocationError;
-use crate::utils::extract_password_parameters;
 use crate::peer::PyUser;
+use crate::utils::extract_password_parameters;
 
 /// Login token needed to continue the login process after sending the code.
 #[derive(Clone)]
@@ -176,7 +176,7 @@ impl PyClient {
             Ok(user) => Ok(user),
             Err(e) if Python::attach(|py| e.is_instance_of::<PasswordRequiredError>(py)) => {
                 self._check_password(None).await
-            },
+            }
             Err(e) => Err(e),
         }?;
 
@@ -240,7 +240,9 @@ impl PyClient {
         };
 
         match result {
-            tl::enums::auth::Authorization::Authorization(x) => self._complete_login(x.into()).await,
+            tl::enums::auth::Authorization::Authorization(x) => {
+                self._complete_login(x.into()).await
+            }
             tl::enums::auth::Authorization::SignUpRequired(_) => Err(PyRuntimeError::new_err(
                 "API returned SignUpRequired even though we're logging in as a bot",
             )),
@@ -372,11 +374,7 @@ impl PyClient {
     /// else:
     ///     println!("Signed in!")
     /// ```
-    pub async fn sign_in(
-        &self,
-        token: PyLoginToken,
-        code: String,
-    ) -> PyResult<Py<PyUser>> {
+    pub async fn sign_in(&self, token: PyLoginToken, code: String) -> PyResult<Py<PyUser>> {
         match self
             .invoke(&tl::functions::auth::SignIn {
                 phone_number: token.phone.clone(),
@@ -386,7 +384,9 @@ impl PyClient {
             })
             .await
         {
-            Ok(tl::enums::auth::Authorization::Authorization(x)) => self._complete_login(x.into()).await,
+            Ok(tl::enums::auth::Authorization::Authorization(x)) => {
+                self._complete_login(x.into()).await
+            }
             Ok(tl::enums::auth::Authorization::SignUpRequired(_)) => {
                 Err(PySignUpRequiredError::new())
             }
@@ -480,7 +480,9 @@ impl PyClient {
         };
 
         match self.invoke(&check_password).await {
-            Ok(tl::enums::auth::Authorization::Authorization(x)) => self._complete_login(x.into()).await,
+            Ok(tl::enums::auth::Authorization::Authorization(x)) => {
+                self._complete_login(x.into()).await
+            }
             Ok(tl::enums::auth::Authorization::SignUpRequired(_x)) => {
                 Err(PySignUpRequiredError::new())
             }
@@ -578,9 +580,7 @@ impl PyClient {
 
         // In the extremely rare case where `Err` happens, there's not much we can do.
         // `message_box` will try to correct its state as updates arrive.
-        let update_state = self
-            .invoke(&tl::functions::updates::GetState {})
-            .await;
+        let update_state = self.invoke(&tl::functions::updates::GetState {}).await;
         if let Ok(tl::enums::updates::State::State(state)) = update_state {
             session
                 .set_update_state(UpdateStateLike::All(PyUpdatesState {
@@ -593,8 +593,6 @@ impl PyClient {
                 .await?;
         }
 
-        Python::attach(|py|
-            Py::new(py, PyUser::new(self, user.into()))
-        )
+        Python::attach(|py| Py::new(py, PyUser::new(self, user.into())))
     }
 }

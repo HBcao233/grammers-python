@@ -249,17 +249,15 @@ impl PyClient {
                 .unbind()
         })
     }
-    
+
     #[getter(me)]
     fn _me(&self) -> Option<Py<PyUser>> {
         match &self.inner.lock().unwrap().me {
             None => None,
-            Some(me) => Some(Python::attach(|py| 
-                me.bind(py).clone().unbind()
-            ))
+            Some(me) => Some(Python::attach(|py| me.bind(py).clone().unbind())),
         }
     }
-    
+
     #[setter(me)]
     pub fn set_me(&self, user: Py<PyUser>) {
         self.inner.lock().unwrap().me = Some(user);

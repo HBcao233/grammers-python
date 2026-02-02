@@ -4,7 +4,7 @@ pub mod utils;
 
 pub use common::{
     PyRawVec_enums_AccessPointRule, PyRawVec_enums_IpPort, PyRawVec_enums_TlsBlock,
-    PyRawVec_types_FutureSalt
+    PyRawVec_types_FutureSalt,
 };
 pub use common::{TLObject, TLRequest};
 pub use generated::{TLObjectLike, TLRequestLike, enums, functions, types};

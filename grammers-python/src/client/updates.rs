@@ -15,7 +15,7 @@ use std::time::{Duration, Instant};
 
 use grammers_mtsender_pyo3::InvocationError;
 use grammers_session::updates::{MessageBoxes, PrematureEndReason, State, UpdatesLike};
-use grammers_session_pyo3::{PyPeerId, PeerInfoLike, PyUpdatesState, Session, UpdateStateLike};
+use grammers_session_pyo3::{PeerInfoLike, PyPeerId, PyUpdatesState, Session, UpdateStateLike};
 use grammers_tl_types as tl;
 
 use log::{trace, warn};

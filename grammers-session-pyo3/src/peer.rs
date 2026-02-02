@@ -1,6 +1,6 @@
-use pyo3::exceptions::{PyTypeError, PyValueError, PyNotImplementedError};
-use pyo3::prelude::*;
 use pyo3::PyTypeInfo;
+use pyo3::exceptions::{PyNotImplementedError, PyTypeError, PyValueError};
+use pyo3::prelude::*;
 use pyo3::types::{PyDict, PyDictMethods, PyType};
 
 use grammers_tl_types as tl;
@@ -103,7 +103,7 @@ impl PyPeerId {
             Ok(dict.unbind())
         })
     }
-    
+
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
         pytl::TLObject::pretty_format(&slf.call_method0("to_dict")?, None)
     }
@@ -225,25 +225,26 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
         }
         // FullEntity
         if let Ok(v) = ob.extract::<pytl::types::PyUserFull>() {
-             return Ok(Self(PyPeerId::user(v.id)?.0))
+            return Ok(Self(PyPeerId::user(v.id)?.0));
         }
         if let Ok(v) = ob.extract::<pytl::types::messages::PyChatFull>() {
             let py = ob.py();
             return Ok(Self(match v.full_chat {
                 pytl::enums::PyChatFull::Full(x) => PyPeerId::chat(x.0.borrow(py).id)?.0,
                 pytl::enums::PyChatFull::ChannelFull(x) => PyPeerId::channel(x.0.borrow(py).id)?.0,
-            }))
+            }));
         }
         if let Ok(v) = ob.extract::<pytl::types::PyChatFull>() {
-             return Ok(Self(PyPeerId::chat(v.id)?.0))
+            return Ok(Self(PyPeerId::chat(v.id)?.0));
         }
         if let Ok(v) = ob.extract::<pytl::types::PyChannelFull>() {
-             return Ok(Self(PyPeerId::channel(v.id)?.0))
+            return Ok(Self(PyPeerId::channel(v.id)?.0));
         }
         let cls_name = ob.get_type().qualname()?;
-        Err(PyTypeError::new_err(
-            format!("expected PeerIdLike, got '{}'", cls_name)
-        ))
+        Err(PyTypeError::new_err(format!(
+            "expected PeerIdLike, got '{}'",
+            cls_name
+        )))
     }
 }
 
@@ -276,7 +277,7 @@ impl PyPeerKind {
             Ok(dict.unbind())
         })
     }
-    
+
     fn __repr__(&self) -> String {
         match self {
             Self::User => "PeerKind.User",
@@ -317,7 +318,7 @@ impl PyPeerAuth {
             Ok(dict.unbind())
         })
     }
-    
+
     fn __repr__(&self) -> String {
         format!("PeerAuth({})", self.0)
     }
@@ -388,7 +389,7 @@ impl PyChannelKind {
             Ok(dict.unbind())
         })
     }
-    
+
     fn __repr__(&self) -> String {
         match self {
             Self::Broadcast => "ChannelKind.Broadcast",
@@ -402,7 +403,6 @@ impl PyChannelKind {
         *self as i64
     }
 }
-
 
 pub enum PeerInfoLike {
     User {
@@ -434,7 +434,7 @@ pub enum PeerInfoLike {
         auth: Option<PyPeerAuth>,
         /// Channel kind, useful to determine what the possible permissions on it are.
         kind: Option<PyChannelKind>,
-    }
+    },
 }
 
 impl<'a, 'py> FromPyObject<'a, 'py> for PeerInfoLike {
@@ -449,9 +449,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerInfoLike {
             });
         }
         if let Ok(x) = ob.extract::<PyPeerInfoChat>() {
-            return Ok(Self::Chat {
-                id: x.id,
-            });
+            return Ok(Self::Chat { id: x.id });
         }
         if let Ok(x) = ob.extract::<PyPeerInfoChannel>() {
             return Ok(Self::Channel {
@@ -461,9 +459,10 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerInfoLike {
             });
         }
         let cls_name = ob.get_type().qualname()?;
-        Err(PyTypeError::new_err(
-            format!("expected PeerInfo, got '{}'.", cls_name)
-        ))
+        Err(PyTypeError::new_err(format!(
+            "expected PeerInfo, got '{}'.",
+            cls_name
+        )))
     }
 }
 
@@ -473,18 +472,22 @@ impl<'py> IntoPyObject<'py> for PeerInfoLike {
     type Error = PyErr;
     fn into_pyobject(self, py: Python<'py>) -> PyResult<Bound<'py, PyPeerInfo>> {
         match self {
-            Self::User { id, auth, bot, is_self } => Ok(Bound::new(
+            Self::User {
+                id,
+                auth,
+                bot,
+                is_self,
+            } => Ok(Bound::new(
                 py,
-                PyPeerInfoUser::new(id, auth.map(PeerAuthLike), bot, is_self)?
-            )?.into_super()),
-            Self::Chat { id } => Ok(Bound::new(
-                py,
-                PyPeerInfoChat::new(id)?
-            )?.into_super()),
+                PyPeerInfoUser::new(id, auth.map(PeerAuthLike), bot, is_self)?,
+            )?
+            .into_super()),
+            Self::Chat { id } => Ok(Bound::new(py, PyPeerInfoChat::new(id)?)?.into_super()),
             Self::Channel { id, auth, kind } => Ok(Bound::new(
                 py,
-                PyPeerInfoChannel::new(id, auth.map(PeerAuthLike), kind)?
-            )?.into_super()),
+                PyPeerInfoChannel::new(id, auth.map(PeerAuthLike), kind)?,
+            )?
+            .into_super()),
         }
     }
 }
@@ -497,7 +500,7 @@ impl PeerInfoLike {
             Self::Channel { id, .. } => PyPeerId::channel(*id).unwrap(),
         }
     }
-    
+
     pub fn auth(&self) -> Option<PyPeerAuth> {
         match self {
             Self::User { auth, .. } => *auth,
@@ -519,13 +522,13 @@ impl PyPeerInfo {
     fn user(py: Python<'_>) -> Py<PyType> {
         PyPeerInfoUser::type_object(py).unbind()
     }
-    
+
     #[classattr]
     #[pyo3(name = "Chat")]
     fn chat(py: Python<'_>) -> Py<PyType> {
         PyPeerInfoChat::type_object(py).unbind()
     }
-    
+
     #[classattr]
     #[pyo3(name = "Channel")]
     fn channel(py: Python<'_>) -> Py<PyType> {
@@ -537,7 +540,7 @@ impl PyPeerInfo {
             "PeerInfo subclasses must implement to_dict()",
         ))
     }
-    
+
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
         pytl::TLObject::pretty_format(&slf.call_method0("to_dict")?, None)
     }
@@ -581,19 +584,19 @@ impl PyPeerInfoUser {
         };
         Ok(base.add_subclass(x))
     }
-    
+
     #[getter]
     fn id(&self) -> PyPeerId {
         PyPeerId::user(self.id).unwrap()
     }
-    
+
     #[setter(id)]
     fn set_id(&mut self, id: PeerIdLike) -> PyResult<()> {
         let _ = PyPeerId::user(id.0)?;
         self.id = id.0;
         Ok(())
     }
-    
+
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
         Python::attach(|py| {
             let dict = PyDict::new(py);
@@ -621,19 +624,19 @@ impl PyPeerInfoChat {
         let base = PyClassInitializer::from(PyPeerInfo {});
         Ok(base.add_subclass(Self { id }))
     }
-    
+
     #[getter]
     fn id(&self) -> PyPeerId {
         PyPeerId::chat(self.id).unwrap()
     }
-    
+
     #[setter(id)]
     fn set_id(&mut self, id: PeerIdLike) -> PyResult<()> {
         let _ = PyPeerId::chat(id.0)?;
         self.id = id.0;
         Ok(())
     }
-    
+
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
         Python::attach(|py| {
             let dict = PyDict::new(py);
@@ -679,19 +682,19 @@ impl PyPeerInfoChannel {
         };
         Ok(base.add_subclass(x))
     }
-    
+
     #[getter]
     fn id(&self) -> PyPeerId {
         PyPeerId::channel(self.id).unwrap()
     }
-    
+
     #[setter(id)]
     fn set_id(&mut self, id: PeerIdLike) -> PyResult<()> {
         let _ = PyPeerId::channel(id.0)?;
         self.id = id.0;
         Ok(())
     }
-    
+
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
         Python::attach(|py| {
             let dict = PyDict::new(py);
@@ -703,7 +706,6 @@ impl PyPeerInfoChannel {
         })
     }
 }
-
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[pyclass(name = "PeerRef", module = "grammers.sessions")]

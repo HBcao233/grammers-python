@@ -33,8 +33,7 @@ pub struct PyPeerMap {
 }
 
 #[pymethods]
-impl PyPeerMap {
-}
+impl PyPeerMap {}
 
 impl PyPeerMap {
     /// Retrieve the full `Peer` object given its `PeerId`.
