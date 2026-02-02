@@ -1,7 +1,7 @@
 from ..sessions import Session, SqliteSession
 from .. import tl
-from grammers._rs.client import (
-    Client,
+from grammers._rs.client import Client
+from .types import (
     User,
     Group,
     Channel,
@@ -27,6 +27,9 @@ __all__ = [
     'PasswordRequiredError',
     'InvalidCodeError',
     'InvalidPasswordError',
+    'User',
+    'Group',
+    'Channel',
 ]
 
 

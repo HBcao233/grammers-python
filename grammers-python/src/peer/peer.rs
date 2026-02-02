@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 use super::{PyChannel, PyGroup, PyUser};
 
 use crate::PyClient;
-use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PeerInfoLike};
+use grammers_session_pyo3::{PeerInfoLike, PyPeerAuth, PyPeerId};
 use grammers_tl_types as tl;
 
 // use crate::media::ChatPhoto;
@@ -39,43 +39,37 @@ impl Clone for Peer {
 
 impl Peer {
     pub(crate) fn from_user(client: &PyClient, user: tl::enums::User) -> PyResult<Self> {
-        Ok(Self::User(Python::attach(|py| 
+        Ok(Self::User(Python::attach(|py| {
             Py::new(py, PyUser::from_raw(client, user))
-        )?))
+        })?))
     }
 
     pub fn from_raw(client: &PyClient, chat: tl::enums::Chat) -> PyResult<Self> {
         use tl::enums::Chat as C;
 
-        Python::attach(|py| Ok(match chat {
-            C::Empty(_) | C::Chat(_) | C::Forbidden(_) => Self::Group(
-                Py::new(py, PyGroup::from_raw(client, chat)?)?
-            ),
-            C::Channel(ref channel) => {
-                if channel.broadcast {
-                    Self::Channel(
-                        Py::new(py, PyChannel::from_raw(client, chat)?)?
-                    )
-                } else {
-                    Self::Group(
-                        Py::new(py, PyGroup::from_raw(client, chat)?)?
-                    )
+        Python::attach(|py| {
+            Ok(match chat {
+                C::Empty(_) | C::Chat(_) | C::Forbidden(_) => {
+                    Self::Group(Py::new(py, PyGroup::from_raw(client, chat)?)?)
                 }
-            },
-            C::ChannelForbidden(ref channel) => {
-                if channel.broadcast {
-                    Self::Channel(
-                        Py::new(py, PyChannel::from_raw(client, chat)?)?
-                    )
-                } else {
-                    Self::Group(
-                        Py::new(py, PyGroup::from_raw(client, chat)?)?
-                    )
+                C::Channel(ref channel) => {
+                    if channel.broadcast {
+                        Self::Channel(Py::new(py, PyChannel::from_raw(client, chat)?)?)
+                    } else {
+                        Self::Group(Py::new(py, PyGroup::from_raw(client, chat)?)?)
+                    }
                 }
-            },
-        }))
+                C::ChannelForbidden(ref channel) => {
+                    if channel.broadcast {
+                        Self::Channel(Py::new(py, PyChannel::from_raw(client, chat)?)?)
+                    } else {
+                        Self::Group(Py::new(py, PyGroup::from_raw(client, chat)?)?)
+                    }
+                }
+            })
+        })
     }
-    
+
     pub fn id(&self) -> PyPeerId {
         Python::attach(|py| match self {
             Self::User(x) => x.borrow(py).id(),
@@ -83,7 +77,7 @@ impl Peer {
             Self::Channel(x) => x.borrow(py).id(),
         })
     }
-    
+
     pub fn auth(&self) -> Option<PyPeerAuth> {
         Python::attach(|py| match self {
             Self::User(x) => x.borrow(py).auth(),
@@ -91,7 +85,7 @@ impl Peer {
             Self::Channel(x) => x.borrow(py).auth(),
         })
     }
-    
+
     pub fn info(&self) -> PeerInfoLike {
         Python::attach(|py| match self {
             Self::User(x) => x.borrow(py).info(),

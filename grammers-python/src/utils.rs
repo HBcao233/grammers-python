@@ -15,7 +15,7 @@ use chrono::{DateTime, Utc};
 */
 use pyo3::call::PyCallArgs;
 use pyo3::types::{PyAnyMethods, PyDateTime};
-use pyo3::{Py, PyAny, PyErr, PyResult, Python, FromPyObject, IntoPyObject};
+use pyo3::{FromPyObject, IntoPyObject, Py, PyAny, PyErr, PyResult, Python};
 
 use grammers_session_pyo3::utils::into_future;
 use grammers_tl_types as tl;
@@ -56,19 +56,6 @@ pub fn asyncio() -> PyResult<Py<PyAny>> {
 pub fn event_loop() -> PyResult<Py<PyAny>> {
     let asyncio = asyncio()?;
     Python::attach(|py| asyncio.call_method0(py, "get_running_loop"))
-}
-
-#[derive(FromPyObject, IntoPyObject)]
-pub struct PyAnyWrapper(pub Py<PyAny>);
-impl Clone for PyAnyWrapper {
-    fn clone(&self) -> Self {
-        Self(Python::attach(|py| self.0.bind(py).clone().unbind()))
-    }
-}
-impl From<Py<PyAny>> for PyAnyWrapper {
-    fn from(x: Py<PyAny>) -> Self {
-        PyAnyWrapper(x)
-    }
 }
 
 #[derive(FromPyObject, IntoPyObject)]

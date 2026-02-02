@@ -84,7 +84,7 @@ class ChannelKind:
 
 class PeerInfo:
     @final
-    class User(PeerInfo): ...
+    class User(PeerInfo):
         def __new__(
             cls,
             id: int,

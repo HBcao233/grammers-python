@@ -6,11 +6,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use pyo3::prelude::*;
-use pyo3::types::{PyDict, PyDateTime};
 use pyo3::exceptions::PyTypeError;
+use pyo3::prelude::*;
+use pyo3::types::{PyDateTime, PyDict};
 
-use grammers_session_pyo3::{PyChannelKind, PyPeerAuth, PyPeerId, PeerInfoLike, PyPeerRef};
+use grammers_session_pyo3::{PeerInfoLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerRef};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
@@ -24,7 +24,7 @@ struct ChannelData {
     pub title: String,
     pub access_hash: Option<PyPeerAuth>,
     pub username: Option<String>,
-    pub usernames: Vec<String>,
+    pub usernames: Vec<pytl::enums::PyUsername>,
     pub photo: Option<pytl::enums::PyChatPhoto>,
     pub date: Option<PyDateTimeWrapper>,
     pub date_timestamp: Option<i32>,
@@ -88,18 +88,18 @@ struct ChannelData {
 #[pyclass(name = "Channel", module = "grammers.client", extends = pytl::TLObject)]
 pub struct PyChannel {
     pub(crate) client: PyClient,
-    
+
     /// Return the unique identifier for this channel.
     #[pyo3(get)]
     pub id: PyPeerId,
-    
+
     /// Return the title of this channel.
     #[pyo3(get, set)]
     pub title: String,
-    
+
     #[pyo3(get, set)]
     pub access_hash: Option<PyPeerAuth>,
-    
+
     /// Return the public @username of this channel, if any.
     ///
     /// The returned username does not contain the "@" prefix.
@@ -108,7 +108,7 @@ pub struct PyChannel {
     /// as https://t.me/username.
     #[pyo3(get, set)]
     pub username: Option<String>,
-    
+
     /// Return collectible usernames of this channel, if any.
     ///
     /// The returned usernames do not contain the "@" prefix.
@@ -116,12 +116,12 @@ pub struct PyChannel {
     /// Outside of the application, people may link to this user with one of its username, such
     /// as https://t.me/username.
     #[pyo3(get, set)]
-    pub usernames: Vec<String>,
-    
+    pub usernames: Vec<pytl::enums::PyUsername>,
+
     /// Return the photo of this channel, if any.
     #[pyo3(get, set)]
     pub photo: Option<pytl::enums::PyChatPhoto>,
-    
+
     #[pyo3(get)]
     pub date: Option<PyDateTimeWrapper>,
     #[pyo3(get)]
@@ -130,12 +130,12 @@ pub struct PyChannel {
     pub until_date: Option<PyDateTimeWrapper>,
     #[pyo3(get)]
     pub until_date_timestamp: Option<i32>,
-    
+
     #[pyo3(get, set)]
     pub broadcast: bool,
     #[pyo3(get, set)]
     pub megagroup: bool,
-    
+
     #[pyo3(get, set)]
     pub creator: Option<bool>,
     #[pyo3(get, set)]
@@ -221,19 +221,26 @@ pub struct PyChannel {
 }
 
 impl PyChannel {
-    pub fn from_raw(client: &PyClient, chat: tl::enums::Chat) -> PyResult<PyClassInitializer<Self>> {
+    pub fn from_raw(
+        client: &PyClient,
+        chat: tl::enums::Chat,
+    ) -> PyResult<PyClassInitializer<Self>> {
         use tl::enums::Chat as C;
 
         let (id, data) = match chat {
-            C::Empty(_) | C::Chat(_) | C::Forbidden(_) => return Err(PyTypeError::new_err(
-                "cannot create from group chat"
-            )),
-            C::Channel(x) if !x.broadcast => return Err(PyTypeError::new_err(
-                "tried to create broadcast channel from megagroup"
-            )),
-            C::ChannelForbidden(x) if !x.broadcast => return Err(PyTypeError::new_err(
-                "tried to create broadcast channel from megagroup"
-            )),
+            C::Empty(_) | C::Chat(_) | C::Forbidden(_) => {
+                return Err(PyTypeError::new_err("cannot create from group chat"));
+            }
+            C::Channel(x) if !x.broadcast => {
+                return Err(PyTypeError::new_err(
+                    "tried to create broadcast channel from megagroup",
+                ));
+            }
+            C::ChannelForbidden(x) if !x.broadcast => {
+                return Err(PyTypeError::new_err(
+                    "tried to create broadcast channel from megagroup",
+                ));
+            }
             C::Channel(x) => (
                 PyPeerId::channel(x.id).unwrap(),
                 ChannelData {
@@ -276,55 +283,54 @@ impl PyChannel {
                         let x = x.photo.into();
                         match x {
                             pytl::enums::PyChatPhoto::Photo(_) => Some(x),
-                            _ => None
+                            _ => None,
                         }
                     },
-                    date: Some(Python::attach(|py|
+                    date: Some(Python::attach(|py| {
                         PyDateTime::from_timestamp(py, x.date as f64, None)
                             .map(|x| x.unbind().into())
-                    )?),
+                    })?),
                     date_timestamp: Some(x.date),
-                    restriction_reason: x.restriction_reason
+                    restriction_reason: x
+                        .restriction_reason
                         .unwrap_or_default()
                         .into_iter()
                         .map(|x| PyRestrictionReason::from_raw(&x).into())
                         .collect(),
                     admin_rights: match x.admin_rights {
                         Some(y) => Some(y.into()),
-                        None if x.creator => Some(pytl::types::PyChatAdminRights {
-                            add_admins: true,
-                            other: true,
-                            change_info: true,
-                            post_messages: true,
-                            anonymous: false,
-                            ban_users: true,
-                            delete_messages: true,
-                            edit_messages: true,
-                            invite_users: true,
-                            manage_call: true,
-                            pin_messages: true,
-                            manage_topics: true,
-                            post_stories: true,
-                            edit_stories: true,
-                            delete_stories: true,
-                            manage_direct_messages: true,
-                        }.into()),
+                        None if x.creator => Some(
+                            pytl::types::PyChatAdminRights {
+                                add_admins: true,
+                                other: true,
+                                change_info: true,
+                                post_messages: true,
+                                anonymous: false,
+                                ban_users: true,
+                                delete_messages: true,
+                                edit_messages: true,
+                                invite_users: true,
+                                manage_call: true,
+                                pin_messages: true,
+                                manage_topics: true,
+                                post_stories: true,
+                                edit_stories: true,
+                                delete_stories: true,
+                                manage_direct_messages: true,
+                            }
+                            .into(),
+                        ),
                         None => None,
                     },
                     banned_rights: x.banned_rights.map(Into::into),
                     default_banned_rights: x.default_banned_rights.map(Into::into),
                     participants_count: x.participants_count,
-                    usernames: x.usernames.as_deref()
-                        .map_or(Vec::new(), |usernames| {
-                            usernames
-                                .iter()
-                                .map(|username| match username {
-                                    tl::enums::Username::Username(username) => {
-                                        username.username.clone()
-                                    }
-                                })
-                                .collect()
-                        }),
+                    usernames: x
+                        .usernames
+                        .unwrap_or(Vec::new())
+                        .into_iter()
+                        .map(Into::into)
+                        .collect(),
                     stories_max_id: x.stories_max_id.map(Into::into),
                     color: x.color.map(Into::into),
                     profile_color: x.profile_color.map(Into::into),
@@ -332,17 +338,17 @@ impl PyChannel {
                     level: x.level,
                     subscription_until_date: match x.subscription_until_date {
                         None => None,
-                        Some(x) => Some(Python::attach(|py|
+                        Some(x) => Some(Python::attach(|py| {
                             PyDateTime::from_timestamp(py, x as f64, None)
-                            .map(|x| x.unbind().into())
-                        )?),
+                                .map(|x| x.unbind().into())
+                        })?),
                     },
                     subscription_until_date_timestamp: x.subscription_until_date,
                     bot_verification_icon: x.bot_verification_icon,
                     send_paid_messages_stars: x.send_paid_messages_stars,
                     linked_monoforum_id: x.linked_monoforum_id,
                     ..Default::default()
-                }
+                },
             ),
             C::ChannelForbidden(x) => (
                 PyPeerId::channel(x.id).unwrap(),
@@ -353,13 +359,13 @@ impl PyChannel {
                     megagroup: x.megagroup,
                     until_date: match x.until_date {
                         None => None,
-                        Some(x) => Some(Python::attach(|py|
+                        Some(x) => Some(Python::attach(|py| {
                             PyDateTime::from_timestamp(py, x as f64, None)
                                 .map(|x| x.unbind().into())
-                        )?),
+                        })?),
                     },
                     ..Default::default()
-                } 
+                },
             ),
         };
         let ChannelData {
@@ -475,16 +481,16 @@ impl PyChannel {
         };
         Ok(base.add_subclass(sub))
     }
-    
+
     pub fn id(&self) -> PyPeerId {
         self.id
     }
-    
+
     /// Non-min auth stored in the channel, if any.
     pub fn auth(&self) -> Option<PyPeerAuth> {
         self.access_hash
     }
-    
+
     pub fn info(&self) -> PeerInfoLike {
         PeerInfoLike::Channel {
             id: self.id.bare_id().unwrap(),
@@ -492,7 +498,7 @@ impl PyChannel {
             kind: self.kind(),
         }
     }
-    
+
     /// Convert the channel to its reference.
     ///
     /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
@@ -504,7 +510,7 @@ impl PyChannel {
             None => session.peer_ref(id).await?,
         })
     }
-    
+
     pub fn into_dict(self) -> PyResult<Py<PyDict>> {
         let PyChannel {
             id,
@@ -623,11 +629,13 @@ impl PyChannel {
     fn new(client: &PyClient, chat: pytl::enums::PyChat) -> PyResult<PyClassInitializer<Self>> {
         PyChannel::from_raw(client, chat.into())
     }
-    
+
     fn to_bytes(&self) -> PyResult<Vec<u8>> {
-        Err(PyTypeError::new_err("grammers.client.Group can't to_bytes()"))
+        Err(PyTypeError::new_err(
+            "grammers.client.Group can't to_bytes()",
+        ))
     }
-    
+
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
         self.clone().into_dict()
     }
@@ -643,12 +651,12 @@ impl PyChannel {
             Some(PyChannelKind::Broadcast)
         }
     }
-    
+
     #[getter]
     pub fn is_megagroup(&self) -> bool {
         self.megagroup
     }
-    
+
     #[getter]
     pub fn is_gigagroup(&self) -> bool {
         matches!(self.gigagroup, Some(true))

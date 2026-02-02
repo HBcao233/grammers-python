@@ -2,14 +2,12 @@ from typing import Awaitable, Callable, Optional, Protocol, Self
 from . import tl
 from .tl import types
 from ..sessions import Session
-
-class LoginToken:
-    @property
-    def phone(self) -> str: ...
-    @property
-    def phone_code_hash(self) -> str: ...
-    def __new__(cls, phone: str, phone_code_hash: str) -> Self: ...
-    def __repr__(self) -> str: ...
+from .types import (
+    LoginToken,
+    User,
+    Group,
+    Channel,
+)
 
 class PasswordCallback(Protocol):
     def __call__(self, hint: str) -> str | Awaitable[str]: ...
@@ -59,7 +57,7 @@ class Client:
         lang_code: Optional[str] = None,
         system_lang_code: Optional[str] = None,
         use_ipv6: bool = False,
-    ) -> Client:
+    ) -> Self:
         """
         Create client instanse.
 
@@ -76,7 +74,7 @@ class Client:
                 The *api_hash* part of the Telegram API key, as string.
                 E.g.: '0123456789abcdef0123456789abcdef'.
         """
-    
+
     async def invoke(self, request: tl.TLRequest) -> tl.TLObject:
         """
         Invoke a raw API call. This directly sends the request to Telegram's servers.
@@ -226,18 +224,18 @@ class Client:
         automatically. If saving fails, it is recommended to [`Client.sign_out`]. If the session is never
         saved post-login, then the authorization will be "lost" in the list of logged-in clients, since it
         is unaccessible.
-        
+
         Examples
-        
+
         ```
         # API_HASH: str = ""
         # PHONE: str = ""
         def ask_code_to_user() -> str:
             pass
-        
+
         token = await client.request_login_code(PHONE, API_HASH)
         code = ask_code_to_user()
-        
+
         try:
             let user = await client.sign_in(token, code)
         except errors.PasswordRequiredError as e:
@@ -247,7 +245,7 @@ class Client:
             print('Sign up required')
         except errors.RpcError as e:
             print('Failed to sign in as a user:\n', traceback.format_exc(e))
-        
+
         if user.first_name:
             print(f"Signed in as {user.first_name}!")
         else:
@@ -261,59 +259,61 @@ class Client:
         It's called automatically when we get PasswordRequiredError during sign in.
         """
         ...
-    async def check_password(self, password_info: types.account.Password, password: str) -> types.User:
+    async def check_password(
+        self, password_info: types.account.Password, password: str
+    ) -> types.User:
         """
         Sign in using two-factor authentication (user password).
-        
+
         [`password_token`] can be obtained from [`PasswordRequiredError`] error after the
         [`Client.sign_in`] method fails.
-        
+
         Examples
-        
+
         ```
         # const API_HASH: &str = "";
         # const PHONE: &str = "";
         def get_user_password(hint: str) -> String:
             pass
-        
+
         # let token = await client.request_login_code(PHONE, API_HASH)
         # let code = "";
-        
+
         # ... enter phone number, request login code ...
-        
+
         try:
             let user = await client.sign_in(token, code)
         except errors.PasswordRequiredError as e:
             password_token = e.password_token
             password = get_user_password(password_token.hint)
-        
+
             try:
                 user = await client.check_password(password_token, password)
             except errors.RpcError as e:
                 print('Sign in required')
         except errors.RpcError as e:
             print('Failed to sign in as a user:', traceback.format_exc(e))
-        
+
         ```
         """
         ...
-    
+
     async def sign_out(self) -> types.auth.LoggedOut:
         """
         Signs out of the account authorized by this client's session.
-        
+
         If the client was not logged in, this method raise RpcError.
-        
+
         The client is not disconnected after signing out.
-        
+
         Note that after using this method you will have to sign in again. If all you want to do
         is disconnect, simply call `await client.stop()`.
-        
+
         Examples
-        
+
         ```
         from grammers import errors
-        
+
         try:
             await client.sign_out()
         except errors.RpcError:
@@ -328,12 +328,14 @@ class Client:
         Signals all clients sharing the same sender pool to disconnect.
         """
         ...
-    async def _check_password(self, password_info: types.account.Password | None = None) -> types.User:
+    async def _check_password(
+        self, password_info: types.account.Password | None = None
+    ) -> types.User:
         """
         Check password used by `Client.authorize`
-        
+
         Pseudo-code
-        
+
         ```
         async def _check_password(self, password_info: types.account.Password | None = None) -> types.User:
             if password_info is None:

@@ -35,7 +35,7 @@ mod _rs {
 
     #[pymodule_export]
     use super::client::client_;
-    
+
     #[pymodule_init]
     fn init(_m: &Bound<'_, PyModule>) -> PyResult<()> {
         // pyo3_asyncio::tokio::init_multi_thread();
