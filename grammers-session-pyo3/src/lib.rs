@@ -4,7 +4,7 @@ mod types;
 pub mod utils;
 
 pub use peer::{
-    PeerIdLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerKind, PyPeerRef,
+    PeerIdLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerKind, PyPeerRef, PeerInfoLike
 };
 pub use session::{PySession, Session};
 pub use types::{

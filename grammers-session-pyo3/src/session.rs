@@ -1,6 +1,6 @@
 use super::{
     PeerIdLike, PyDcOption, PyPeerId, PyPeerInfo, PyPeerRef, PyUpdateState, PyUpdatesState,
-    UpdateStateLike,
+    UpdateStateLike, PeerInfoLike,
 };
 use pyo3::exceptions::{PyNotImplementedError, PyTypeError};
 use pyo3::prelude::*;
@@ -227,7 +227,7 @@ impl Session {
         Ok(())
     }
 
-    pub async fn peer(&self, peer: PyPeerId) -> PyResult<Option<PyPeerInfo>> {
+    pub async fn peer(&self, peer: PyPeerId) -> PyResult<Option<PeerInfoLike>> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let peer = Py::new(py, peer)?;
@@ -242,7 +242,7 @@ impl Session {
             Ok(if res.is_none() {
                 None
             } else {
-                let res = res.cast::<PyPeerInfo>().map_err(|e| {
+                let res = res.extract::<PeerInfoLike>().map_err(|e| {
                     let cls_name = match Python::attach(|py| {
                         Ok(self
                             .inner
@@ -256,7 +256,7 @@ impl Session {
                     };
                     PyTypeError::new_err(format!("{}.peer(): {}", cls_name, e))
                 })?;
-                Some(res.borrow().clone())
+                Some(res)
             })
         })
     }
@@ -269,10 +269,9 @@ impl Session {
             .map(|auth| PyPeerRef { id: peer, auth }))
     }
 
-    pub async fn cache_peer(&self, peer_info: PyPeerInfo) -> PyResult<()> {
+    pub async fn cache_peer(&self, peer_info: PeerInfoLike) -> PyResult<()> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            let peer_info = Py::new(py, peer_info)?;
             self.inner
                 .bind(py)
                 .call_method1("cache_peer", (peer_info,))
