@@ -7,15 +7,16 @@
 // except according to those terms.
 
 use pyo3::prelude::*;
-use pyo3::types::PyDict;
+use pyo3::types::{PyDict, PyDateTime};
 use pyo3::exceptions::PyTypeError;
 
-use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerRef, PyChannelKind};
+use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PeerInfoLike, PyPeerRef, PyChannelKind};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
 use super::{PyRestrictionReason, PyRestrictionReasonWrapper};
 use crate::PyClient;
+use crate::utils::PyDateTimeWrapper;
 
 #[derive(Clone)]
 #[pyclass]
@@ -68,7 +69,10 @@ pub struct PyGroup {
     pub title: Option<String>,
     
     /// Date when the user joined the supergroup/channel, or if the user isn't a member, its creation date
-    pub date: Option<i32>,
+    #[pyo3(get)]
+    pub date: Option<PyDateTimeWrapper>,
+    #[pyo3(get)]
+    pub date_timestamp: Option<i32>,
     
     #[pyo3(get, set)]
     pub access_hash: Option<PyPeerAuth>,
@@ -78,8 +82,10 @@ pub struct PyGroup {
     pub megagroup: Option<bool>,
     
     /// The ban is valid until the specified date.
-    #[pyo3(get, set)]
-    pub until_date: Option<i32>,
+    #[pyo3(get)]
+    pub until_date: Option<PyDateTimeWrapper>,
+    #[pyo3(get)]
+    pub until_date_timestamp: Option<i32>,
     
     /// The ban is valid until the specified date.
     #[pyo3(get, set)]
@@ -106,8 +112,11 @@ pub struct PyGroup {
     pub version: Option<i32>,
     #[pyo3(get, set)]
     pub migrated_to: Option<pytl::enums::PyInputChannel>,
+    
+    /// Return the permissions of the logged-in user in this channel.
     #[pyo3(get, set)]
     pub admin_rights: Option<pytl::enums::PyChatAdminRights>,
+    
     #[pyo3(get, set)]
     pub default_banned_rights: Option<pytl::enums::PyChatBannedRights>,
     
@@ -187,8 +196,14 @@ pub struct PyGroup {
     pub emoji_status: Option<pytl::enums::PyEmojiStatus>,
     #[pyo3(get, set)]
     pub level: Option<i32>,
-    #[pyo3(get, set)]
-    pub subscription_until_date: Option<i32>,
+    
+    /// Expiration date of the Telegram Star subscription
+    /// the current user has bought to gain access to this channel.
+    #[pyo3(get)]
+    pub subscription_until_date: Option<PyDateTimeWrapper>,
+    #[pyo3(get)]
+    pub subscription_until_date_timestamp: Option<i32>,
+    
     #[pyo3(get, set)]
     pub bot_verification_icon: Option<i64>,
     #[pyo3(get, set)]
@@ -197,14 +212,17 @@ pub struct PyGroup {
     pub linked_monoforum_id: Option<i64>,
 }
 
+// use to Default::default() eliminate so much None
 #[derive(Default)]
 struct GroupData {
     pub title: Option<String>,
-    pub date: Option<i32>,
+    pub date: Option<PyDateTimeWrapper>,
+    pub date_timestamp: Option<i32>,
     pub access_hash: Option<PyPeerAuth>,
     pub broadcast: Option<bool>,
     pub megagroup: Option<bool>,
-    pub until_date: Option<i32>,
+    pub until_date: Option<PyDateTimeWrapper>,
+    pub until_date_timestamp: Option<i32>,
     pub username: Option<String>,
     pub usernames: Vec<String>,
     pub photo: Option<pytl::enums::PyChatPhoto>,
@@ -248,7 +266,10 @@ struct GroupData {
     pub profile_color: Option<pytl::enums::PyPeerColor>,
     pub emoji_status: Option<pytl::enums::PyEmojiStatus>,
     pub level: Option<i32>,
-    pub subscription_until_date: Option<i32>,
+    
+    pub subscription_until_date: Option<PyDateTimeWrapper>,
+    pub subscription_until_date_timestamp: Option<i32>,
+    
     pub bot_verification_icon: Option<i64>,
     pub send_paid_messages_stars: Option<i64>,
     pub linked_monoforum_id: Option<i64>,
@@ -257,7 +278,7 @@ struct GroupData {
 // TODO it might be desirable to manually merge all the properties of the chat to avoid endless matching
 
 impl PyGroup {
-    pub fn from_raw(client: &PyClient, chat: tl::enums::Chat) -> Self {
+    pub fn from_raw(client: &PyClient, chat: tl::enums::Chat) -> PyResult<PyClassInitializer<Self>> {
         use tl::enums::Chat as C;
 
         let (id, raw_type, data) = match chat {
@@ -285,7 +306,11 @@ impl PyGroup {
                         }
                     },
                     participants_count: Some(x.participants_count),
-                    date: Some(x.date),
+                    date: Some(Python::attach(|py|
+                        PyDateTime::from_timestamp(py, x.date as f64, None)
+                            .map(|x| x.unbind().into())
+                    )?),
+                    date_timestamp: Some(x.date),
                     version: Some(x.version),
                     migrated_to: x.migrated_to.map(Into::into),
                     admin_rights: x.admin_rights.map(Into::into),
@@ -301,6 +326,12 @@ impl PyGroup {
                     ..Default::default()
                 }
             ),
+            C::Channel(x) if x.broadcast => return Err(PyTypeError::new_err(
+                "tried to create group from broadcast channel"
+            )),
+            C::ChannelForbidden(x) if x.broadcast => return Err(PyTypeError::new_err(
+                "tried to create group from broadcast channel"
+            )),
             C::Channel(x) => (
                 PyPeerId::channel(x.id).unwrap(),
                 GroupRawType::Channel,
@@ -343,13 +374,38 @@ impl PyGroup {
                             _ => None
                         }
                     },
-                    date: Some(x.date),
+                    date: Some(Python::attach(|py|
+                        PyDateTime::from_timestamp(py, x.date as f64, None)
+                            .map(|x| x.unbind().into())
+                    )?),
+                    date_timestamp: Some(x.date),
                     restriction_reason: x.restriction_reason
                         .unwrap_or_default()
                         .into_iter()
                         .map(|x| PyRestrictionReason::from_raw(&x).into())
                         .collect(),
-                    admin_rights: x.admin_rights.map(Into::into),
+                    admin_rights: match x.admin_rights {
+                        Some(x) => Some(x.into()),
+                        None if x.creator => Some(pytl::types::PyChatAdminRights {
+                            add_admins: true,
+                            other: true,
+                            change_info: true,
+                            post_messages: true,
+                            anonymous: false,
+                            ban_users: true,
+                            delete_messages: true,
+                            edit_messages: true,
+                            invite_users: true,
+                            manage_call: true,
+                            pin_messages: true,
+                            manage_topics: true,
+                            post_stories: true,
+                            edit_stories: true,
+                            delete_stories: true,
+                            manage_direct_messages: true,
+                        }.into()),
+                        None => None,
+                    },
                     banned_rights: x.banned_rights.map(Into::into),
                     default_banned_rights: x.default_banned_rights.map(Into::into),
                     participants_count: x.participants_count,
@@ -369,7 +425,14 @@ impl PyGroup {
                     profile_color: x.profile_color.map(Into::into),
                     emoji_status: x.emoji_status.map(Into::into),
                     level: x.level,
-                    subscription_until_date: x.subscription_until_date,
+                    subscription_until_date: match x.subscription_until_date {
+                        None => None,
+                        Some(x) => Some(Python::attach(|py|
+                            PyDateTime::from_timestamp(py, x as f64, None)
+                            .map(|x| x.unbind().into())
+                        )?),
+                    },
+                    subscription_until_date_timestamp: x.subscription_until_date,
                     bot_verification_icon: x.bot_verification_icon,
                     send_paid_messages_stars: x.send_paid_messages_stars,
                     linked_monoforum_id: x.linked_monoforum_id,
@@ -383,8 +446,15 @@ impl PyGroup {
                     access_hash: Some(PyPeerAuth::new(x.access_hash)),
                     title: Some(x.title),
                     broadcast: Some(false),
-                    megagroup: Some(false),
-                    until_date: x.until_date,
+                    megagroup: Some(x.megagroup),
+                    until_date: match x.until_date {
+                        None => None,
+                        Some(x) => Some(Python::attach(|py|
+                            PyDateTime::from_timestamp(py, x as f64, None)
+                                .map(|x| x.unbind().into())
+                        )?),
+                    },
+                    until_date_timestamp: x.until_date,
                     ..Default::default()
                 }
             ),
@@ -392,10 +462,12 @@ impl PyGroup {
         let GroupData {
             title,
             date,
+            date_timestamp,
             access_hash,
             broadcast,
             megagroup,
             until_date,
+            until_date_timestamp,
             creator,
             left,
             deactivated,
@@ -439,20 +511,24 @@ impl PyGroup {
             emoji_status,
             level,
             subscription_until_date,
+            subscription_until_date_timestamp,
             bot_verification_icon,
             send_paid_messages_stars,
             linked_monoforum_id,
         } = data;
-        Self {
+        let base = PyClassInitializer::from(pytl::TLObject {});
+        let sub = Self {
             raw_type,
             client: client.clone(),
             id,
             title,
             date,
+            date_timestamp,
             access_hash,
             broadcast,
             megagroup,
             until_date,
+            until_date_timestamp,
             creator,
             left,
             deactivated,
@@ -496,41 +572,36 @@ impl PyGroup {
             emoji_status,
             level,
             subscription_until_date,
+            subscription_until_date_timestamp,
             bot_verification_icon,
             send_paid_messages_stars,
             linked_monoforum_id,
-        }
+        };
+        Ok(base.add_subclass(sub))
     }
 
     pub fn id(&self) -> PyPeerId {
         self.id
     }
     
-    pub fn info(&self) -> PyPeerInfo {
+    pub fn info(&self) -> PeerInfoLike {
         match self.raw_type {
-            GroupRawType::ChatEmpty | GroupRawType::Chat | GroupRawType::ChatForbidden => PyPeerInfo::Chat {
+            GroupRawType::ChatEmpty | GroupRawType::Chat | GroupRawType::ChatForbidden => PeerInfoLike::Chat {
                 id: self.id.bare_id().unwrap(),
             },
-            GroupRawType::Channel | GroupRawType::ChannelForbidden => PyPeerInfo::Channel {
+            GroupRawType::Channel | GroupRawType::ChannelForbidden => PeerInfoLike::Channel {
                 id: self.id.bare_id().unwrap(),
                 auth: self.auth(),
-                kind: if self.is_gigagroup() {
-                    Some(PyChannelKind::Gigagroup)
-                } else if self.is_megagroup() {
-                    Some(PyChannelKind::Megagroup)
-                } else {
-                    None
-                },
+                kind: self.kind(),
             },
         }
     }
     
     pub fn into_dict(self) -> PyResult<Py<PyDict>> {
-        let date = (&self).date()?;
         let PyGroup {
             id,
             title,
-            // date,
+            date,
             access_hash,
             broadcast,
             megagroup,
@@ -589,13 +660,13 @@ impl PyGroup {
             dict.set_item("id", id)?;
             dict.set_item("title", title)?;
             dict.set_item("access_hash", access_hash)?;
+            dict.set_item("username", username)?;
+            dict.set_item("usernames", usernames)?;
             dict.set_item("photo", photo)?;
             dict.set_item("date", date)?;
             dict.set_item("broadcast", broadcast)?;
             dict.set_item("megagroup", megagroup)?;
             dict.set_item("until_date", until_date)?;
-            dict.set_item("username", username)?;
-            dict.set_item("usernames", usernames)?;
             dict.set_item("creator", creator)?;
             dict.set_item("left", left)?;
             dict.set_item("deactivated", deactivated)?;
@@ -647,8 +718,8 @@ impl PyGroup {
 #[pymethods]
 impl PyGroup {
     #[new]
-    pub fn new(client: &PyClient, chat: pytl::enums::PyChat) -> (Self, pytl::TLObject) {
-        (Self::from_raw(client, chat.into()), pytl::TLObject {})
+    fn new(client: &PyClient, chat: pytl::enums::PyChat) -> PyResult<PyClassInitializer<Self>> {
+        Self::from_raw(client, chat.into())
     }
     
     fn to_bytes(&self) -> PyResult<Vec<u8>> {
@@ -663,6 +734,17 @@ impl PyGroup {
     #[getter]
     pub fn auth(&self) -> Option<PyPeerAuth> {
         self.access_hash.clone()
+    }
+    
+    #[getter]
+    pub fn kind(&self) -> Option<PyChannelKind> {
+        if self.is_gigagroup() {
+            Some(PyChannelKind::Gigagroup)
+        } else if self.is_megagroup() {
+            Some(PyChannelKind::Megagroup)
+        } else {
+            None
+        }
     }
 
     /// Convert the group to its reference.
@@ -693,14 +775,5 @@ impl PyGroup {
     #[getter]
     fn is_gigagroup(&self) -> bool {
         matches!(self.gigagroup, Some(true))
-    }
-    
-    /// Date when the user joined the supergroup/channel, or if the user isn't a member, its creation date
-    #[getter]
-    fn date(&self) -> PyResult<Py<PyAny>> {
-        Python::attach(|py| match self.date {
-            None => Ok(py.None()),
-            Some(x) => crate::utils::datetime()?.call_method1(py, "fromtimestamp", (x,))
-        })
     }
 }
