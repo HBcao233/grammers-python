@@ -1,7 +1,6 @@
 use std::sync::{Arc, Mutex};
 
 use grammers_session::updates::UpdatesLike;
-use grammers_tl_types_pyo3 as pytl;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3_async_runtimes::tokio::get_runtime;
@@ -12,6 +11,7 @@ use tokio::task::JoinHandle;
 use super::UpdateStream;
 use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
 use grammers_session_pyo3::{PySession, Session};
+use crate::peer::PyUserWrapper;
 
 #[derive(Debug, Clone)]
 pub struct ApiId(pub i32);
@@ -57,25 +57,12 @@ pub struct PyClient {
     pub inner: Arc<Mutex<ClientInner>>,
 
     #[pyo3(get)]
-    pub me: Option<pytl::enums::PyUser>,
+    pub me: Option<PyUserWrapper>,
 }
 
 #[pymethods]
 impl PyClient {
     /// Create client instanse.
-    ///
-    /// Args:
-    ///     session (``str`` | ``Session``):
-    ///         A name for the client or a Session instanse.
-    ///         E.g.: "my_account", SqliteSession("path").
-    ///
-    ///     api_id (``int`` | ``str``, *optional*):
-    ///         The *api_id* part of the Telegram API key, as integer or string.
-    ///         E.g.: 12345 or "12345".
-    ///
-    ///     api_hash (``str``, *optional*):
-    ///         The *api_hash* part of the Telegram API key, as string.
-    ///         E.g.: "0123456789abcdef0123456789abcdef".
     #[new]
     #[pyo3(signature = (
         session,

@@ -24,6 +24,7 @@ use std::sync::OnceLock;
 
 static PY_INSPECT: OnceLock<Py<PyAny>> = OnceLock::new();
 static PY_ASYNCIO: OnceLock<Py<PyAny>> = OnceLock::new();
+static PY_DATETIME: OnceLock<Py<PyAny>> = OnceLock::new();
 
 pub fn inspect() -> PyResult<Py<PyAny>> {
     match PY_INSPECT.get() {
@@ -58,6 +59,21 @@ pub fn event_loop() -> PyResult<Py<PyAny>> {
     Python::attach(|py| asyncio.call_method0(py, "get_running_loop"))
 }
 
+pub fn datetime() -> PyResult<Py<PyAny>> {
+    match PY_DATETIME.get() {
+        Some(x) => Ok(Python::attach(|py| x.bind(py).clone().unbind())),
+        None => {
+            let (v1, v2) = Python::attach(|py| {
+                let x = py.import("datetime")?;
+                let x = x.getattr("datetime")?.into_any();
+                Ok::<_, PyErr>((x.clone().unbind(), x.unbind()))
+            })?;
+            PY_DATETIME.set(v1).unwrap();
+            Ok(v2)
+        }
+    }
+}
+
 pub fn maybe_call0(obj: Py<PyAny>) -> PyResult<Py<PyAny>> {
     Python::attach(|py| {
         if obj.bind(py).is_callable() {
@@ -79,7 +95,7 @@ where
     }
 }
 
-pub async fn maybe_awaitable(obj: Py<PyAny>) -> PyResult<Py<PyAny>> {
+pub async fn maybe_await(obj: Py<PyAny>) -> PyResult<Py<PyAny>> {
     let inspect = inspect()?;
     let is_awaitable = Python::attach(|py| {
         let x = inspect.bind(py).call_method1("isawaitable", (&obj,))?;

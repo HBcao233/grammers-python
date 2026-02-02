@@ -21,7 +21,7 @@ mod auth_key;
 mod sha;
 
 #[pyo3::pymodule(name = "crypto")]
-pub mod _crypto {
+pub mod crypto_ {
     #[pymodule_export]
     #[allow(non_upper_case_globals)]
     const __doc__: &str = &"Cryptographic functions for MTProto protocol";

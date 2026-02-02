@@ -6,12 +6,14 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use pyo3::PyResult;
+use pyo3::prelude::*;
+use pyo3::types::PyDict;
 
 use std::fmt;
 
 use grammers_session_pyo3::{PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerRef};
 use grammers_tl_types as tl;
+use grammers_tl_types_pyo3 as pytl;
 
 use crate::PyClient;
 
@@ -24,18 +26,19 @@ use crate::PyClient;
 /// this variant will always represent a broadcast channel. The only difference between a
 /// broadcast channel and a megagroup are the permissions (default, and available).
 #[derive(Clone)]
-pub struct Channel {
+#[pyclass(name = "Channel", module = "grammers.client", extends = pytl::TLObject)]
+pub struct PyChannel {
     pub raw: tl::types::Channel,
     pub(crate) client: PyClient,
 }
 
-impl fmt::Debug for Channel {
+impl fmt::Debug for PyChannel {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         self.raw.fmt(f)
     }
 }
 
-impl Channel {
+impl PyChannel {
     pub fn from_raw(client: &PyClient, chat: tl::enums::Chat) -> Self {
         use tl::enums::Chat as C;
 
@@ -114,18 +117,37 @@ impl Channel {
             }
         }
     }
-
-    /// Return the unique identifier for this channel.
-    pub fn id(&self) -> PyPeerId {
-        PyPeerId::channel(self.raw.id).unwrap()
-    }
-
+    
     /// Non-min auth stored in the channel, if any.
     pub(crate) fn auth(&self) -> Option<PyPeerAuth> {
         self.raw
             .access_hash
             .filter(|_| !self.raw.min)
             .map(PyPeerAuth::new)
+    }
+}
+
+#[pymethods]
+impl PyChannel {
+    #[new]
+    pub fn new(client: &PyClient, chat: pytl::enums::PyChat) -> (Self, pytl::TLObject) {
+        (PyChannel::from_raw(client, chat.into()), pytl::TLObject {})
+    }
+    
+    fn to_bytes(&self) -> Vec<u8> {
+        let raw: pytl::types::PyChannel = self.raw.clone().into();
+        raw.py_to_bytes()
+    }
+    
+    fn to_dict(&self) -> PyResult<Py<PyDict>> {
+        let raw: pytl::types::PyChannel = self.raw.clone().into();
+        raw.into_dict()
+    }
+
+    /// Return the unique identifier for this channel.
+    #[getter]
+    pub fn id(&self) -> PyPeerId {
+        PyPeerId::channel(self.raw.id).unwrap()
     }
 
     /// Convert the channel to its reference.
@@ -141,17 +163,18 @@ impl Channel {
     }
 
     /// Additional information about this channel.
-    #[inline]
+    #[getter]
     pub fn kind(&self) -> Option<PyChannelKind> {
-        match <PyChannelKind as TryFrom<&Channel>>::try_from(self) {
+        match <PyChannelKind as TryFrom<&PyChannel>>::try_from(self) {
             Ok(channel_kind) => Some(channel_kind),
             Err(()) => None,
         }
     }
 
     /// Return the title of this channel.
-    pub fn title(&self) -> &str {
-        self.raw.title.as_str()
+    #[getter]
+    pub fn title(&self) -> String {
+        self.raw.title.clone()
     }
 
     /// Return the public @username of this channel, if any.
@@ -160,8 +183,9 @@ impl Channel {
     ///
     /// Outside of the application, people may link to this user with one of Telegram's URLs, such
     /// as https://t.me/username.
-    pub fn username(&self) -> Option<&str> {
-        self.raw.username.as_deref()
+    #[getter]
+    pub fn username(&self) -> Option<String> {
+        self.raw.username.clone()
     }
 
     /// Return collectible usernames of this channel, if any.
@@ -170,7 +194,8 @@ impl Channel {
     ///
     /// Outside of the application, people may link to this user with one of its username, such
     /// as https://t.me/username.
-    pub fn usernames(&self) -> Vec<&str> {
+    #[getter]
+    pub fn usernames(&self) -> Vec<String> {
         self.raw
             .usernames
             .as_deref()
@@ -178,25 +203,31 @@ impl Channel {
                 usernames
                     .iter()
                     .map(|username| match username {
-                        tl::enums::Username::Username(username) => username.username.as_ref(),
+                        tl::enums::Username::Username(username) => username.username.clone(),
                     })
                     .collect()
             })
     }
 
     /// Return the photo of this channel, if any.
-    pub fn photo(&self) -> Option<&tl::types::ChatPhoto> {
+    #[getter]
+    pub fn photo(&self) -> Option<Py<pytl::types::PyChatPhoto>> {
         match &self.raw.photo {
             tl::enums::ChatPhoto::Empty => None,
-            tl::enums::ChatPhoto::Photo(photo) => Some(photo),
+            tl::enums::ChatPhoto::Photo(photo) => {
+                let x: pytl::types::PyChatPhoto = photo.clone().into();
+                let x: pytl::types::PyChatPhotoWrapper = x.into();
+                Some(x.0)
+            },
         }
     }
 
     /// Return the permissions of the logged-in user in this channel.
-    pub fn admin_rights(&self) -> Option<&tl::types::ChatAdminRights> {
+    #[getter]
+    pub fn admin_rights(&self) -> Option<Py<pytl::types::PyChatAdminRights>> {
         match &self.raw.admin_rights {
-            Some(tl::enums::ChatAdminRights::Rights(rights)) => Some(rights),
-            None if self.raw.creator => Some(&tl::types::ChatAdminRights {
+            Some(tl::enums::ChatAdminRights::Rights(rights)) => Some(rights.clone().into()),
+            None if self.raw.creator => Some(pytl::types::PyChatAdminRights {
                 add_admins: true,
                 other: true,
                 change_info: true,
@@ -215,35 +246,29 @@ impl Channel {
                 manage_direct_messages: true,
             }),
             None => None,
-        }
+        }.map(|x| Into::<pytl::types::PyChatAdminRightsWrapper>::into(x).0)
     }
 }
 
-impl TryFrom<Channel> for PyChannelKind {
-    type Error = <Self as TryFrom<&'static Channel>>::Error;
+impl PyChannel {
+    pub fn info(&self) -> PyPeerInfo {
+        self.raw.clone().into()
+    }
+}
+
+impl TryFrom<PyChannel> for PyChannelKind {
+    type Error = <Self as TryFrom<&'static PyChannel>>::Error;
 
     #[inline]
-    fn try_from(channel: Channel) -> Result<Self, Self::Error> {
-        <Self as TryFrom<&Channel>>::try_from(&channel)
+    fn try_from(channel: PyChannel) -> Result<Self, Self::Error> {
+        <Self as TryFrom<&PyChannel>>::try_from(&channel)
     }
 }
-impl<'a> TryFrom<&'a Channel> for PyChannelKind {
+impl<'a> TryFrom<&'a PyChannel> for PyChannelKind {
     type Error = <Self as TryFrom<&'a tl::types::Channel>>::Error;
 
     #[inline]
-    fn try_from(channel: &'a Channel) -> Result<Self, Self::Error> {
+    fn try_from(channel: &'a PyChannel) -> Result<Self, Self::Error> {
         <Self as TryFrom<&'a tl::types::Channel>>::try_from(&channel.raw)
-    }
-}
-
-impl From<Channel> for PyPeerInfo {
-    #[inline]
-    fn from(channel: Channel) -> Self {
-        <Self as From<&Channel>>::from(&channel)
-    }
-}
-impl<'a> From<&'a Channel> for PyPeerInfo {
-    fn from(channel: &'a Channel) -> Self {
-        <Self as From<&'a tl::types::Channel>>::from(&channel.raw)
     }
 }

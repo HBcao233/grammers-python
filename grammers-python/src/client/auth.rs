@@ -1,4 +1,5 @@
-use pyo3::exceptions::{PyRuntimeError, PyValueError};
+use pyo3::create_exception;
+use pyo3::exceptions::{PyException, PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 
 use grammers_crypto::two_factor_auth::{calculate_2fa, check_p_and_g};
@@ -9,11 +10,8 @@ use grammers_tl_types_pyo3 as pytl;
 
 use crate::client::PyClient;
 use crate::errors::PyInvocationError;
-use crate::errors::signin::{
-    PasswordRequiredError, PyInvalidCodeError, PyInvalidPasswordError, PyPasswordRequiredError,
-    PyPaymentRequiredError, PySignUpRequiredError, SignInError,
-};
 use crate::utils::extract_password_parameters;
+use crate::peer::PyUser;
 
 /// Login token needed to continue the login process after sending the code.
 #[derive(Clone)]
@@ -26,12 +24,96 @@ pub struct PyLoginToken {
 }
 #[pymethods]
 impl PyLoginToken {
+    #[new]
+    fn __new__(phone: String, phone_code_hash: String) -> Self {
+        Self {
+            phone,
+            phone_code_hash,
+        }
+    }
+
     fn __repr__(&self) -> String {
         format!(
             "LoginToken(\n  phone={},\n  phone_code_hash={},\n)",
             pytl::utils::mask_phone(&self.phone),
             self.phone_code_hash,
         )
+    }
+}
+
+create_exception!(
+    grammers.errors,
+    SignInError,
+    PyException,
+    "Login-related errors."
+);
+create_exception!(
+    grammers.errors,
+    PaymentRequiredError,
+    SignInError,
+    "Indicating that due to the high cost of SMS verification codes for the user's country/provider, the user must purchase a Telegram Premium subscription in order to proceed with the login/signup."
+);
+create_exception!(
+    grammers.errors,
+    SignUpRequiredError,
+    SignInError,
+    "Sign-up with an official client is required. (Third-party applications cannot be used to register new accounts.)"
+);
+create_exception!(
+    grammers.errors,
+    PasswordRequiredError,
+    SignInError,
+    "The account has 2FA enabled, and the password is required."
+);
+create_exception!(
+    grammers.errors,
+    InvalidCodeError,
+    SignInError,
+    "The code used to complete login was not valid."
+);
+create_exception!(
+    grammers.errors,
+    InvalidPasswordError,
+    SignInError,
+    "The 2FA password used to complete login was not valid."
+);
+
+pub struct PyPaymentRequiredError {}
+impl PyPaymentRequiredError {
+    pub fn new() -> PyErr {
+        PaymentRequiredError::new_err(
+            "Indicating that due to the high cost of SMS verification codes for the user's country/provider, the user must purchase a Telegram Premium subscription in order to proceed with the login/signup.",
+        )
+    }
+}
+
+pub struct PySignUpRequiredError {}
+impl PySignUpRequiredError {
+    pub fn new() -> PyErr {
+        SignUpRequiredError::new_err(
+            "Sign-up with an official client is required. (Third-party applications cannot be used to register new accounts.)",
+        )
+    }
+}
+
+pub struct PyPasswordRequiredError {}
+impl PyPasswordRequiredError {
+    pub fn new() -> PyErr {
+        PasswordRequiredError::new_err("The account has 2FA enabled, and the password is required.")
+    }
+}
+
+pub struct PyInvalidCodeError {}
+impl PyInvalidCodeError {
+    pub fn new() -> PyErr {
+        InvalidCodeError::new_err("The code used to complete login was not valid.")
+    }
+}
+
+pub struct PyInvalidPasswordError {}
+impl PyInvalidPasswordError {
+    pub fn new() -> PyErr {
+        InvalidPasswordError::new_err("The 2FA password used to complete login was not valid.")
     }
 }
 
@@ -46,15 +128,15 @@ impl PyClient {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// if await client.is_authorized():
     ///     print('Client already authorized and ready to use!')
     /// else:
     ///     print('Client is not authorized, you will need to sign_in!')
     /// ```
     pub async fn is_authorized(&self) -> PyResult<bool> {
-        let request = pytl::functions::updates::PyGetState {};
-        match self.invoke_raw(request.into()).await {
+        let request = tl::functions::updates::GetState {};
+        match self.invoke(&request).await {
             Ok(_) => Ok(true),
             Err(InvocationError::Rpc(e)) if e.code == 401 => Ok(false),
             Err(err) => Err(PyInvocationError::new(err)),
@@ -62,11 +144,13 @@ impl PyClient {
     }
 
     /// Terminal interactive login.
-    pub async fn authorize(&self) -> PyResult<pytl::enums::PyUser> {
-        if self.bot_token().is_some() {
-            return Ok(self.bot_sign_in(None).await?);
+    pub async fn authorize(&self) -> PyResult<Py<PyUser>> {
+        let bot_token = self.bot_token();
+        if bot_token.is_some() {
+            return Ok(self.bot_sign_in(bot_token).await?);
         }
 
+        // check if session is logined
         let session = self.session();
         let dc_id = session.home_dc_id().await?;
         let dc_option = session.dc_option(dc_id).await?;
@@ -78,26 +162,23 @@ impl PyClient {
 
         let phone = self.phone();
         let phone = crate::utils::maybe_call0(phone)?;
-        let phone = crate::utils::maybe_awaitable(phone).await?;
-        let phone = Python::attach(|py| phone.bind(py).str().map(|x| x.to_string()))?;
+        let phone = crate::utils::maybe_await(phone).await?;
+        let phone: String = Python::attach(|py| phone.bind(py).extract())?;
 
         let api_hash = self.api_hash();
         let login_token = self.request_login_code(phone, api_hash).await?;
 
         let code = Python::attach(|py| self.code().call0(py))?;
-        let code = crate::utils::maybe_awaitable(code).await?;
+        let code = crate::utils::maybe_await(code).await?;
         let code = Python::attach(|py| code.bind(py).str().map(|x| x.to_string()))?;
 
         let user = match self.sign_in(login_token, code).await {
-            Ok(user) => user,
-            Err(e) => {
-                return if Python::attach(|py| e.is_instance_of::<PasswordRequiredError>(py)) {
-                    self._check_password(None).await
-                } else {
-                    Err(e)
-                };
-            }
-        };
+            Ok(user) => Ok(user),
+            Err(e) if Python::attach(|py| e.is_instance_of::<PasswordRequiredError>(py)) => {
+                self._check_password(None).await
+            },
+            Err(e) => Err(e),
+        }?;
 
         Ok(user)
     }
@@ -113,7 +194,7 @@ impl PyClient {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// # Note: these values are obviously fake.
     /// # Obtain your own with the developer's phone at https://my.telegram.org.
     /// API_HASH: str = "514727c32270b9eb8cc16daf17e21e57"
@@ -126,7 +207,7 @@ impl PyClient {
     ///     print('Signed in as {user.first_name}')
     /// ```
     #[pyo3(signature = (bot_token=None))]
-    pub async fn bot_sign_in(&self, bot_token: Option<String>) -> PyResult<pytl::enums::PyUser> {
+    pub async fn bot_sign_in(&self, bot_token: Option<String>) -> PyResult<Py<PyUser>> {
         let token = match bot_token {
             Some(x) => x,
             None => self
@@ -140,7 +221,7 @@ impl PyClient {
             bot_auth_token: token,
         };
 
-        let result = match self.invoke_tl(&request).await {
+        let result = match self.invoke(&request).await {
             Ok(x) => x,
             Err(InvocationError::Rpc(err)) if err.code == 303 => {
                 let session = self.session();
@@ -151,7 +232,7 @@ impl PyClient {
                 // if there's a need to connect back to the old DC after having logged in.
                 self.handle().disconnect_from_dc(old_dc_id);
                 session.set_home_dc_id(new_dc_id).await?;
-                self.invoke_tl(&request)
+                self.invoke(&request)
                     .await
                     .map_err(PyInvocationError::new)?
             }
@@ -159,7 +240,7 @@ impl PyClient {
         };
 
         match result {
-            tl::enums::auth::Authorization::Authorization(x) => self.complete_login(x).await,
+            tl::enums::auth::Authorization::Authorization(x) => self._complete_login(x.into()).await,
             tl::enums::auth::Authorization::SignUpRequired(_) => Err(PyRuntimeError::new_err(
                 "API returned SignUpRequired even though we're logging in as a bot",
             )),
@@ -176,7 +257,7 @@ impl PyClient {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// # Note: these values are obviously fake.
     /// # Obtain your own with the developer's phone at https://my.telegram.org.
     /// API_HASH: str = "514727c32270b9eb8cc16daf17e21e57"
@@ -213,7 +294,7 @@ impl PyClient {
 
         use tl::enums::auth::SentCode as SC;
 
-        let sent_code: tl::types::auth::SentCode = match self.invoke_tl(&request).await {
+        let sent_code: tl::types::auth::SentCode = match self.invoke(&request).await {
             Ok(x) => match x {
                 SC::Code(code) => code,
                 SC::Success(_) => {
@@ -233,7 +314,7 @@ impl PyClient {
                 self.handle().disconnect_from_dc(old_dc_id);
                 session.set_home_dc_id(new_dc_id).await?;
                 match self
-                    .invoke_tl(&request)
+                    .invoke(&request)
                     .await
                     .map_err(PyInvocationError::new)?
                 {
@@ -267,7 +348,7 @@ impl PyClient {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// # API_HASH: str = ""
     /// # PHONE: str = ""
     /// def ask_code_to_user() -> str:
@@ -295,9 +376,9 @@ impl PyClient {
         &self,
         token: PyLoginToken,
         code: String,
-    ) -> PyResult<pytl::enums::PyUser> {
+    ) -> PyResult<Py<PyUser>> {
         match self
-            .invoke_tl(&tl::functions::auth::SignIn {
+            .invoke(&tl::functions::auth::SignIn {
                 phone_number: token.phone.clone(),
                 phone_code_hash: token.phone_code_hash.clone(),
                 phone_code: Some(code.to_string()),
@@ -305,7 +386,7 @@ impl PyClient {
             })
             .await
         {
-            Ok(tl::enums::auth::Authorization::Authorization(x)) => self.complete_login(x).await,
+            Ok(tl::enums::auth::Authorization::Authorization(x)) => self._complete_login(x.into()).await,
             Ok(tl::enums::auth::Authorization::SignUpRequired(_)) => {
                 Err(PySignUpRequiredError::new())
             }
@@ -321,7 +402,7 @@ impl PyClient {
         let request = tl::functions::account::GetPassword {};
 
         let password = self
-            .invoke_tl(&request)
+            .invoke(&request)
             .await
             .map_err(PyInvocationError::new)?;
 
@@ -335,7 +416,7 @@ impl PyClient {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// # const API_HASH: &str = "";
     /// # const PHONE: &str = "";
     /// def get_user_password(hint: str) -> String:
@@ -364,7 +445,7 @@ impl PyClient {
         &self,
         password_info: pytl::types::account::PyPassword,
         password: String,
-    ) -> PyResult<pytl::enums::PyUser> {
+    ) -> PyResult<Py<PyUser>> {
         let mut password_info: tl::types::account::Password = password_info.into();
         let current_algo = password_info.current_algo.as_ref().unwrap();
         let mut params = extract_password_parameters(&current_algo);
@@ -398,8 +479,8 @@ impl PyClient {
             }),
         };
 
-        match self.invoke_tl(&check_password).await {
-            Ok(tl::enums::auth::Authorization::Authorization(x)) => self.complete_login(x).await,
+        match self.invoke(&check_password).await {
+            Ok(tl::enums::auth::Authorization::Authorization(x)) => self._complete_login(x.into()).await,
             Ok(tl::enums::auth::Authorization::SignUpRequired(_x)) => {
                 Err(PySignUpRequiredError::new())
             }
@@ -419,31 +500,31 @@ impl PyClient {
     ///
     /// # Examples
     ///
-    /// ```
+    /// ```ignore
     /// from grammers import errors
     ///
     /// try:
     ///     await client.sign_out()
     /// except errors.RpcError:
-    ///     println!("No user was signed in, so nothing has changed...");
+    ///     print("No user was signed in, so nothing has changed...");
     /// else:
-    ///     println!("Signed out successfully!");
+    ///     print("Signed out successfully!");
     /// ```
-    pub async fn sign_out(&self) -> PyResult<pytl::PyTLObject> {
+    pub async fn sign_out(&self) -> PyResult<pytl::enums::auth::PyLoggedOut> {
         let request = pytl::functions::auth::PyLogOut {};
-        self.invoke(request.into()).await
+        self.invoke(&request).await.map_err(PyInvocationError::new)
     }
 
+    /// Signals all clients sharing the same sender pool to disconnect.
     pub fn disconnect(&self) {
         self.inner.lock().unwrap().handle.quit();
     }
-}
 
-impl PyClient {
+    #[pyo3(signature = (password_info=None))]
     async fn _check_password(
         &self,
         password_info: Option<pytl::enums::account::PyPassword>,
-    ) -> PyResult<pytl::enums::PyUser> {
+    ) -> PyResult<Py<PyUser>> {
         let password_info = match password_info {
             Some(x) => x,
             None => self.get_password_information().await?,
@@ -457,23 +538,17 @@ impl PyClient {
 
         let password = self.password();
         let password = Python::attach(|py| crate::utils::maybe_call1(py, password, (hint,)))?;
-        let password = crate::utils::maybe_awaitable(password).await?;
+        let password = crate::utils::maybe_await(password).await?;
         let password: String = Python::attach(|py| password.bind(py).extract())?;
 
         self.check_password(password_info, password).await
     }
 
-    async fn complete_login(
+    async fn _complete_login(
         &self,
-        auth: tl::types::auth::Authorization,
-    ) -> PyResult<pytl::enums::PyUser> {
-        // In the extremely rare case where `Err` happens, there's not much we can do.
-        // `message_box` will try to correct its state as updates arrive.
-        let update_state = self
-            .invoke_tl(&tl::functions::updates::GetState {})
-            .await
-            .ok();
-
+        auth: pytl::types::auth::PyAuthorization,
+    ) -> PyResult<Py<PyUser>> {
+        let auth: tl::types::auth::Authorization = auth.into();
         let user = auth.user;
         let user_id = user.id();
         let bot = match user {
@@ -500,7 +575,13 @@ impl PyClient {
                 is_self: Some(true),
             })
             .await?;
-        if let Some(tl::enums::updates::State::State(state)) = update_state {
+
+        // In the extremely rare case where `Err` happens, there's not much we can do.
+        // `message_box` will try to correct its state as updates arrive.
+        let update_state = self
+            .invoke(&tl::functions::updates::GetState {})
+            .await;
+        if let Ok(tl::enums::updates::State::State(state)) = update_state {
             session
                 .set_update_state(UpdateStateLike::All(PyUpdatesState {
                     pts: state.pts,
@@ -512,6 +593,8 @@ impl PyClient {
                 .await?;
         }
 
-        Ok(user.into())
+        Python::attach(|py|
+            Py::new(py, PyUser::new(self, user.into()))
+        )
     }
 }

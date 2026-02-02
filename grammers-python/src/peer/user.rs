@@ -6,33 +6,49 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use pyo3::PyResult;
+use pyo3::prelude::*;
 
-use std::fmt;
-
-use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerRef};
+use grammers_session_pyo3::{PyPeerId, PyPeerAuth, PyPeerInfo};
 use grammers_tl_types as tl;
+use grammers_tl_types_pyo3 as pytl;
 
 use crate::PyClient;
 
 /// Platform Identifier referenced only by [`RestrictionReason`].
 #[non_exhaustive]
-pub enum Platform {
-    All,
-    Android,
-    Ios,
-    WindowsPhone,
+#[derive(Clone)]
+#[pyclass(name = "Platform", module = "grammers.client")]
+pub enum PyPlatform {
+    All(),
+    Android(),
+    Ios(),
+    WindowsPhone(),
     Other(String),
 }
 
+#[pymethods]
+impl PyPlatform {
+    fn __repr__(&self) -> String {
+        match self {
+            Self::All() => "Platform.All".to_string(),
+            Self::Android() => "Platform.Android".to_string(),
+            Self::Ios() => "Platform.IOS".to_string(),
+            Self::WindowsPhone() => "Platform.WindowsPhone".to_string(),
+            Self::Other(x) => format!("Platform.Other('{}')", x),
+        }
+    }
+}
+
 /// Reason why a user is globally restricted.
-pub struct RestrictionReason {
-    pub platforms: Vec<Platform>,
+#[derive(Clone)]
+#[pyclass(name = "RestrictionReason", module = "grammers.client")]
+pub struct PyRestrictionReason {
+    pub platforms: Vec<PyPlatform>,
     pub reason: String,
     pub text: String,
 }
 
-impl RestrictionReason {
+impl PyRestrictionReason {
     pub fn from_raw(reason: &tl::enums::RestrictionReason) -> Self {
         let tl::enums::RestrictionReason::Reason(reason) = reason;
         Self {
@@ -41,16 +57,52 @@ impl RestrictionReason {
                 .split('-')
                 .map(|p| match p {
                     // Taken from https://core.telegram.org/constructor/restrictionReason
-                    "all" => Platform::All,
-                    "android" => Platform::Android,
-                    "ios" => Platform::Ios,
-                    "wp" => Platform::WindowsPhone,
-                    o => Platform::Other(o.to_string()),
+                    "all" => PyPlatform::All(),
+                    "android" => PyPlatform::Android(),
+                    "ios" => PyPlatform::Ios(),
+                    "wp" => PyPlatform::WindowsPhone(),
+                    o => PyPlatform::Other(o.to_string()),
                 })
                 .collect(),
             reason: reason.reason.to_string(),
             text: reason.text.to_string(),
         }
+    }
+}
+
+#[pymethods]
+impl PyRestrictionReason {
+    #[new]
+    fn new(reason: pytl::enums::PyRestrictionReason) -> Self {
+        Self::from_raw(&reason.into())
+    }
+    
+    fn __repr__(&self) -> String {
+        let platforms = "[".to_owned() + &self.platforms
+            .iter()
+            .map(|x| "        \n".to_owned() + &x.__repr__())
+            .collect::<Vec<String>>()
+            .join(",") + "\n    ]";
+
+        format!(
+            "RestrictionReason(\n    platforms={},\n    reason={},    text={},\n)",
+            platforms,
+            self.reason,
+            self.text,
+        )
+    }
+}
+
+#[derive(IntoPyObject, FromPyObject)]
+pub struct PyRestrictionReasonWrapper(pub Py<PyRestrictionReason>);
+impl Clone for PyRestrictionReasonWrapper {
+    fn clone(&self) -> Self {
+        Python::attach(|py| Self(self.0.bind(py).clone().unbind()))
+    }
+}
+impl From<PyRestrictionReason> for PyRestrictionReasonWrapper {
+    fn from(x: PyRestrictionReason) -> Self {
+        PyRestrictionReasonWrapper(Python::attach(|py| Py::new(py, x).expect("init")))
     }
 }
 
@@ -67,258 +119,144 @@ impl RestrictionReason {
 ///
 /// [@BotFather]: https://t.me/BotFather
 #[derive(Clone)]
-pub struct User {
-    pub raw: tl::enums::User,
+#[pyclass(name = "User", module = "grammers.client", extends = pytl::types::PyUser)]
+pub struct PyUser {
+    id: PyPeerId,
+    auth: Option<PyPeerAuth>,
+    bot: Option<bool>,
+    is_self: Option<bool>,
+    restriction_reason: Vec<PyRestrictionReasonWrapper>,
     pub(crate) client: PyClient,
 }
 
-impl fmt::Debug for User {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.raw.fmt(f)
+impl PyUser {
+    pub fn from_raw(client: &PyClient, user: tl::enums::User) -> PyClassInitializer<Self> {
+        let (user, id, auth, bot, is_self, restriction_reason) = match user {
+            tl::enums::User::Empty(x) => (
+                pytl::types::PyUser {
+                    id: x.id,
+                    is_self: false,
+                    contact: false,
+                    mutual_contact: false,
+                    deleted: false,
+                    bot: false,
+                    bot_chat_history: false,
+                    bot_nochats: false,
+                    verified: false,
+                    restricted: false,
+                    min: false,
+                    bot_inline_geo: false,
+                    support: false,
+                    scam: false,
+                    apply_min_photo: false,
+                    fake: false,
+                    bot_attach_menu: false,
+                    premium: false,
+                    attach_menu_enabled: false,
+                    bot_can_edit: false,
+                    close_friend: false,
+                    stories_hidden: false,
+                    stories_unavailable: false,
+                    contact_require_premium: false,
+                    bot_business: false,
+                    bot_has_main_app: false,
+                    bot_forum_view: false,
+                    access_hash: None,
+                    first_name: None,
+                    last_name: None,
+                    username: None,
+                    phone: None,
+                    photo: None,
+                    status: None,
+                    bot_info_version: None,
+                    restriction_reason: None,
+                    bot_inline_placeholder: None,
+                    lang_code: None,
+                    emoji_status: None,
+                    usernames: None,
+                    stories_max_id: None,
+                    color: None,
+                    profile_color: None,
+                    bot_active_users: None,
+                    bot_verification_icon: None,
+                    send_paid_messages_stars: None,
+                },
+                PyPeerId::user(x.id).unwrap(),
+                Some(PyPeerAuth::default()),
+                None,
+                None,
+                Vec::new()
+            ),
+            tl::enums::User::User(x) => (
+                x.clone().into(),
+                PyPeerId::user(x.id).unwrap(),
+                x.access_hash.map(PyPeerAuth::new),
+                Some(x.bot),
+                Some(x.is_self),
+                x.restriction_reason
+                    .map_or(Vec::new(), |x| 
+                        x.into_iter()
+                        .map(|x| PyRestrictionReason::from_raw(&x).into())
+                        .collect()
+                    )
+            ),
+        };
+        PyClassInitializer::from(pytl::TLObject {})
+            .add_subclass(user)
+            .add_subclass(Self {
+                id,
+                auth,
+                bot,
+                is_self,
+                restriction_reason,
+                client: client.clone(),
+            })
+    }
+    
+    pub fn id(&self) -> PyPeerId {
+        self.id
+    }
+
+    pub fn auth(&self) -> Option<PyPeerAuth> {
+        self.auth
+    }
+
+    pub fn info(&self) -> PyPeerInfo {
+        PyPeerInfo::User {
+            id: self.id.bare_id().unwrap(),
+            auth: self.auth,
+            bot: self.bot,
+            is_self: self.is_self,
+        }
     }
 }
 
 // TODO: photo
-impl User {
-    pub fn from_raw(client: &PyClient, user: tl::enums::User) -> Self {
-        Self {
-            raw: user,
-            client: client.clone(),
-        }
+#[pymethods]
+impl PyUser {
+    #[new]
+    pub fn new(client: &PyClient, user: pytl::enums::PyUser) -> PyClassInitializer<Self> {
+        let user: tl::enums::User = user.into();
+        PyUser::from_raw(client, user)
     }
-
-    pub(crate) fn user(&self) -> Option<&tl::types::User> {
-        match &self.raw {
-            tl::enums::User::User(u) => Some(u),
-            tl::enums::User::Empty(_) => None,
-        }
-    }
-
-    /// Return the user presence status (also known as "last seen").
-    pub fn status(&self) -> &grammers_tl_types::enums::UserStatus {
-        self.user()
-            .and_then(|u| u.status.as_ref())
-            .unwrap_or(&grammers_tl_types::enums::UserStatus::Empty)
-    }
-
-    /// Return the unique identifier for this user.
-    pub fn id(&self) -> PyPeerId {
-        PyPeerId::user(self.raw.id()).unwrap()
-    }
-
-    /// Non-min auth stored in the user, if any.
-    pub(crate) fn auth(&self) -> Option<PyPeerAuth> {
-        let user = self.user()?;
-        user.access_hash.filter(|_| !user.min).map(PyPeerAuth::new)
-    }
-
-    /// Convert the user to its reference.
-    ///
-    /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
-    pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
-        let id = self.id();
-        let session = self.client.inner.lock().unwrap().session.clone();
-        Ok(match self.auth() {
-            Some(auth) => Some(PyPeerRef { id, auth }),
-            None => session.peer_ref(id).await?,
-        })
-    }
-
-    /// Return the first name of this user.
-    ///
-    /// The name will be `None` if the account was deleted. It may also be `None` if you received
-    /// it previously.
-    pub fn first_name(&self) -> Option<&str> {
-        self.user().and_then(|u| u.first_name.as_deref())
-    }
-
-    /// Return the last name of this user, if any.
-    pub fn last_name(&self) -> Option<&str> {
-        self.user().and_then(|u| {
-            u.last_name
-                .as_deref()
-                .and_then(|name| if name.is_empty() { None } else { Some(name) })
-        })
-    }
-
-    /// Return the full name of this user.
-    ///
-    /// This is equal to the user's first name concatenated with the user's last name, if this
-    /// is not empty. Otherwise, it equals the user's first name.
-    pub fn full_name(&self) -> String {
-        let first_name = self.first_name().unwrap_or_default();
-        if let Some(last_name) = self.last_name() {
-            let mut name = String::with_capacity(first_name.len() + 1 + last_name.len());
-            name.push_str(first_name);
-            name.push(' ');
-            name.push_str(last_name);
-            name
-        } else {
-            first_name.to_string()
-        }
-    }
-
-    /// Return the public @username of this user, if any.
-    ///
-    /// The returned username does not contain the "@" prefix.
-    ///
-    /// Outside of the application, people may link to this user with one of Telegram's URLs, such
-    /// as https://t.me/username.
-    pub fn username(&self) -> Option<&str> {
-        self.user().and_then(|u| u.username.as_deref())
-    }
-
-    /// Return collectible usernames of this user, if any.
-    ///
-    /// The returned usernames do not contain the "@" prefix.
-    ///
-    /// Outside of the application, people may link to this user with one of its username, such
-    /// as https://t.me/username.
-    pub fn usernames(&self) -> Vec<&str> {
-        self.user()
-            .and_then(|u| u.usernames.as_deref())
-            .map_or(Vec::new(), |usernames| {
-                usernames
-                    .iter()
-                    .map(|username| match username {
-                        tl::enums::Username::Username(username) => username.username.as_ref(),
-                    })
-                    .collect()
-            })
-    }
-
-    /// Return the phone number of this user, if they are not a bot and their privacy settings
-    /// allow you to see it.
-    pub fn phone(&self) -> Option<&str> {
-        self.user().and_then(|u| u.phone.as_deref())
-    }
-
-    /// Return the photo of this user, if any.
-    pub fn photo(&self) -> Option<&tl::types::UserProfilePhoto> {
-        match self.user().and_then(|u| u.photo.as_ref()) {
-            Some(maybe_photo) => match maybe_photo {
-                tl::enums::UserProfilePhoto::Empty => None,
-                tl::enums::UserProfilePhoto::Photo(photo) => Some(photo),
-            },
-            None => None,
-        }
-    }
-
-    /// Does this user represent the account that's currently logged in?
-    pub fn is_self(&self) -> bool {
-        // TODO if is_self is false, check in peer cache if id == ourself
-        self.user().map(|u| u.is_self).unwrap_or(false)
-    }
-
-    /// Is this user in your account's contact list?
-    pub fn contact(&self) -> bool {
-        self.user().map(|u| u.contact).unwrap_or(false)
-    }
-
-    /// Is this user a mutual contact?
-    ///
-    /// Contacts are mutual if both the user of the current account and this user have eachother
-    /// in their respective contact list.
-    pub fn mutual_contact(&self) -> bool {
-        self.user().map(|u| u.mutual_contact).unwrap_or(false)
-    }
-
-    /// Has the account of this user been deleted?
-    pub fn deleted(&self) -> bool {
-        self.user().map(|u| u.deleted).unwrap_or(false)
-    }
-
-    /// Is the current account a bot?
-    ///
-    /// Bot accounts are those created by [@BotFather](https://t.me/BotFather).
-    pub fn is_bot(&self) -> bool {
-        self.user().map(|u| u.bot).unwrap_or(false)
-    }
-
-    /// If the current user is a bot, does it have [privacy mode] enabled?
-    ///
-    /// * Bots with privacy enabled won't see messages in groups unless they are replied or the
-    ///   command includes their name (`/command@bot`).
-    /// * Bots with privacy disabled will be able to see all messages in a group.
-    ///
-    /// [privacy mode]: https://core.telegram.org/bots#privacy-mode
-    pub fn bot_privacy(&self) -> bool {
-        self.user().map(|u| !u.bot_chat_history).unwrap_or(false)
-    }
-
-    /// If the current user is a bot, can it be added to groups?
-    pub fn bot_supports_chats(self) -> bool {
-        self.user().map(|u| u.bot_nochats).unwrap_or(false)
-    }
-
-    /// Has the account of this user been verified?
-    ///
-    /// Verified accounts, such as [@BotFather](https://t.me/BotFather), have a special icon next
-    /// to their names in official applications (commonly a blue starred checkmark).
-    pub fn verified(&self) -> bool {
-        self.user().map(|u| u.verified).unwrap_or(false)
-    }
-
-    /// Does this user have restrictions applied to their account?
-    pub fn restricted(&self) -> bool {
-        self.user().map(|u| u.restricted).unwrap_or(false)
-    }
-
-    /// If the current user is a bot, does it want geolocation information on inline queries?
-    pub fn bot_inline_geo(&self) -> bool {
-        self.user().map(|u| u.bot_inline_geo).unwrap_or(false)
-    }
-
-    /// Is this user an official member of the support team?
-    pub fn support(&self) -> bool {
-        self.user().map(|u| u.support).unwrap_or(false)
-    }
-
-    /// Has this user been flagged for trying to scam other people?
-    pub fn scam(&self) -> bool {
-        self.user().map(|u| u.scam).unwrap_or(false)
-    }
-
-    /// Does this user have a Telegram Premium subscription?
-    pub fn is_premium(&self) -> bool {
-        self.user().map(|u| u.premium).unwrap_or(false)
-    }
-
-    /// Has this user been flagged as a fake account?
-    pub fn fake(&self) -> bool {
-        self.user().map(|u| u.fake).unwrap_or(false)
-    }
-
-    /// The reason(s) why this user is restricted, could be empty.
-    pub fn restriction_reason(&self) -> Vec<RestrictionReason> {
-        if let Some(reasons) = self.user().and_then(|u| u.restriction_reason.as_ref()) {
-            reasons.iter().map(RestrictionReason::from_raw).collect()
-        } else {
-            Vec::new()
-        }
-    }
-
-    /// Return the placeholder for inline queries if the current user is a bot and has said
-    /// placeholder configured.
-    pub fn bot_inline_placeholder(&self) -> Option<&str> {
-        self.user()
-            .and_then(|u| u.bot_inline_placeholder.as_deref())
-    }
-
-    /// Language code of the user, if any.
-    pub fn lang_code(&self) -> Option<&str> {
-        self.user().and_then(|u| u.lang_code.as_deref())
+    
+    #[getter]
+    fn restriction_reason(&self) -> Vec<PyRestrictionReasonWrapper> {
+        self.restriction_reason.clone()
     }
 }
 
-impl From<User> for PyPeerInfo {
-    #[inline]
-    fn from(user: User) -> Self {
-        <Self as From<&User>>::from(&user)
+#[derive(IntoPyObject)]
+pub struct PyUserWrapper(pub Py<PyUser>);
+impl Clone for PyUserWrapper {
+    fn clone(&self) -> Self {
+        Python::attach(|py| 
+            PyUserWrapper(self.0.bind(py).clone().unbind())
+        )
     }
 }
-impl<'a> From<&'a User> for PyPeerInfo {
-    fn from(user: &'a User) -> Self {
-        <PyPeerInfo as From<&'a tl::enums::User>>::from(&user.raw)
+impl From<Py<PyUser>> for PyUserWrapper {
+    fn from(x: Py<PyUser>) -> Self {
+        PyUserWrapper(x)
     }
 }

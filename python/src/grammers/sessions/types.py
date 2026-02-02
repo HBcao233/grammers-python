@@ -11,7 +11,17 @@ from grammers._rs.sessions import (
 )
 from grammers.tl import types
 
-PeerIdLike = int | PeerId | types.InputPeer | types.Peer
+PeerIdLike = (
+    int
+    | PeerId
+    | types.InputPeerSelf
+    | types.InputPeerChat
+    | types.InputPeerUser
+    | types.InputPeerChannel
+    | types.Peer
+    | types.Entity
+    | types.FullEntity
+)
 
 __all__ = [
     'PeerId',

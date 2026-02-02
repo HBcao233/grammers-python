@@ -1,16 +1,61 @@
 from ..sessions import Session, SqliteSession
 from .. import tl
-from grammers._rs import Client, LoginToken
+from grammers._rs.client import (
+    Client,
+    User,
+    Group,
+    Channel,
+    LoginToken,
+    SignInError,
+    PaymentRequiredError,
+    SignUpRequiredError,
+    PasswordRequiredError,
+    InvalidCodeError,
+    InvalidPasswordError,
+)
 from typing import Callable, Protocol, Awaitable, Optional
 from getpass import getpass
 import asyncio
 import signal
 
-__all__ = ['Client', 'LoginToken']
+__all__ = [
+    'Client',
+    'LoginToken',
+    'SignInError',
+    'PaymentRequiredError',
+    'SignUpRequiredError',
+    'PasswordRequiredError',
+    'InvalidCodeError',
+    'InvalidPasswordError',
+]
 
 
 class PasswordCallback(Protocol):
     def __call__(self, hint: str) -> str | Awaitable[str]: ...
+
+
+def default_phone_callback():
+    first_empty = True
+    while True:
+        res = input('Please enter your phone: ')
+        if res:
+            confirm = input('confirm? (y/n)').lower()
+            if confirm == 'y':
+                return res
+        else:
+            print('No input.')
+            if first_empty:
+                first_empty = False
+            else:
+                raise ValueError('Cancelled')
+
+
+def default_code_callback():
+    return input('Please enter the code you received: ')
+
+
+def default_password_callback(hint: str):
+    return getpass(f'Please enter your password (hint: {hint}): ')
 
 
 class Client(Client):
@@ -37,26 +82,10 @@ class Client(Client):
             session = SqliteSession(session)
 
         if phone is None:
-
-            def phone():
-                first_empty = True
-                while True:
-                    res = input('Please enter your phone: ')
-                    if res:
-                        confirm = input('confirm? (y/n)').lower()
-                        if confirm == 'y':
-                            return res
-                    else:
-                        print('No input.')
-                        if first_empty:
-                            first_empty = False
-                        else:
-                            raise ValueError('Cancelled')
+            phone = default_phone_callback
 
         if code is None:
-
-            def code():
-                return input('Please enter the code you received: ')
+            code = default_code_callback
         elif not callable(code):
             raise ValueError(
                 'The code parameter needs to be a callable '
@@ -64,9 +93,7 @@ class Client(Client):
             )
 
         if password is None:
-
-            def password(hint: str):
-                return getpass(f'Please enter your password (hint: {hint}): ')
+            password = default_password_callback
 
         return super().__new__(
             cls,

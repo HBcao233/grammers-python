@@ -23,7 +23,7 @@ use tokio::sync::mpsc;
 use tokio::time::timeout_at;
 
 use super::PyClient;
-use crate::peer::PeerMap;
+use crate::peer::PyPeerMap;
 
 /// How long to wait after warning the user that the updates limit was exceeded.
 const UPDATE_LIMIT_EXCEEDED_LOG_COOLDOWN: Duration = Duration::from_secs(300);
@@ -113,7 +113,7 @@ pub struct UpdateStream {
     // When did we last warn the user that the update queue filled up?
     // This is used to avoid spamming the log.
     last_update_limit_warn: Option<Instant>,
-    buffer: VecDeque<(tl::enums::Update, State, PeerMap)>,
+    buffer: VecDeque<(tl::enums::Update, State, PyPeerMap)>,
     updates: mpsc::UnboundedReceiver<UpdatesLike>,
     configuration: UpdatesConfiguration,
     should_get_state: bool,
@@ -131,12 +131,12 @@ impl UpdateStream {
     /// Unlike [`Self::next`], the update is not wrapped at all, but it is still processed.
     pub async fn next_raw(
         &mut self,
-    ) -> Result<(tl::enums::Update, State, PeerMap), InvocationError> {
+    ) -> Result<(tl::enums::Update, State, PyPeerMap), InvocationError> {
         if self.should_get_state {
             self.should_get_state = false;
             match self
                 .client
-                .invoke_tl(&tl::functions::updates::GetState {})
+                .invoke(&tl::functions::updates::GetState {})
                 .await
             {
                 Ok(tl::enums::updates::State::State(state)) => {
@@ -181,7 +181,7 @@ impl UpdateStream {
             };
 
             if let Some(request) = get_diff {
-                let response = self.client.invoke_tl(&request).await?;
+                let response = self.client.invoke(&request).await?;
                 let (updates, users, chats) = self.message_box.apply_difference(response);
                 let peers = self
                     .client
@@ -193,7 +193,7 @@ impl UpdateStream {
             }
 
             if let Some(request) = get_channel_diff {
-                let maybe_response = self.client.invoke_tl(&request).await;
+                let maybe_response = self.client.invoke(&request).await;
 
                 let response = match maybe_response {
                     Ok(r) => r,
@@ -287,7 +287,7 @@ impl UpdateStream {
     fn extend_update_queue(
         &mut self,
         mut updates: Vec<(tl::enums::Update, State)>,
-        peer_map: PeerMap,
+        peer_map: PyPeerMap,
     ) {
         if let Some(limit) = self.configuration.update_queue_limit {
             if let Some(exceeds) = (self.buffer.len() + updates.len()).checked_sub(limit + 1) {

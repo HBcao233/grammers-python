@@ -2,7 +2,6 @@ mod common;
 mod macros;
 mod rpcbaseerrors;
 mod rpcerrorlist;
-pub mod signin;
 
 pub use common::PyInvocationError;
 use common::{DeserializeError, DroppedError, TransportError};
@@ -14,7 +13,7 @@ pub use rpcbaseerrors::{
 pub use rpcerrorlist::*;
 
 #[pyo3::pymodule(name = "errors")]
-pub mod _errors {
+pub mod errors_ {
     #[pymodule_export]
     use super::DroppedError;
 
@@ -23,24 +22,6 @@ pub mod _errors {
 
     #[pymodule_export]
     use super::TransportError;
-
-    #[pymodule_export]
-    use super::signin::SignInError;
-
-    #[pymodule_export]
-    use super::signin::PaymentRequiredError;
-
-    #[pymodule_export]
-    use super::signin::SignUpRequiredError;
-
-    #[pymodule_export]
-    use super::signin::PasswordRequiredError;
-
-    #[pymodule_export]
-    use super::signin::InvalidCodeError;
-
-    #[pymodule_export]
-    use super::signin::InvalidPasswordError;
 
     // ===== rpcbaseerrors =====
     #[pymodule_export]

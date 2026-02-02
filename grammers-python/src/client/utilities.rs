@@ -13,7 +13,7 @@ impl PyClient {
             self.authorize().await?
         } else {
             self.get_me().await?
-        });
+        }.into());
 
         self._start().await
     }

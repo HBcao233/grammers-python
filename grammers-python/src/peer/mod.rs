@@ -23,13 +23,12 @@ mod peer_map;
 // mod permissions;
 mod user;
 
-pub use channel::Channel;
+pub use channel::PyChannel;
 // pub use chats::{AdminRightsBuilder, BannedRightsBuilder};
 // pub use dialog::Dialog;
-pub use group::Group;
+pub use group::PyGroup;
 // pub use participant::{Participant, Role};
 pub use peer::Peer;
-pub use peer_map::PeerMap;
+pub use peer_map::PyPeerMap;
 // pub use permissions::{Permissions, Restrictions};
-// pub use user::{Platform, RestrictionReason};
-pub use user::User;
+pub use user::{PyPlatform, PyRestrictionReason, PyRestrictionReasonWrapper, PyUser, PyUserWrapper};

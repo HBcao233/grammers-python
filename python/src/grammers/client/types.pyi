@@ -1,0 +1,9 @@
+from .. import types
+
+class RestrictionReason:
+    def __new__(cls, reason: types.RestrictionReason): ...
+    def __repr__(self) -> str: ...
+
+class User(types.User):
+    @property
+    def restriction_reason(self) -> RestrictionReason: ...
