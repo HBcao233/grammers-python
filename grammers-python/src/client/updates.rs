@@ -15,7 +15,7 @@ use std::time::{Duration, Instant};
 
 use grammers_mtsender_pyo3::InvocationError;
 use grammers_session::updates::{MessageBoxes, PrematureEndReason, State, UpdatesLike};
-use grammers_session_pyo3::{PyPeerId, PyPeerInfo, PyUpdatesState, Session, UpdateStateLike};
+use grammers_session_pyo3::{PyPeerId, PeerInfoLike, PyUpdatesState, Session, UpdateStateLike};
 use grammers_tl_types as tl;
 
 use log::{trace, warn};
@@ -71,7 +71,7 @@ async fn prepare_channel_difference(
         _ => unreachable!(),
     };
 
-    if let Some(PyPeerInfo::Channel {
+    if let Some(PeerInfoLike::Channel {
         id,
         auth: Some(auth),
         ..
@@ -85,7 +85,7 @@ async fn prepare_channel_difference(
             .peer(PyPeerId::self_user()?)
             .await?
             .map(|user| match user {
-                PyPeerInfo::User { bot, .. } => bot.unwrap_or(false),
+                PeerInfoLike::User { bot, .. } => bot.unwrap_or(false),
                 _ => false,
             })
             .unwrap_or(false)

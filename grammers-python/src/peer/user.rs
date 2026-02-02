@@ -8,7 +8,7 @@
 
 use pyo3::prelude::*;
 
-use grammers_session_pyo3::{PyPeerId, PyPeerAuth, PyPeerInfo};
+use grammers_session_pyo3::{PyPeerId, PyPeerAuth, PeerInfoLike};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
@@ -221,8 +221,8 @@ impl PyUser {
         self.auth
     }
 
-    pub fn info(&self) -> PyPeerInfo {
-        PyPeerInfo::User {
+    pub fn info(&self) -> PeerInfoLike {
+        PeerInfoLike::User {
             id: self.id.bare_id().unwrap(),
             auth: self.auth,
             bot: self.bot,
@@ -243,20 +243,5 @@ impl PyUser {
     #[getter]
     fn restriction_reason(&self) -> Vec<PyRestrictionReasonWrapper> {
         self.restriction_reason.clone()
-    }
-}
-
-#[derive(IntoPyObject)]
-pub struct PyUserWrapper(pub Py<PyUser>);
-impl Clone for PyUserWrapper {
-    fn clone(&self) -> Self {
-        Python::attach(|py| 
-            PyUserWrapper(self.0.bind(py).clone().unbind())
-        )
-    }
-}
-impl From<Py<PyUser>> for PyUserWrapper {
-    fn from(x: Py<PyUser>) -> Self {
-        PyUserWrapper(x)
     }
 }

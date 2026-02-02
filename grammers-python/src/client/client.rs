@@ -9,9 +9,9 @@ use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
 
 use super::UpdateStream;
+use crate::peer::PyUser;
 use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
 use grammers_session_pyo3::{PySession, Session};
-use crate::peer::PyUserWrapper;
 
 #[derive(Debug, Clone)]
 pub struct ApiId(pub i32);
@@ -49,15 +49,14 @@ pub struct ClientInner {
     pub(crate) phone: Py<PyAny>,
     pub(crate) code: Py<PyAny>,
     pub(crate) password: Py<PyAny>,
+
+    pub(crate) me: Option<Py<PyUser>>,
 }
 
 #[derive(Clone)]
 #[pyclass(name = "Client", module = "grammers", subclass, dict)]
 pub struct PyClient {
     pub inner: Arc<Mutex<ClientInner>>,
-
-    #[pyo3(get)]
-    pub me: Option<PyUserWrapper>,
 }
 
 #[pymethods]
@@ -186,10 +185,10 @@ impl PyClient {
             use_ipv6,
             system_lang_code: system_lang_code.to_string(),
             lang_code: lang_code.to_string(),
+            me: None,
         };
         Ok(Self {
             inner: Arc::new(Mutex::new(inner)),
-            me: None,
         })
     }
 
@@ -249,6 +248,21 @@ impl PyClient {
                 .clone()
                 .unbind()
         })
+    }
+    
+    #[getter(me)]
+    fn _me(&self) -> Option<Py<PyUser>> {
+        match &self.inner.lock().unwrap().me {
+            None => None,
+            Some(me) => Some(Python::attach(|py| 
+                me.bind(py).clone().unbind()
+            ))
+        }
+    }
+    
+    #[setter(me)]
+    pub fn set_me(&self, user: Py<PyUser>) {
+        self.inner.lock().unwrap().me = Some(user);
     }
 }
 

@@ -4,7 +4,7 @@ use pyo3::prelude::*;
 
 use grammers_crypto::two_factor_auth::{calculate_2fa, check_p_and_g};
 use grammers_mtsender_pyo3::InvocationError;
-use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PyPeerInfo, PyUpdatesState, UpdateStateLike};
+use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PeerInfoLike, PyUpdatesState, UpdateStateLike};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
@@ -568,7 +568,7 @@ impl PyClient {
         };
 
         session
-            .cache_peer(PyPeerInfo::User {
+            .cache_peer(PeerInfoLike::User {
                 id: user_id,
                 auth: auth,
                 bot,

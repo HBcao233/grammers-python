@@ -31,4 +31,4 @@ pub use group::PyGroup;
 pub use peer::Peer;
 pub use peer_map::PyPeerMap;
 // pub use permissions::{Permissions, Restrictions};
-pub use user::{PyPlatform, PyRestrictionReason, PyRestrictionReasonWrapper, PyUser, PyUserWrapper};
+pub use user::{PyPlatform, PyRestrictionReason, PyRestrictionReasonWrapper, PyUser};

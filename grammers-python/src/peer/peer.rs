@@ -3,7 +3,7 @@ use pyo3::prelude::*;
 use super::{PyChannel, PyGroup, PyUser};
 
 use crate::PyClient;
-use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PyPeerInfo};
+use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PeerInfoLike};
 use grammers_tl_types as tl;
 
 // use crate::media::ChatPhoto;
@@ -49,27 +49,27 @@ impl Peer {
 
         Python::attach(|py| Ok(match chat {
             C::Empty(_) | C::Chat(_) | C::Forbidden(_) => Self::Group(
-                Py::new(py, PyGroup::new(client, chat.into()))?
+                Py::new(py, PyGroup::from_raw(client, chat)?)?
             ),
             C::Channel(ref channel) => {
                 if channel.broadcast {
                     Self::Channel(
-                        Py::new(py, PyChannel::new(client, chat.into()))?
+                        Py::new(py, PyChannel::from_raw(client, chat)?)?
                     )
                 } else {
                     Self::Group(
-                        Py::new(py, PyGroup::new(client, chat.into()))?
+                        Py::new(py, PyGroup::from_raw(client, chat)?)?
                     )
                 }
             },
             C::ChannelForbidden(ref channel) => {
                 if channel.broadcast {
                     Self::Channel(
-                        Py::new(py, PyChannel::new(client, chat.into()))?
+                        Py::new(py, PyChannel::from_raw(client, chat)?)?
                     )
                 } else {
                     Self::Group(
-                        Py::new(py, PyGroup::new(client, chat.into()))?
+                        Py::new(py, PyGroup::from_raw(client, chat)?)?
                     )
                 }
             },
@@ -92,7 +92,7 @@ impl Peer {
         })
     }
     
-    pub fn info(&self) -> PyPeerInfo {
+    pub fn info(&self) -> PeerInfoLike {
         Python::attach(|py| match self {
             Self::User(x) => x.borrow(py).info(),
             Self::Group(x) => x.borrow(py).info(),

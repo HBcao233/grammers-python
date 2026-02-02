@@ -14,8 +14,8 @@ use std::time::SystemTime;
 use chrono::{DateTime, Utc};
 */
 use pyo3::call::PyCallArgs;
-use pyo3::types::PyAnyMethods;
-use pyo3::{Py, PyAny, PyErr, PyResult, Python};
+use pyo3::types::{PyAnyMethods, PyDateTime};
+use pyo3::{Py, PyAny, PyErr, PyResult, Python, FromPyObject, IntoPyObject};
 
 use grammers_session_pyo3::utils::into_future;
 use grammers_tl_types as tl;
@@ -24,7 +24,6 @@ use std::sync::OnceLock;
 
 static PY_INSPECT: OnceLock<Py<PyAny>> = OnceLock::new();
 static PY_ASYNCIO: OnceLock<Py<PyAny>> = OnceLock::new();
-static PY_DATETIME: OnceLock<Py<PyAny>> = OnceLock::new();
 
 pub fn inspect() -> PyResult<Py<PyAny>> {
     match PY_INSPECT.get() {
@@ -59,18 +58,29 @@ pub fn event_loop() -> PyResult<Py<PyAny>> {
     Python::attach(|py| asyncio.call_method0(py, "get_running_loop"))
 }
 
-pub fn datetime() -> PyResult<Py<PyAny>> {
-    match PY_DATETIME.get() {
-        Some(x) => Ok(Python::attach(|py| x.bind(py).clone().unbind())),
-        None => {
-            let (v1, v2) = Python::attach(|py| {
-                let x = py.import("datetime")?;
-                let x = x.getattr("datetime")?.into_any();
-                Ok::<_, PyErr>((x.clone().unbind(), x.unbind()))
-            })?;
-            PY_DATETIME.set(v1).unwrap();
-            Ok(v2)
-        }
+#[derive(FromPyObject, IntoPyObject)]
+pub struct PyAnyWrapper(pub Py<PyAny>);
+impl Clone for PyAnyWrapper {
+    fn clone(&self) -> Self {
+        Self(Python::attach(|py| self.0.bind(py).clone().unbind()))
+    }
+}
+impl From<Py<PyAny>> for PyAnyWrapper {
+    fn from(x: Py<PyAny>) -> Self {
+        PyAnyWrapper(x)
+    }
+}
+
+#[derive(FromPyObject, IntoPyObject)]
+pub struct PyDateTimeWrapper(pub Py<PyDateTime>);
+impl Clone for PyDateTimeWrapper {
+    fn clone(&self) -> Self {
+        Self(Python::attach(|py| self.0.bind(py).clone().unbind()))
+    }
+}
+impl From<Py<PyDateTime>> for PyDateTimeWrapper {
+    fn from(x: Py<PyDateTime>) -> Self {
+        Self(x)
     }
 }
 

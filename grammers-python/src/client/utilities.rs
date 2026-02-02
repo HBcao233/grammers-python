@@ -9,11 +9,12 @@ impl PyClient {
     #[pyo3(signature = ())]
     async fn start(&mut self) -> PyResult<()> {
         let authorized = self.is_authorized().await?;
-        self.me = Some(if !authorized {
+        let user = if !authorized {
             self.authorize().await?
         } else {
             self.get_me().await?
-        }.into());
+        };
+        self.set_me(user);
 
         self._start().await
     }
