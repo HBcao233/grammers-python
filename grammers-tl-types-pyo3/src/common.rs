@@ -1,7 +1,7 @@
 use pyo3::exceptions::PyNotImplementedError;
 use pyo3::prelude::*;
 use pyo3::exceptions::PyTypeError;
-use pyo3::types::{PyString, PyBytes, PyDict, PyMapping, PySequence};
+use pyo3::types::{PyString, PyBytes, PyDict, PyMapping, PySequence, PyDateTime};
 
 use grammers_tl_types as tl;
 
@@ -290,11 +290,21 @@ impl TLObject {
 
     #[staticmethod]
     fn json_default(obj: &Bound<'_, PyAny>) -> PyResult<Py<PyAny>> {
+        let py = obj.py();
         if obj.is_instance_of::<PyBytes>() {
-            return Ok(obj.repr()?.into_any().unbind());
+            let dict = PyDict::new(py);
+            dict.set_item("_", "bytes")?;
+            dict.set_item("__repr__", obj.str()?)?;
+            return Ok(dict.unbind().into_any());
         }
-        if obj.is_instance_of::<TLObject>() || obj.is_instance_of::<TLRequest>() {
-            return Ok(obj.call_method0("to_dict")?.unbind());
+        if let Ok(to_dict) = obj.getattr("to_dict") {
+            return Ok(to_dict.call0()?.unbind());
+        }
+        if obj.is_instance_of::<PyDateTime>() {
+            let dict = PyDict::new(py);
+            dict.set_item("_", "datetime.datetime")?;
+            dict.set_item("__repr__", obj.repr()?)?;
+            return Ok(dict.unbind().into_any());
         }
 
         let cls_name = obj.get_type().qualname()?;
