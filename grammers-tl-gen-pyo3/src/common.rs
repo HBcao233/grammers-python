@@ -112,7 +112,8 @@ fn write_into_tlrequest<W: Write>(file: &mut W, definitions: &[Definition]) -> i
 fn write_enum_tlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(file, "#[allow(non_camel_case_types)]")?;
     writeln!(file, "#[derive(Debug, Clone)]")?;
-    writeln!(file, "pub enum TLObjectLike {{")?;
+    writeln!(file, "pub enum TLObjectLike {{
+    Vec(Vec<TLObjectLike>),")?;
     for def in definitions {
         if def.category == Category::Types && !ignore_type(&def.ty) {
             writeln!(
@@ -166,7 +167,8 @@ fn write_into_tlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io
     type Output = pyo3::Bound<'py, pyo3::PyAny>;
     type Error = pyo3::PyErr;
     fn into_pyobject(self, py: pyo3::Python<'py>) -> Result<pyo3::Bound<'py, pyo3::PyAny>, pyo3::PyErr> {{
-        Ok(match self {{"#
+        Ok(match self {{
+            Self::Vec(x) => x.into_pyobject(py)?,"#
     )?;
     for def in definitions {
         if def.category == Category::Types && !ignore_type(&def.ty) {
@@ -190,13 +192,11 @@ fn write_into_tlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io
 fn write_serialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl grammers_tl_types::Serializable for TLObjectLike {{"
+        r#"impl grammers_tl_types::Serializable for TLObjectLike {{
+    fn serialize(&self, buf: &mut impl Extend<u8>) {{
+        match self {{
+            Self::Vec(x) => x.into_iter().for_each(|x| x.serialize(buf)),"#,
     )?;
-    writeln!(
-        file,
-        "    fn serialize(&self, buf: &mut impl Extend<u8>) {{"
-    )?;
-    writeln!(file, "        match self {{")?;
     for def in definitions {
         if def.category == Category::Types && !ignore_type(&def.ty) {
             writeln!(
@@ -215,33 +215,38 @@ fn write_serialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Re
 fn write_deserialize<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(
         file,
-        "impl grammers_tl_types::Deserializable for TLObjectLike {{"
+        r#"impl grammers_tl_types::Deserializable for TLObjectLike {{
+    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{
+        use grammers_tl_types::Identifiable;
+        let id = u32::deserialize(buf)?;
+        Ok(match id {{
+            0x1cb5c415u32 => {{
+                let len = u32::deserialize(buf)?;
+                TLObjectLike::Vec(
+                    (0..len)
+                    .map(|_| TLObjectLike::deserialize(buf))
+                    .collect::<grammers_tl_types::deserialize::Result<Vec<TLObjectLike>>>()?
+                )
+            }},"#,
     )?;
-    writeln!(
-        file,
-        "    fn deserialize(buf: crate::Buffer) -> grammers_tl_types::deserialize::Result<Self> {{"
-    )?;
-    writeln!(file, "        use grammers_tl_types::Identifiable;")?;
-    writeln!(file, "        let id = u32::deserialize(buf)?;")?;
-    writeln!(file, "        match id {{")?;
     for def in definitions {
         if def.category == Category::Types && !ignore_type(&def.ty) {
             let qual_name = rustifier::definitions::qual_name(def);
             // let ns_type_name = rustifier::definitions::ns_type_name(def);
             writeln!(
                 file,
-                "            {name}::CONSTRUCTOR_ID => Ok({name}::deserialize(buf)?.into()),",
+                "            {name}::CONSTRUCTOR_ID => {name}::deserialize(buf)?.into(),",
                 name = qual_name,
             )?;
         }
     }
     writeln!(
         file,
-        "            _ => Err(grammers_tl_types::deserialize::Error::UnexpectedConstructor {{ id }}),"
+        r#"            _ => return Err(grammers_tl_types::deserialize::Error::UnexpectedConstructor {{ id }}),
+        }})
+    }}
+}}"#
     )?;
-    writeln!(file, "        }}")?;
-    writeln!(file, "    }}")?;
-    writeln!(file, "}}")?;
     Ok(())
 }
 
