@@ -9,19 +9,8 @@ from grammers._rs.sessions import (
     UpdatesState,
     UpdateState,
 )
-from grammers.tl import types
 
-PeerIdLike = (
-    int
-    | PeerId
-    | types.InputPeerSelf
-    | types.InputPeerChat
-    | types.InputPeerUser
-    | types.InputPeerChannel
-    | types._Peer
-    | types.Entity
-    | types.FullEntity
-)
+PeerIdLike = int | PeerId
 
 __all__ = [
     'PeerId',

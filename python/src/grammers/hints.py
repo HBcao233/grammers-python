@@ -3,13 +3,5 @@ from .sessions import PeerIdLike
 
 Phone = str
 Username = str
-PeerIdLikeExtend = (
-    PeerIdLike
-    | types.InputPeerUserFromMessage
-    | types.InputPeerChannelFromMessage
-)
-EntityLike = (
-    Phone
-    | Username
-    | PeerIdLikeExtend
-)
+InviteLink = str
+InputPeerLike = Phone | Username | types.InputPeer | PeerIdLike

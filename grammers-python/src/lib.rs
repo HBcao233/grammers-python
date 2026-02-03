@@ -6,7 +6,7 @@ mod errors;
 mod peer;
 mod utils;
 // mod message;
-// mod hints;
+mod hints;
 
 use client::PyClient;
 // use hints::PeerIdLikeExtend;

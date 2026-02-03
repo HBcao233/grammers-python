@@ -44,17 +44,16 @@ impl PyClient {
             .map_err(Into::into)
             .map_err(PyInvocationError::new)
     }
-    
+
     #[pyo3(name = "invoke_raw")]
     async fn py_invoke_raw(&self, request_body: Vec<u8>) -> PyResult<Vec<u8>> {
         let dc_id = self.session().home_dc_id().await?;
         self.py_invoke_raw_in_dc(dc_id, request_body).await
     }
-    
+
     #[pyo3(name = "invoke_raw_in_dc")]
     async fn py_invoke_raw_in_dc(&self, dc_id: i32, request_body: Vec<u8>) -> PyResult<Vec<u8>> {
-        self
-            .do_invoke_in_dc(dc_id, request_body)
+        self.do_invoke_in_dc(dc_id, request_body)
             .await
             .map_err(PyInvocationError::new)
     }

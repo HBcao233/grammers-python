@@ -17,10 +17,12 @@ use pyo3::call::PyCallArgs;
 use pyo3::types::{PyAnyMethods, PyDateTime};
 use pyo3::{FromPyObject, IntoPyObject, Py, PyAny, PyErr, PyResult, Python};
 
+use regex::Regex;
+use std::sync::OnceLock;
+
+use crate::hints::InputPeerLike;
 use grammers_session_pyo3::utils::into_future;
 use grammers_tl_types as tl;
-
-use std::sync::OnceLock;
 
 static PY_INSPECT: OnceLock<Py<PyAny>> = OnceLock::new();
 static PY_ASYNCIO: OnceLock<Py<PyAny>> = OnceLock::new();
@@ -166,3 +168,40 @@ pub(crate) fn peer_from_message(message: &tl::enums::Message) -> Option<tl::enum
     }
 }
 */
+
+static PHONE_PATTERN: &'static str = r"^[+()\s0-9-]+$";
+static USERNAME_PATTERN: &'static str = r"^@?([a-zA-Z][a-zA-z0-9_]{3,}[a-zA-Z0-9])$";
+
+pub fn parse_username(username: &str) -> Option<String> {
+    let pattern = Regex::new(USERNAME_PATTERN).unwrap();
+    match pattern.captures(username) {
+        Some(x) => Some(x[1].to_string()),
+        None => None,
+    }
+}
+
+pub fn parse_phone(phone: &str) -> Option<String> {
+    if phone.is_empty() {
+        return None;
+    }
+    let pattern = Regex::new(r"[+()\s-]").unwrap();
+    let res = pattern.replace_all(phone, "");
+    if !res.chars().all(|c| c.is_ascii_digit()) {
+        None
+    } else {
+        Some(res.into_owned())
+    }
+}
+
+pub fn parse_peer_string(peer: &str) -> Option<InputPeerLike> {
+    if peer.is_empty() {
+        return None;
+    }
+
+    let pattern = Regex::new(PHONE_PATTERN).unwrap();
+    if pattern.is_match(peer) {
+        return parse_phone(&peer).map(InputPeerLike::Phone);
+    }
+
+    parse_username(&peer).map(InputPeerLike::Username)
+}

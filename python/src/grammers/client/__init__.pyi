@@ -93,6 +93,11 @@ class Client:
         ```
         """
         ...
+    async def invoke_raw(request_body: bytes) -> bytes:
+        """
+        low-level api, send data to telegram directly.
+        """
+        ...
     async def start(self) -> None:
         """
         Start login in to telegram
@@ -407,6 +412,8 @@ class Client:
 
         Although this method is cheap to call, you might want to cache the results somewhere.
 
+        Both users and bots can use this method.
+
         Examples
 
         ```
@@ -420,6 +427,8 @@ class Client:
 
         Note that this method is expensive to call, and can quickly cause long flood waits.
 
+        Both users and bots can use this method.
+
         # Examples
 
         ```
@@ -428,14 +437,43 @@ class Client:
         ```
         """
         ...
-    async def resolve_peer(self, peer: hints.PeerIdLikeExtend) -> Peer:
-        """
-        Resolves a PeerIdLike or InputPeer into a Peer
-        """
-        ...
     async def resolve_phone(self, phone: str) -> User:
         """
         Resolves a phone into User.
+
+        Both users and bots can use this method.
+        """
+        ...
+    async def resolve_input_peer(self, peer: hints.PeerIdLikeExtend) -> Peer:
+        """
+        Resolves a InputPeer into a Peer.
+
+        Both users and bots can use this method.
+        """
+        ...
+    async def resolve_peer(self, peer: hints.PeerIdLikeExtend) -> Peer:
+        """
+        Resolves any InputPeerLike into a Peer.
+
+        Both users and bots can use this method.
+        """
+        ...
+    async def check_invite_link(
+        invite_link: str,
+    ) -> types.ChatInviteAlready | types.ChatInvite | types.ChatInvitePeek:
+        """
+        Check the validity of a chat invite link and get basic info about it.
+
+        Only users can use this method.
+        """
+        ...
+    async def accept_invite_link(
+        invite_link: str,
+    ) -> types.ChatInviteAlready | types.ChatInvite | types.ChatInvitePeek:
+        """
+        Import a chat invite and join a private chat/supergroup/channel.
+
+        Only users can use this method.
         """
         ...
 

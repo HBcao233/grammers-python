@@ -10,9 +10,5 @@ InputPeer = (
     | InputPeerChannelFromMessage
 )
 
-_Peer = PeerUser | PeerChat | PeerChannel
-
-Entity = (
-    UserEmpty | User | ChatEmpty | Chat | ChatForbidden | Channel | ChannelForbidden
-)
-FullEntity = UserFull | messages.ChatFull | ChatFull | ChannelFull
+Peer = UserEmpty | User | ChatEmpty | Chat | ChatForbidden | Channel | ChannelForbidden
+PeerFull = UserFull | messages.ChatFull | ChatFull | ChannelFull
