@@ -112,8 +112,11 @@ fn write_into_tlrequest<W: Write>(file: &mut W, definitions: &[Definition]) -> i
 fn write_enum_tlobject<W: Write>(file: &mut W, definitions: &[Definition]) -> io::Result<()> {
     writeln!(file, "#[allow(non_camel_case_types)]")?;
     writeln!(file, "#[derive(Debug, Clone)]")?;
-    writeln!(file, "pub enum TLObjectLike {{
-    Vec(Vec<TLObjectLike>),")?;
+    writeln!(
+        file,
+        "pub enum TLObjectLike {{
+    Vec(Vec<TLObjectLike>),"
+    )?;
     for def in definitions {
         if def.category == Category::Types && !ignore_type(&def.ty) {
             writeln!(

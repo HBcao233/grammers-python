@@ -39,7 +39,7 @@ pub struct PyPeerId(pub i64);
 #[pymethods]
 impl PyPeerId {
     #[new]
-    fn new(id: PeerIdLike) -> PyResult<Self> {
+    pub fn new(id: PeerIdLike) -> PyResult<Self> {
         let id = id.0;
         if (1 <= id && id <= 0xffffffffff)
             || id == SELF_USER_ID
@@ -178,71 +178,9 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
         if let Ok(v) = ob.extract::<PyPeerId>() {
             return Ok(Self(v.0));
         }
-        // Peer
-        if let Ok(v) = ob.extract::<pytl::types::PyPeerUser>() {
-            return Ok(Self(PyPeerId::user(v.user_id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyPeerChat>() {
-            return Ok(Self(PyPeerId::chat(v.chat_id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyPeerChannel>() {
-            return Ok(Self(PyPeerId::channel(v.channel_id)?.0));
-        }
-        // InputPeer
-        if let Ok(_) = ob.extract::<pytl::types::PyInputPeerSelf>() {
-            return Ok(Self(PyPeerId::self_user()?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyInputPeerUser>() {
-            return Ok(Self(PyPeerId::user(v.user_id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyInputPeerChat>() {
-            return Ok(Self(PyPeerId::chat(v.chat_id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyInputPeerChannel>() {
-            return Ok(Self(PyPeerId::channel(v.channel_id)?.0));
-        }
-        // Entity
-        if let Ok(v) = ob.extract::<pytl::types::PyUserEmpty>() {
-            return Ok(Self(PyPeerId::user(v.id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyUser>() {
-            return Ok(Self(PyPeerId::user(v.id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyChatEmpty>() {
-            return Ok(Self(PyPeerId::chat(v.id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyChat>() {
-            return Ok(Self(PyPeerId::chat(v.id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyChatForbidden>() {
-            return Ok(Self(PyPeerId::chat(v.id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyChannel>() {
-            return Ok(Self(PyPeerId::channel(v.id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyChannelForbidden>() {
-            return Ok(Self(PyPeerId::channel(v.id)?.0));
-        }
-        // FullEntity
-        if let Ok(v) = ob.extract::<pytl::types::PyUserFull>() {
-            return Ok(Self(PyPeerId::user(v.id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::messages::PyChatFull>() {
-            let py = ob.py();
-            return Ok(Self(match v.full_chat {
-                pytl::enums::PyChatFull::Full(x) => PyPeerId::chat(x.0.borrow(py).id)?.0,
-                pytl::enums::PyChatFull::ChannelFull(x) => PyPeerId::channel(x.0.borrow(py).id)?.0,
-            }));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyChatFull>() {
-            return Ok(Self(PyPeerId::chat(v.id)?.0));
-        }
-        if let Ok(v) = ob.extract::<pytl::types::PyChannelFull>() {
-            return Ok(Self(PyPeerId::channel(v.id)?.0));
-        }
         let cls_name = ob.get_type().qualname()?;
         Err(PyTypeError::new_err(format!(
-            "expected PeerIdLike, got '{}'",
+            "expected int or PeerId, got '{}'",
             cls_name
         )))
     }
