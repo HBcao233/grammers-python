@@ -7,7 +7,9 @@ from .types import (
     User,
     Group,
     Channel,
+    Peer,
 )
+from .. import hints
 
 class PasswordCallback(Protocol):
     def __call__(self, hint: str) -> str | Awaitable[str]: ...
@@ -424,6 +426,16 @@ class Client:
         if peer := await client.resolve_username("username"):
             print("Found peer!: {:?}", peer.name)
         ```
+        """
+        ...
+    async def resolve_peer(self, peer: hints.PeerIdLikeExtend) -> Peer:
+        """
+        Resolves a PeerIdLike or InputPeer into a Peer
+        """
+        ...
+    async def resolve_phone(self, phone: str) -> User:
+        """
+        Resolves a phone into User.
         """
         ...
 

@@ -18,7 +18,7 @@ PeerIdLike = (
     | types.InputPeerChat
     | types.InputPeerUser
     | types.InputPeerChannel
-    | types.Peer
+    | types._Peer
     | types.Entity
     | types.FullEntity
 )

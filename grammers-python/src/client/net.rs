@@ -10,6 +10,24 @@ use crate::errors::PyInvocationError;
 
 #[pymethods]
 impl PyClient {
+    /// Invoke a raw API call. This directly sends the request to Telegram's servers.
+    ///
+    /// Using function definitions corresponding to a different layer is likely to cause the
+    /// responses to the request to not be understood.
+    ///
+    /// <div class="warning">
+    ///
+    /// This method is **not** part of the stability guarantees of semantic
+    /// versioning. It **may** break during *minor* version changes (but not on patch version
+    /// changes). Use with care.
+    ///
+    /// </div>
+    ///
+    /// Examples
+    ///
+    /// ```ignore
+    /// await client.invoke(functions.Ping(ping_id=0))
+    /// ```
     #[pyo3(name = "invoke")]
     async fn py_invoke(&self, request: TLRequestLike) -> PyResult<TLObjectLike> {
         let dc_id = self.session().home_dc_id().await?;
@@ -24,6 +42,20 @@ impl PyClient {
             .map_err(PyInvocationError::new)?;
         TLObjectLike::from_bytes(&response)
             .map_err(Into::into)
+            .map_err(PyInvocationError::new)
+    }
+    
+    #[pyo3(name = "invoke_raw")]
+    async fn py_invoke_raw(&self, request_body: Vec<u8>) -> PyResult<Vec<u8>> {
+        let dc_id = self.session().home_dc_id().await?;
+        self.py_invoke_raw_in_dc(dc_id, request_body).await
+    }
+    
+    #[pyo3(name = "invoke_raw_in_dc")]
+    async fn py_invoke_raw_in_dc(&self, dc_id: i32, request_body: Vec<u8>) -> PyResult<Vec<u8>> {
+        self
+            .do_invoke_in_dc(dc_id, request_body)
+            .await
             .map_err(PyInvocationError::new)
     }
 }

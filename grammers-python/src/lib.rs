@@ -6,8 +6,10 @@ mod errors;
 mod peer;
 mod utils;
 // mod message;
+// mod hints;
 
 use client::PyClient;
+// use hints::PeerIdLikeExtend;
 
 #[pyo3::pymodule]
 mod _rs {

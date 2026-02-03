@@ -10,7 +10,7 @@ InputPeer = (
     | InputPeerChannelFromMessage
 )
 
-Peer = PeerUser | PeerChat | PeerChannel
+_Peer = PeerUser | PeerChat | PeerChannel
 
 Entity = (
     UserEmpty | User | ChatEmpty | Chat | ChatForbidden | Channel | ChannelForbidden

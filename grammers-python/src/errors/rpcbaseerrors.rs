@@ -52,10 +52,9 @@ impl PyRpcError {
 
     fn __str__(&self) -> PyResult<String> {
         let message = match &self.message {
-            None => "".to_string(),
-            Some(x) => format!(" {}", x),
+            Some(x) => x,
+            None => &"".to_string(),
         };
-
         let caused_by = match self.caused_by {
             None => "".to_string(),
             Some(x) => format!("caused by {}", tl::name_for_id(x)),
@@ -72,9 +71,9 @@ impl PyRpcError {
         let more = if more.is_empty() {
             "".to_string()
         } else {
-            format!("({})", more)
+            format!(" {}", more)
         };
-        Ok(format!("{}:{}{}", self.code, message, more))
+        Ok(format!("{} ({}{})", message, self.code, more))
     }
 
     fn __repr__(&self) -> PyResult<String> {

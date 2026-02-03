@@ -1,14 +1,11 @@
-use pyo3::exceptions::PyIndexError;
+use pyo3::exceptions::{PyIndexError, PyTypeError};
 use pyo3::prelude::*;
 
 use std::collections::HashMap;
 use std::sync::Arc;
 
-use crate::peer::Peer;
-use crate::peer::PyPeerMap;
-use crate::peer::PyUser;
-
 use super::PyClient;
+use crate::peer::{Peer, PyPeerMap, PyUser};
 use crate::errors::PyInvocationError;
 
 use grammers_session_pyo3::PyPeerId;
@@ -40,7 +37,7 @@ impl PyClient {
         }
     }
 
-    /// Resolves a username into the peer that owns it, if any.
+    /// Resolves a username (not prefix with '@') into the peer that owns it, if any.
     ///
     /// Note that this method is expensive to call, and can quickly cause long flood waits.
     ///
@@ -83,6 +80,121 @@ impl PyClient {
                 .find(|peer| peer.id() == PyPeerId::channel(channel_id).unwrap()),
         };
         Ok(res)
+    }
+    
+    /// Resolves a PeerIdLike or InputPeer into a Peer
+    pub async fn resolve_peer(&self, peer: pytl::enums::PyInputPeer) -> PyResult<Option<Peer>> {
+        Ok(match peer {
+            pytl::enums::PyInputPeer::Empty(_) => return Err(PyTypeError::new_err(
+                "InputPeerEmpty can't resolve to any peer."
+            )),
+            pytl::enums::PyInputPeer::PeerSelf(_) => Some(Peer::User(self.get_me().await?)),
+            pytl::enums::PyInputPeer::User(x) => {
+                let (user_id, access_hash) = Python::attach(|py| {
+                    let x = x.0.borrow(py);
+                    (x.user_id, x.access_hash)
+                });
+                let mut res = self
+                    .invoke(&tl::functions::users::GetUsers {
+                        id: vec![tl::types::InputUser {
+                            user_id: user_id,
+                            access_hash: access_hash,
+                        }.into()],
+                    })
+                    .await
+                    .map_err(PyInvocationError::new)?;
+                match res.pop() {
+                    Some(x) => Some(Peer::from_user(self, x)?),
+                    None => None,
+                }
+            },
+            pytl::enums::PyInputPeer::Chat(x) => {
+                let chat_id = Python::attach(|py| {
+                    x.0.borrow(py).chat_id
+                });
+                let mut res = match self
+                    .invoke(&tl::functions::messages::GetChats {
+                        id: vec![chat_id],
+                    })
+                    .await
+                    .map_err(PyInvocationError::new)?
+                {
+                    tl::enums::messages::Chats::Chats(chats) => chats.chats,
+                    tl::enums::messages::Chats::Slice(chat_slice) => chat_slice.chats,
+                };
+                match res.pop() {
+                    Some(x) => Some(Peer::from_raw(self, x)?),
+                    None => None,
+                }
+            },
+            pytl::enums::PyInputPeer::Channel(x) => {
+                let (channel_id, access_hash) = Python::attach(|py| {
+                    let x = x.0.borrow(py);
+                    (x.channel_id, x.access_hash)
+                });
+                let mut res = match self
+                    .invoke(&tl::functions::channels::GetChannels {
+                        id: vec![tl::types::InputChannel {
+                            channel_id: channel_id,
+                            access_hash: access_hash,
+                        }.into()],
+                    })
+                    .await
+                    .map_err(PyInvocationError::new)?
+                {
+                    tl::enums::messages::Chats::Chats(chats) => chats.chats,
+                    tl::enums::messages::Chats::Slice(chat_slice) => chat_slice.chats,
+                };
+                match res.pop() {
+                    Some(x) => Some(Peer::from_raw(self, x)?),
+                    None => None,
+                }
+            },
+            pytl::enums::PyInputPeer::UserFromMessage(x) => {
+                let (peer, msg_id, user_id) = Python::attach(|py| {
+                    let x = x.0.borrow(py);
+                    (x.peer.clone(), x.msg_id, x.user_id)
+                });
+                let mut res = self
+                    .invoke(&tl::functions::users::GetUsers {
+                        id: vec![tl::types::InputUserFromMessage {
+                            peer: peer.into(),
+                            msg_id: msg_id,
+                            user_id: user_id,
+                        }.into()],
+                    })
+                    .await
+                    .map_err(PyInvocationError::new)?;
+                match res.pop() {
+                    Some(x) => Some(Peer::from_user(self, x)?),
+                    None => None,
+                }
+            },
+            pytl::enums::PyInputPeer::ChannelFromMessage(x) => {
+                let (peer, msg_id, channel_id) = Python::attach(|py| {
+                    let x = x.0.borrow(py);
+                    (x.peer.clone(), x.msg_id, x.channel_id)
+                });
+                let mut res = match self
+                    .invoke(&tl::functions::channels::GetChannels {
+                        id: vec![tl::types::InputChannelFromMessage {
+                            peer: peer.into(),
+                            msg_id: msg_id,
+                            channel_id: channel_id,
+                        }.into()],
+                    })
+                    .await
+                    .map_err(PyInvocationError::new)?
+                {
+                    tl::enums::messages::Chats::Chats(chats) => chats.chats,
+                    tl::enums::messages::Chats::Slice(chat_slice) => chat_slice.chats,
+                };
+                match res.pop() {
+                    Some(x) => Some(Peer::from_raw(self, x)?),
+                    None => None,
+                }
+            },
+        })
     }
 }
 

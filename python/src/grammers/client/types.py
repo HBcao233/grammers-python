@@ -11,6 +11,8 @@ from grammers._rs.client import (
     Channel,
 )
 
+Peer = User | Group | Channel
+
 __all__ = [
     'LoginToken',
     'SignInError',
