@@ -125,6 +125,7 @@ impl From<PyRestrictionReason> for PyRestrictionReasonWrapper {
 #[pyclass(name = "User", module = "grammers.client", extends = pytl::TLObject)]
 pub struct PyUser {
     pub(crate) client: PyClient,
+
     #[pyo3(get)]
     pub id: PyPeerId,
     #[pyo3(get, set)]

@@ -16,8 +16,8 @@ use grammers_tl_types as tl;
 /// * Private conversations with other people are treated as the peer of the user itself.
 /// * Conversations in a group, whether it's private or public, are simply known as groups.
 /// * Conversations where only administrators broadcast messages are known as channels.
-#[derive(IntoPyObject)]
-pub enum Peer {
+#[derive(Debug, FromPyObject, IntoPyObject)]
+pub enum PyPeer {
     /// A [`User`].
     User(Py<PyUser>),
 
@@ -27,24 +27,24 @@ pub enum Peer {
     /// A broadcast [`Channel`].
     Channel(Py<PyChannel>),
 }
-impl Clone for Peer {
+impl Clone for PyPeer {
     fn clone(&self) -> Self {
         Python::attach(|py| match self {
-            Self::User(x) => Self::User(x.bind(py).clone().unbind()),
-            Self::Group(x) => Self::Group(x.bind(py).clone().unbind()),
-            Self::Channel(x) => Self::Channel(x.bind(py).clone().unbind()),
+            Self::User(x) => Self::User(Py::clone_ref(x, py)),
+            Self::Group(x) => Self::Group(Py::clone_ref(x, py)),
+            Self::Channel(x) => Self::Channel(Py::clone_ref(x, py)),
         })
     }
 }
 
-impl Peer {
+impl PyPeer {
     pub(crate) fn from_user(client: &PyClient, user: tl::enums::User) -> PyResult<Self> {
         Ok(Self::User(Python::attach(|py| {
             Py::new(py, PyUser::from_raw(client, user))
         })?))
     }
 
-    pub fn from_raw(client: &PyClient, chat: tl::enums::Chat) -> PyResult<Self> {
+    pub fn from_chat(client: &PyClient, chat: tl::enums::Chat) -> PyResult<Self> {
         use tl::enums::Chat as C;
 
         Python::attach(|py| {

@@ -3,10 +3,10 @@
 mod client;
 mod crypto;
 mod errors;
+mod hints;
+mod message;
 mod peer;
 mod utils;
-// mod message;
-mod hints;
 
 use client::PyClient;
 // use hints::PeerIdLikeExtend;

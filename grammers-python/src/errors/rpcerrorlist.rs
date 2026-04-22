@@ -335,7 +335,7 @@ createBadRequestError!(
 createBadRequestError!(
     PyChannelInvalidError,
     "ChannelInvalidError",
-    "Invalid channel object. Make sure to pass the right types, for instance making sure that the request is designed for channels or otherwise look for a different one more suited"
+    "Invalid channel object. Make sure to pass the right access_hash."
 );
 createBadRequestError!(
     PyChannelParicipantMissingError,

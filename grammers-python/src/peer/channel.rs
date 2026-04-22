@@ -632,7 +632,7 @@ impl PyChannel {
 
     fn to_bytes(&self) -> PyResult<Vec<u8>> {
         Err(PyTypeError::new_err(
-            "grammers.client.Group can't to_bytes()",
+            "grammers.custom.Channel can't to_bytes()",
         ))
     }
 

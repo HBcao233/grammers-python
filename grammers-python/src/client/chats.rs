@@ -7,7 +7,7 @@ use std::sync::Arc;
 use super::PyClient;
 use crate::errors::PyInvocationError;
 use crate::hints::InputPeerLike;
-use crate::peer::{Peer, PyPeerMap, PyUser};
+use crate::peer::{PyPeer, PyPeerMap, PyUser};
 use crate::utils::{parse_phone, parse_username};
 
 use grammers_session_pyo3::PyPeerId;
@@ -18,7 +18,7 @@ fn updates_to_chat(
     client: &PyClient,
     id: Option<i64>,
     updates: tl::enums::Updates,
-) -> PyResult<Option<Peer>> {
+) -> PyResult<Option<PyPeer>> {
     use tl::enums::Updates;
 
     let chats = match updates {
@@ -36,7 +36,7 @@ fn updates_to_chat(
     };
     Ok(match chat {
         None => None,
-        Some(x) => Some(Peer::from_raw(client, x)?),
+        Some(x) => Some(PyPeer::from_chat(client, x)?),
     })
 }
 
@@ -80,7 +80,7 @@ impl PyClient {
     /// if peer := await client.resolve_username("username"):
     ///     print("Found peer!: {:?}", peer.name)
     /// ```
-    pub async fn resolve_username(&self, username: String) -> PyResult<Option<Peer>> {
+    pub async fn resolve_username(&self, username: String) -> PyResult<Option<PyPeer>> {
         let username = match parse_username(&username) {
             Some(x) => x,
             None => return Err(PyValueError::new_err("Invalid username.")),
@@ -99,19 +99,19 @@ impl PyClient {
         let res = match peer {
             tl::enums::Peer::User(tl::types::PeerUser { user_id }) => users
                 .into_iter()
-                .map(|user| Peer::from_user(self, user.into()))
+                .map(|user| PyPeer::from_user(self, user.into()))
                 .collect::<PyResult<Vec<_>>>()?
                 .into_iter()
                 .find(|peer| peer.id() == PyPeerId::user(user_id).unwrap()),
             tl::enums::Peer::Chat(tl::types::PeerChat { chat_id }) => chats
                 .into_iter()
-                .map(|chat| Peer::from_raw(self, chat))
+                .map(|chat| PyPeer::from_chat(self, chat))
                 .collect::<PyResult<Vec<_>>>()?
                 .into_iter()
                 .find(|peer| peer.id() == PyPeerId::chat(chat_id).unwrap()),
             tl::enums::Peer::Channel(tl::types::PeerChannel { channel_id }) => chats
                 .into_iter()
-                .map(|chat| Peer::from_raw(self, chat))
+                .map(|chat| PyPeer::from_chat(self, chat))
                 .collect::<PyResult<Vec<_>>>()?
                 .into_iter()
                 .find(|peer| peer.id() == PyPeerId::channel(channel_id).unwrap()),
@@ -147,14 +147,14 @@ impl PyClient {
     pub async fn resolve_input_peer(
         &self,
         peer: pytl::enums::PyInputPeer,
-    ) -> PyResult<Option<Peer>> {
+    ) -> PyResult<Option<PyPeer>> {
         Ok(match peer {
             pytl::enums::PyInputPeer::Empty(_) => {
                 return Err(PyTypeError::new_err(
                     "InputPeerEmpty can't resolve to any peer.",
                 ));
             }
-            pytl::enums::PyInputPeer::PeerSelf(_) => Some(Peer::User(self.get_me().await?)),
+            pytl::enums::PyInputPeer::PeerSelf(_) => Some(PyPeer::User(self.get_me().await?)),
             pytl::enums::PyInputPeer::User(x) => {
                 let (user_id, access_hash) = Python::attach(|py| {
                     let x = x.0.borrow(py);
@@ -173,7 +173,7 @@ impl PyClient {
                     .await
                     .map_err(PyInvocationError::new)?;
                 match res.pop() {
-                    Some(x) => Some(Peer::from_user(self, x)?),
+                    Some(x) => Some(PyPeer::from_user(self, x)?),
                     None => None,
                 }
             }
@@ -188,7 +188,7 @@ impl PyClient {
                     tl::enums::messages::Chats::Slice(chat_slice) => chat_slice.chats,
                 };
                 match res.pop() {
-                    Some(x) => Some(Peer::from_raw(self, x)?),
+                    Some(x) => Some(PyPeer::from_chat(self, x)?),
                     None => None,
                 }
             }
@@ -214,7 +214,7 @@ impl PyClient {
                     tl::enums::messages::Chats::Slice(chat_slice) => chat_slice.chats,
                 };
                 match res.pop() {
-                    Some(x) => Some(Peer::from_raw(self, x)?),
+                    Some(x) => Some(PyPeer::from_chat(self, x)?),
                     None => None,
                 }
             }
@@ -237,7 +237,7 @@ impl PyClient {
                     .await
                     .map_err(PyInvocationError::new)?;
                 match res.pop() {
-                    Some(x) => Some(Peer::from_user(self, x)?),
+                    Some(x) => Some(PyPeer::from_user(self, x)?),
                     None => None,
                 }
             }
@@ -264,7 +264,7 @@ impl PyClient {
                     tl::enums::messages::Chats::Slice(chat_slice) => chat_slice.chats,
                 };
                 match res.pop() {
-                    Some(x) => Some(Peer::from_raw(self, x)?),
+                    Some(x) => Some(PyPeer::from_chat(self, x)?),
                     None => None,
                 }
             }
@@ -335,11 +335,12 @@ impl PyClient {
     /// Resolves any InputPeerLike to a Peer.
     ///
     /// Both users and bots can use this method.
-    pub async fn resolve_peer(&self, peer: InputPeerLike) -> PyResult<Option<Peer>> {
+    pub async fn resolve_peer(&self, peer: InputPeerLike) -> PyResult<Option<PyPeer>> {
         match peer {
-            InputPeerLike::Phone(x) => Ok(self.resolve_phone(x).await?.map(Peer::User)),
+            InputPeerLike::Phone(x) => Ok(self.resolve_phone(x).await?.map(PyPeer::User)),
             InputPeerLike::Username(x) => self.resolve_username(x).await,
             InputPeerLike::InputPeer(x) => self.resolve_input_peer(x).await,
+            InputPeerLike::Peer(x) => Ok(Some(x)),
         }
     }
 
@@ -362,7 +363,7 @@ impl PyClient {
     /// Import a chat invite and join a private chat/supergroup/channel.
     ///
     /// Only users can use this method.
-    pub async fn accept_invite_link(&self, invite_link: String) -> PyResult<Option<Peer>> {
+    pub async fn accept_invite_link(&self, invite_link: String) -> PyResult<Option<PyPeer>> {
         match Self::parse_invite_link(invite_link) {
             Some(hash) => updates_to_chat(
                 self,
@@ -385,11 +386,11 @@ impl PyClient {
         let session = self.inner.lock().unwrap().session.clone();
         let users = users
             .into_iter()
-            .map(|user| Peer::from_user(self, user))
+            .map(|user| PyPeer::from_user(self, user))
             .collect::<PyResult<Vec<_>>>()?;
         let chats = chats
             .into_iter()
-            .map(|chat| Peer::from_raw(self, chat))
+            .map(|chat| PyPeer::from_chat(self, chat))
             .collect::<PyResult<Vec<_>>>()?;
         let map = users
             .into_iter()

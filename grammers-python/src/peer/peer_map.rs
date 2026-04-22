@@ -14,7 +14,7 @@ use std::sync::Arc;
 use grammers_session_pyo3::PyPeerId;
 
 use crate::PyClient;
-use crate::peer::Peer;
+use crate::peer::PyPeer;
 // use crate::peer::User;
 
 /// Helper structure to efficiently retrieve peers via their peer.
@@ -28,7 +28,7 @@ use crate::peer::Peer;
 #[derive(Clone)]
 #[pyclass(name = "PeerMap", module = "grammers.client")]
 pub struct PyPeerMap {
-    pub(crate) map: Arc<HashMap<PyPeerId, Peer>>,
+    pub(crate) map: Arc<HashMap<PyPeerId, PyPeer>>,
     pub(crate) client: PyClient,
 }
 
@@ -37,17 +37,17 @@ impl PyPeerMap {}
 
 impl PyPeerMap {
     /// Retrieve the full `Peer` object given its `PeerId`.
-    pub fn get(&self, peer: PyPeerId) -> Option<&Peer> {
+    pub fn get(&self, peer: PyPeerId) -> Option<&PyPeer> {
         self.map.get(&peer)
     }
 
     /// Iterate over the peers and peers in the map.
-    pub fn iter(&self) -> impl Iterator<Item = (PyPeerId, &Peer)> {
+    pub fn iter(&self) -> impl Iterator<Item = (PyPeerId, &PyPeer)> {
         self.map.iter().map(|(k, v)| (*k, v))
     }
 
     /// Iterate over the peers in the map.
-    pub fn iter_peers(&self) -> impl Iterator<Item = &Peer> {
+    pub fn iter_peers(&self) -> impl Iterator<Item = &PyPeer> {
         self.map.values()
     }
 

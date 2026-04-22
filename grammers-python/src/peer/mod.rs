@@ -28,7 +28,7 @@ pub use channel::PyChannel;
 // pub use dialog::Dialog;
 pub use group::PyGroup;
 // pub use participant::{Participant, Role};
-pub use peer::Peer;
+pub use peer::PyPeer;
 pub use peer_map::PyPeerMap;
 // pub use permissions::{Permissions, Restrictions};
 pub use user::{PyPlatform, PyRestrictionReason, PyRestrictionReasonWrapper, PyUser};
