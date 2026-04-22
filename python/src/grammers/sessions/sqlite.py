@@ -177,6 +177,7 @@ class SqliteSession(Session):
             conn.execute('DELETE FROM dc_home')
             conn.execute('INSERT INTO dc_home VALUES (?)', (dc_id,))
             conn.commit()
+        logger.debug(f'set_home_dc_id: {dc_id}')
 
     async def dc_option(self, dc_id: int) -> DcOption | None:
         await self.init()
@@ -281,6 +282,8 @@ class SqliteSession(Session):
                 'INSERT OR REPLACE INTO peer_info VALUES (?, ?, ?)',
                 (peer_id, access_hash, subtype),
             )
+            conn.commit()
+        logger.debug(f'cache_peer: {peer}')
 
     async def updates_state(self) -> UpdatesState:
         await self.init()
@@ -360,3 +363,4 @@ class SqliteSession(Session):
                     )
 
             conn.commit()
+        logger.debug(f'set_update_state: {update}')
