@@ -20,6 +20,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "aho-corasick"
+version = "1.1.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ddd31a130427c27518df266943a5308ed92d4b226cc639f5a8f1002816174301"
+dependencies = [
+ "memchr",
+]
+
+[[package]]
 name = "android_system_properties"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -451,24 +460,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "grammers-client"
-version = "0.8.1"
-source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
-dependencies = [
- "chrono",
- "futures-util",
- "grammers-crypto",
- "grammers-mtsender",
- "grammers-session",
- "grammers-tl-types",
- "log",
- "md5",
- "mime_guess",
- "pin-project-lite",
- "tokio",
-]
-
-[[package]]
 name = "grammers-crypto"
 version = "0.8.0"
 source = "git+https://github.com/Lonami/grammers.git#9551ce6563bed330a41cc08c248d4d98a233147e"
@@ -522,7 +513,7 @@ dependencies = [
 
 [[package]]
 name = "grammers-mtsender-pyo3"
-version = "0.1.0"
+version = "0.4.0"
 dependencies = [
  "grammers-crypto",
  "grammers-mtproto",
@@ -541,10 +532,9 @@ dependencies = [
 
 [[package]]
 name = "grammers-python"
-version = "0.1.0"
+version = "0.4.1"
 dependencies = [
  "chrono",
- "grammers-client",
  "grammers-crypto",
  "grammers-mtproto",
  "grammers-mtsender",
@@ -553,14 +543,14 @@ dependencies = [
  "grammers-session-pyo3",
  "grammers-tl-types",
  "grammers-tl-types-pyo3",
- "locate-locale",
  "log",
- "os_info",
  "pyo3",
  "pyo3-async-runtimes",
  "pyo3-log",
+ "regex",
  "sha1",
  "tokio",
+ "url",
 ]
 
 [[package]]
@@ -576,14 +566,13 @@ dependencies = [
 
 [[package]]
 name = "grammers-session-pyo3"
-version = "0.1.0"
+version = "0.4.1"
 dependencies = [
  "grammers-session",
  "grammers-tl-types",
  "grammers-tl-types-pyo3",
  "log",
  "pyo3",
- "pyo3-async-runtimes",
  "tokio",
 ]
 
@@ -597,7 +586,7 @@ dependencies = [
 
 [[package]]
 name = "grammers-tl-gen-pyo3"
-version = "0.1.0"
+version = "0.4.1"
 dependencies = [
  "grammers-tl-parser",
 ]
@@ -621,7 +610,7 @@ dependencies = [
 
 [[package]]
 name = "grammers-tl-types-pyo3"
-version = "0.1.0"
+version = "0.4.1"
 dependencies = [
  "grammers-tl-gen-pyo3",
  "grammers-tl-parser",
@@ -908,12 +897,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 
 [[package]]
-name = "md5"
-version = "0.8.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ae960838283323069879657ca3de837e9f7bbb4c7bf6ea7f1b290d5e9476d2e0"
-
-[[package]]
 name = "memchr"
 version = "2.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -926,22 +909,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "488016bfae457b036d996092f6cb448677611ce4449e970ceaf42695203f218a"
 dependencies = [
  "autocfg",
-]
-
-[[package]]
-name = "mime"
-version = "0.3.17"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6877bb514081ee2a7ff5ef9de3281f14a4dd4bceac4c09388074a6b5df8a139a"
-
-[[package]]
-name = "mime_guess"
-version = "2.0.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f7c44f8e672c00fe5308fa235f821cb4198414e1c77935c1ab6948d3fd78550e"
-dependencies = [
- "mime",
- "unicase",
 ]
 
 [[package]]
@@ -1449,6 +1416,35 @@ dependencies = [
 ]
 
 [[package]]
+name = "regex"
+version = "1.12.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e10754a14b9137dd7b1e3e5b0493cc9171fdd105e0ab477f51b72e7f3ac0e276"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-automata",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-automata"
+version = "0.4.14"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e1dd4122fc1595e8162618945476892eefca7b88c52820e74af6262213cae8f"
+dependencies = [
+ "aho-corasick",
+ "memchr",
+ "regex-syntax",
+]
+
+[[package]]
+name = "regex-syntax"
+version = "0.8.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc897dd8d9e8bd1ed8cdad82b5966c3e0ecae09fb1907d58efaa013543185d0a"
+
+[[package]]
 name = "resolv-conf"
 version = "0.7.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1759,12 +1755,6 @@ name = "typenum"
 version = "1.19.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "562d481066bde0658276a35467c4af00bdc6ee726305698a55b86e61d7ad82bb"
-
-[[package]]
-name = "unicase"
-version = "2.9.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "dbc4bc3a9f746d862c45cb89d705aa10f187bb96c76001afab07a0d35ce60142"
 
 [[package]]
 name = "unicode-ident"

@@ -99,7 +99,7 @@ fn write_struct<W: Write>(
 {indent}pub struct Py{name}Wrapper(pub pyo3::Py<Py{name}>);
 {indent}impl Clone for Py{name}Wrapper {{
 {indent}    fn clone(&self) -> Self {{
-{indent}        pyo3::Python::attach(|py| self.0.bind(py).clone().unbind()).into()
+{indent}        pyo3::Python::attach(|py| pyo3::Py::clone_ref(&self.0, py)).into()
 {indent}    }}
 {indent}}}
 {indent}impl From<pyo3::Py<Py{name}>> for Py{name}Wrapper {{
