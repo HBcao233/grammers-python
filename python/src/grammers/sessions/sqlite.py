@@ -48,16 +48,15 @@ class SqliteSession(Session):
 
     def __init__(
         self,
-        database: str | sqlite3.Connection = ':memory:',
-        pool_size: int = 5,
+        path: str | sqlite3.Connection = ':memory:',
     ) -> None:
-        if isinstance(database, sqlite3.Connection) or database == ':memory:':
-            pool_size = 1
-
-        self.pool_size = pool_size
-        self._database = database
-        self._pool = None
+        if isinstance(path, sqlite3.Connection):
+            self._conn = path
+        else:
+            self._conn = sqlite3.connect(path, check_same_thread=False)
+        self._lock = asyncio.Lock()
         self._inited = False
+
         self.home_dc: int = DEFAULT_DC
         self.dc_options: dict[int, DcOption] = {}
 
@@ -65,7 +64,6 @@ class SqliteSession(Session):
     def from_telethon_string(
         string: str,
         path: str = ':memory:',
-        pool_size: int = 5,
     ) -> Self:
         if string[0] != telethon_version:
             raise ValueError('Invalid telethon string.')
@@ -103,29 +101,15 @@ class SqliteSession(Session):
         session = SqliteSession(conn, 1)
         return session
 
-    async def _ensure_pool(self):
-        if self._pool is not None:
-            return
-
-        self._pool = asyncio.Queue(maxsize=self.pool_size)
-        for _ in range(self.pool_size):
-            if isinstance(self._database, sqlite3.Connection):
-                conn = self._database
-            else:
-                conn = sqlite3.connect(self._database, check_same_thread=False)
-            await self._pool.put(conn)
-
     @asynccontextmanager
     async def connection(self):
-        await self._ensure_pool()
-        conn = await self._pool.get()
-        try:
-            yield conn
-        finally:
-            await self._pool.put(conn)
+        async with self._lock:
+            yield self._conn
 
     @staticmethod
     def _init(conn: sqlite3.Connection) -> (int, Sequence[DcOption]):
+        conn.execute('PRAGMA journal_mode=WAL')
+
         res = conn.execute('PRAGMA user_version').fetchone()
         user_version = int(res[0]) if res else 0
         if user_version == 0:
@@ -266,10 +250,10 @@ class SqliteSession(Session):
     async def cache_peer(self, peer: PeerInfo) -> None:
         await self.init()
 
-        peer_id = peer.bot_api_dialog_id
-        hash_ = peer.auth
-        if hash_ is not None:
-            hash_ = int(hash_)
+        peer_id = peer.id.bot_api_dialog_id
+        access_hash = peer.access_hash
+        if access_hash is not None:
+            access_hash = int(access_hash)
         subtype = None
         match peer:
             case PeerInfo.User():
@@ -295,7 +279,7 @@ class SqliteSession(Session):
         async with self.connection() as conn:
             conn.execute(
                 'INSERT OR REPLACE INTO peer_info VALUES (?, ?, ?)',
-                (peer_id, hash_, subtype),
+                (peer_id, access_hash, subtype),
             )
 
     async def updates_state(self) -> UpdatesState:

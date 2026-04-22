@@ -534,6 +534,17 @@ impl PyPeerInfoUser {
         self.id = id.0;
         Ok(())
     }
+    
+    #[getter]
+    fn access_hash(&self) -> Option<PyPeerAuth> {
+        self.auth
+    }
+    
+    #[setter(access_hash)]
+    fn set_access_hash(&mut self, access_hash: Option<PyPeerAuth>) -> PyResult<()> {
+        self.auth = access_hash;
+        Ok(())
+    }
 
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
         Python::attach(|py| {
@@ -573,6 +584,16 @@ impl PyPeerInfoChat {
         let _ = PyPeerId::chat(id.0)?;
         self.id = id.0;
         Ok(())
+    }
+    
+    #[getter]
+    fn access_hash(&self) -> Option<PyPeerAuth> {
+        None
+    }
+    
+    #[setter(access_hash)]
+    fn set_access_hash(&mut self, _access_hash: Option<PyPeerAuth>) -> PyResult<()> {
+        Err(PyTypeError::new_err("PeerInfoChat can't be set access_hash."))
     }
 
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
@@ -630,6 +651,17 @@ impl PyPeerInfoChannel {
     fn set_id(&mut self, id: PeerIdLike) -> PyResult<()> {
         let _ = PyPeerId::channel(id.0)?;
         self.id = id.0;
+        Ok(())
+    }
+    
+    #[getter]
+    fn access_hash(&self) -> Option<PyPeerAuth> {
+        self.auth
+    }
+    
+    #[setter(access_hash)]
+    fn set_access_hash(&mut self, access_hash: Option<PyPeerAuth>) -> PyResult<()> {
+        self.auth = access_hash;
         Ok(())
     }
 
