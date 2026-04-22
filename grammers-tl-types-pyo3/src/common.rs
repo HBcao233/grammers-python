@@ -5,7 +5,7 @@ use pyo3::types::{PyBytes, PyDateTime, PyDict, PyMapping, PySequence, PyString};
 
 use grammers_tl_types as tl;
 
-static FORMAT_INDENT: &'static str = "    ";
+static FORMAT_INDENT: &'static str = "\t";
 
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
@@ -162,7 +162,7 @@ impl TLObject {
             d = obj.call_method0("to_dict")?;
             (&d, cls_name.extract()?)
         } else {
-            (obj, "TLObject".to_string())
+            (obj, "dict".to_string())
         };
 
         let next_indent = match indent {
