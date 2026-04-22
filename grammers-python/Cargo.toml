@@ -1,6 +1,6 @@
 [package]
 name = "grammers-python"
-version = { workspace = true }
+version = "0.4.2"
 edition = { workspace = true }
 description = "Python bindings for grammers"
 

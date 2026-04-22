@@ -226,6 +226,8 @@ impl TLObject {
                 "{}({}{}{})",
                 class_name, newline_or_empty, result, closing_indent,
             )
+        } else if obj.is_instance_of::<PyBytes>() {
+            obj.repr()?.to_string()
         } else if obj.is_instance_of::<PyString>() {
             obj.repr()?.to_string()
         } else if let Ok(seq) = obj.cast::<PySequence>() {
