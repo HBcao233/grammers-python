@@ -139,6 +139,10 @@ impl PyPeerId {
         self.0
     }
 
+    fn __index__(&self) -> i64 {
+        self.0
+    }
+
     /// Unpacked peer identifier. Panics if [`Self::kind`] is [`PeerKind::UserSelf`].
     #[getter]
     pub fn bare_id(&self) -> PyResult<i64> {
@@ -264,6 +268,10 @@ impl PyPeerAuth {
     fn __int__(&self) -> i64 {
         self.hash()
     }
+
+    fn __index__(&self) -> i64 {
+        self.hash()
+    }
 }
 
 impl Default for PyPeerAuth {
@@ -292,6 +300,10 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerAuthLike {
         if let Ok(v) = ob.extract::<i64>() {
             return Ok(Self(PyPeerAuth(v)));
         }
+        if let Ok(v) = ob.extract::<PyPeerAuth>() {
+            return Ok(Self(v));
+        }
+
         let cls_name = ob.get_type().qualname()?;
         Err(PyTypeError::new_err(format!(
             "peer_auth expected an int or PeerAuth, got '{}'",
