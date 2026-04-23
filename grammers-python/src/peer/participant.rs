@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use chrono::{DateTime, Utc};
+// use chrono::{DateTime, Utc};
 use grammers_session_pyo3::PyPeerId;
 use grammers_tl_types as tl;
 

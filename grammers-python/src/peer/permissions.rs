@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use chrono::{DateTime, Utc};
+// use chrono::{DateTime, Utc};
 use grammers_tl_types as tl;
 
 use crate::utils;
