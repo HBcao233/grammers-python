@@ -247,11 +247,6 @@ impl PyPeerAuth {
         Self(access_hash)
     }
 
-    #[getter]
-    pub fn hash(&self) -> i64 {
-        self.0
-    }
-
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
         Python::attach(|py| {
             let dict = PyDict::new(py);
@@ -266,11 +261,11 @@ impl PyPeerAuth {
     }
 
     fn __int__(&self) -> i64 {
-        self.hash()
+        self.0
     }
 
     fn __index__(&self) -> i64 {
-        self.hash()
+        self.0
     }
 }
 
