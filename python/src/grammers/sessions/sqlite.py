@@ -162,11 +162,11 @@ class SqliteSession(Session):
     PRIMARY KEY (peer_id))""")
         conn.execute('PRAGMA user_version=1')
         conn.commit()
-    
+
     async def close(self):
         async with self._lock:
             self._conn.close()
-    
+
     async def home_dc_id(self) -> int:
         await self.init()
         return self.home_dc
