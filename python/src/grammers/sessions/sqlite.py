@@ -12,7 +12,7 @@ from .types import (
     UpdateState,
 )
 from .dc_options import DEFAULT_DC, KNOWN_DC_OPTIONS
-from enum import Enum
+from enum import IntEnum
 from contextlib import asynccontextmanager
 from typing import Self, Sequence
 import asyncio
@@ -30,16 +30,13 @@ telethon_format = '>B{}sH256s'
 telethon_version = '1'
 
 
-class PeerSubtype(Enum):
+class PeerSubtype(IntEnum):
     UserSelf = 1
     UserBot = 2
     UserSelfBot = 3
     Megagroup = 4
     Broadcast = 8
     Gigagroup = 12
-
-    def __int__(self):
-        return self.value
 
 
 class SqliteSession(Session):
@@ -165,7 +162,11 @@ class SqliteSession(Session):
     PRIMARY KEY (peer_id))""")
         conn.execute('PRAGMA user_version=1')
         conn.commit()
-
+    
+    async def close(self):
+        async with self._lock:
+            self._conn.close()
+    
     async def home_dc_id(self) -> int:
         await self.init()
         return self.home_dc

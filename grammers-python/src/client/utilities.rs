@@ -28,6 +28,11 @@ impl PyClient {
             s.sync_update_state().await?;
         }
         self.disconnect();
+
+        // session close
+        let session = self.session();
+        session.close().await?;
+
         let task = self.inner.lock().unwrap().pool_task.take();
         if let Some(task) = task {
             let _ = task.await;

@@ -26,8 +26,11 @@ impl PySession {
 
     #[classmethod]
     fn __init_subclass__(cls: &Bound<'_, PyType>) -> PyResult<()> {
+        let py = cls.py();
+        let inspect = py.import("inspect")?;
         let cls_dict = cls.getattr("__dict__")?;
         let required_methods = [
+            "close",
             "home_dc_id",
             "set_home_dc_id",
             "dc_option",
@@ -37,6 +40,7 @@ impl PySession {
             "updates_state",
             "set_update_state",
         ];
+
         for method in required_methods {
             if !cls_dict.contains(method)? {
                 return Err(PyTypeError::new_err(format!(
@@ -45,8 +49,26 @@ impl PySession {
                     method,
                 )));
             }
+
+            let func = cls.getattr(method)?;
+            let is_coro = inspect
+                .call_method1("iscoroutinefunction", (&func,))?
+                .extract::<bool>()?;
+            if !is_coro {
+                return Err(PyTypeError::new_err(format!(
+                    "Can't instantiate abstract class {}, because the implementation for abstract method '{}' is not a coroutine function (async def).",
+                    cls.name()?,
+                    method,
+                )));
+            }
         }
         Ok(())
+    }
+
+    async fn close(&self) -> PyResult<()> {
+        Err(PyNotImplementedError::new_err(
+            "Session subclasses must implement close()",
+        ))
     }
 
     async fn home_dc_id(&self) -> PyResult<i32> {
@@ -111,6 +133,7 @@ impl PySession {
     }
 }
 
+// For use on the Rust side
 pub struct Session {
     inner: Py<PyAny>,
     event_loop: Arc<OnceCell<Py<PyAny>>>,
@@ -142,6 +165,18 @@ impl Session {
         self.event_loop
             .get_or_init(|| async { self.loop_rx.lock().await.take().unwrap().await.unwrap() })
             .await
+    }
+
+    pub async fn close(&self) -> PyResult<()> {
+        let event_loop = self.event_loop().await;
+        let coro = Python::attach(|py| {
+            self.inner
+                .bind(py)
+                .call_method0("close")
+                .map(|x| x.unbind())
+        })?;
+        into_future(event_loop, coro).await?;
+        Ok(())
     }
 
     pub async fn home_dc_id(&self) -> PyResult<i32> {
