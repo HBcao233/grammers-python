@@ -9,6 +9,11 @@ from grammers._rs.client import (
     User,
     Group,
     Channel,
+    PeerMap,
+    Platform,
+    RestrictionReason,
+    Message,
+    HistoryMessageIter,
 )
 
 Peer = User | Group | Channel
@@ -24,4 +29,9 @@ __all__ = [
     'User',
     'Group',
     'Channel',
+    'PeerMap',
+    'Platform',
+    'RestrictionReason',
+    'Message',
+    'HistoryMessageIter',
 ]

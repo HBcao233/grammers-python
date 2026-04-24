@@ -1,4 +1,5 @@
-from .. import types
+from . import Client
+from .. import types, hints
 from ..sessions import PeerId, PeerAuth
 from ..tl import TLObject
 from typing import Self, final
@@ -548,3 +549,225 @@ class Channel(TLObject):
     def send_paid_messages_stars(self) -> int | None: ...
     @property
     def linked_monoforum_id(self) -> int | None: ...
+
+class PeerMap: ...
+
+class Message(TLObject):
+    """
+    Represents a Telegram message, which includes text messages, messages with media, and service
+    messages.
+
+    This message should be treated as a snapshot in time, that is, if the message is edited while
+    using this object, those changes won't alter this structure.
+    """
+    def __new__(
+        cls, client: Client, message: hints.Message, peers: PeerMap
+    ) -> Self: ...
+    @property
+    def id(self) -> int:
+        """
+        The ID of this message.
+
+        Message identifiers are counters that start at 1 and grow by 1 for each message produced.
+
+        Every channel has its own unique message counter. This counter is the same for all users,
+        but unique to each channel.
+
+        Every account has another unique message counter which is used for private conversations
+        and small group chats. This means different accounts will likely have different message
+        identifiers for the same message in a private conversation or small group chat. This also
+        implies that the message identifier alone is enough to uniquely identify the message,
+        without the need to know the chat ID.
+
+        **You cannot use the message ID of User A when running as User B**, unless this message
+        belongs to a megagroup or broadcast channel. Beware of this when using methods like
+        [`Client::delete_messages`], which **cannot** validate the peer where the message
+        should be deleted for those cases.
+        """
+        ...
+    @property
+    def peer_id(self) -> PeerId | None:
+        """
+        The [`Self.peer`]'s identifier.
+        """
+        ...
+    @property
+    def peer(self) -> types.Peer | None:
+        """
+        The peer where this message was sent to.
+
+        This might be the user you're talking to for private conversations, or the group or
+        channel where the message was sent.
+        """
+        ...
+    @property
+    def sender_id(self) -> PeerId | None:
+        """
+        The [`Self.sender`]'s identifier, if there is a sender.
+        """
+        ...
+    @property
+    def sender(self) -> types.Peer | None:
+        """
+        The sender of this message, if there is a sender **and** the sender is in cache.
+        """
+        ...
+    @property
+    def out(self) -> bool | None:
+        """
+        Whether the message is outgoing (i.e. you sent this message to some other peer) or
+        incoming (i.e. someone else sent it to you or the peer).
+        """
+        ...
+    @property
+    def mentioned(self) -> bool | None:
+        """
+        Whether you were mentioned in this message or not.
+
+        This includes @username mentions, text mentions, and messages replying to one of your
+        previous messages (even if it contains no mention in the message text).
+        """
+        ...
+    @property
+    def media_unread(self) -> bool | None:
+        """
+        Whether you have read the media in this message or not.
+
+        Most commonly, these are voice notes that you have not played yet.
+        """
+        ...
+    @property
+    def reactions_are_possible(self) -> bool | None:
+        """
+        Whether you can react to this message.
+
+        MessageService only.
+        """
+        ...
+    @property
+    def silent(self) -> bool | None:
+        """
+        Whether the message should notify people with sound or not.
+        """
+        ...
+    @property
+    def post(self) -> bool | None:
+        """
+        Whether this message is a post in a broadcast channel or not.
+        """
+        ...
+    @property
+    def from_scheduled(self) -> bool | None:
+        """
+        Whether this message was originated from a previously-scheduled message or not.
+        """
+        ...
+    @property
+    def legacy(self) -> bool | None:
+        """
+        Whether this is a legacy message: it has to be refetched with the new layer.
+        """
+        ...
+    @property
+    def edit_hide(self) -> bool | None:
+        """
+        Whether the edited mark of this message is edited should be hidden (e.g. in GUI clients)
+        or shown.
+        """
+        ...
+    @property
+    def pinned(self) -> bool | None:
+        """
+        Whether this message is currently pinned or not.
+        """
+        ...
+    @property
+    def noforwards(self) -> bool | None:
+        """
+        Whether this message is protected and thus cannot be forwarded; clients should also
+        prevent users from saving attached media (i.e. videos should only be streamed,
+        photos should be kept in RAM, et cetera).
+        """
+        ...
+    @property
+    def invert_media(self) -> bool | None:
+        """
+        If set, any eventual webpage preview will be shown on top of the message instead of at the bottom.
+        """
+        ...
+    @property
+    def offline(self) -> bool | None:
+        """
+        If set, the message was sent because of a scheduled action by the message sender,
+        for example, as away, or a greeting service message.
+        """
+        ...
+    @property
+    def video_processing_pending(self) -> bool | None:
+        """
+        The video contained in the message is currently being processed by the server
+        (i.e. to generate alternative qualities, that will be contained in the final messageMediaDocument.alt_document)
+        """
+        ...
+    @property
+    def paid_suggested_post_stars(self) -> bool | None:
+        """
+        Set if this is a suggested channel post that was paid using Telegram Stars.
+        """
+        ...
+    @property
+    def paid_suggested_post_ton(self) -> bool | None:
+        """
+        Set if this is a suggested channel post that was paid using Toncoins.
+        """
+        ...
+    @property
+    def from_id(self) -> PeerId | None:
+        """
+        Raw from_id, generally use `sender_id` instead.
+        """
+        ...
+    @property
+    def from_boosts_applied(self) -> int | None:
+        """
+        Supergroups only, contains the number of boosts this user has given the current supergroup.
+        """
+        ...
+
+    def to_dict(self) -> dict: ...
+
+class HistoryMessageIter:
+    """
+    Create by `Client.iter_history_messages`.
+    """
+    def __new__(
+        cls,
+        client: Client,
+        peer: hints.InputPeerLike,
+        *,
+        offset_id: int = 0,
+        offset_date: int = 0,
+        add_offset: int = 0,
+        limit: int | None = None,
+        page_limit: int = 0,
+        max_id: int = 0,
+        min_id: int = 0,
+    ) -> Self: ...
+    def __aiter__(self): ...
+    def __anext__(self): ...
+    async def init(self): ...
+    async def total(self) -> int:
+        """
+        /// Determines how many messages there are in total.
+
+        This only performs a network call if `next` has not been called before.
+        """
+        ...
+    async def next(self) -> Message:
+        """
+        /// Returns the next `Message` from the internal buffer, filling the buffer previously if it's
+        empty.
+
+        Returns `None` if the `limit` is reached or there are no messages left.
+        """
+        ...

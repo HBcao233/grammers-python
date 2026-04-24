@@ -1,4 +1,4 @@
-from typing import Awaitable, Callable, Optional, Protocol, Self
+from typing import Awaitable, Callable, Optional, Protocol, Self, Sequence
 from . import tl
 from .tl import types
 from ..sessions import Session
@@ -8,6 +8,8 @@ from .types import (
     Group,
     Channel,
     Peer,
+    Message,
+    HistoryMessageIter,
 )
 from .. import hints
 
@@ -478,3 +480,50 @@ class Client:
         ...
 
     # ========== messages methods ==========
+    async def get_messages_by_id(
+        peer: hints.InputPeerLike,
+        message_ids: Sequence[int],
+    ) -> list[Message]:
+        """
+        Get messages by id.
+
+        Both users and bots can use this method.
+        """
+        ...
+    def iter_history_messages(
+        peer: hints.InputPeerLike,
+        *,
+        offset_id: int = 0,
+        offset_date: int = 0,
+        add_offset: int = 0,
+        limit: int | None = None,
+        page_limit: int = 0,
+        max_id: int = 0,
+        min_id: int = 0,
+    ) -> HistoryMessageIter:
+        """
+        Returns the conversation history with one interlocutor / within a chat.
+        Note: Using `async for` with `limit=None` will iterate through the entire messages history.
+
+        Only users can use this method
+
+        # Examples
+
+        ```
+        # Get the latest message of Telegram.
+        async for m in client.iter_history_messages(777000, limit=1)
+            print(m.date)
+            print(m.message)
+
+        # Or without using async for
+        iterator = client.iter_history_messages(
+            777000,
+            limit=None,
+        )
+        # Determines how many messages there are in total.
+        print(await iterator.total())
+        # Get the next `Message`.
+        print(await iterator.next())  # or await anext(iterator)
+        ```
+        """
+        ...

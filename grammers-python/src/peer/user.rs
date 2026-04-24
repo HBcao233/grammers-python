@@ -10,7 +10,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::PyDict;
 
-use grammers_session_pyo3::{PeerInfoLike, PyPeerAuth, PyPeerId};
+use grammers_session_pyo3::{PeerInfo, PyPeerAuth, PyPeerId, PyPeerRef};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
@@ -435,8 +435,8 @@ impl PyUser {
         self.access_hash
     }
 
-    pub fn info(&self) -> PeerInfoLike {
-        PeerInfoLike::User {
+    pub fn info(&self) -> PeerInfo {
+        PeerInfo::User {
             id: self.id.bare_id().unwrap(),
             auth: self.auth(),
             bot: self.bot,
@@ -565,5 +565,17 @@ impl PyUser {
 
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
         self.clone().into_dict()
+    }
+
+    /// Convert the group to its reference.
+    ///
+    /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
+    pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
+        let id = self.id();
+        let session = self.client.session();
+        Ok(match self.auth() {
+            Some(auth) => Some(PyPeerRef { id, auth }),
+            None => session.peer_ref(id).await?,
+        })
     }
 }

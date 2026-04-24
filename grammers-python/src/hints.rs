@@ -4,22 +4,24 @@ use pyo3::types::{PyAnyMethods, PyTypeMethods};
 
 use crate::peer::PyPeer;
 use crate::utils::parse_peer_string;
-use grammers_session_pyo3::{PeerIdLike, PyPeerId, PyPeerKind};
+use grammers_session_pyo3::{PeerIdLike, PyPeerId, PyPeerKind, PyPeerRef};
 use grammers_tl_types_pyo3 as pytl;
 
+#[derive(Clone)]
 pub enum InputPeerLike {
     Phone(String),
     Username(String),
     InputPeer(pytl::enums::PyInputPeer),
     Peer(PyPeer),
+    PeerRef(PyPeerRef),
 }
 impl<'a, 'py> FromPyObject<'a, 'py> for InputPeerLike {
     type Error = PyErr;
-    fn extract(ob: Borrowed<'a, 'py, PyAny>) -> PyResult<Self> {
-        if let Ok(s) = ob.extract::<String>() {
+    fn extract(obj: Borrowed<'a, 'py, PyAny>) -> PyResult<Self> {
+        if let Ok(s) = obj.extract::<String>() {
             return parse_peer_string(&s).ok_or(PyValueError::new_err("Invalid phone or username"));
         }
-        if let Ok(x) = ob.extract::<PeerIdLike>() {
+        if let Ok(x) = obj.extract::<PeerIdLike>() {
             let x = PyPeerId::new(x)?;
             return Ok(match x.kind() {
                 PyPeerKind::UserSelf => Self::InputPeer(pytl::types::PyInputPeerSelf {}.into()),
@@ -45,16 +47,19 @@ impl<'a, 'py> FromPyObject<'a, 'py> for InputPeerLike {
                 ),
             });
         }
-        if let Ok(x) = ob.extract::<pytl::enums::PyInputPeer>() {
+        if let Ok(x) = obj.extract::<pytl::enums::PyInputPeer>() {
             return Ok(Self::InputPeer(x));
         }
-        if let Ok(x) = ob.extract::<PyPeer>() {
+        if let Ok(x) = obj.extract::<PyPeer>() {
             return Ok(Self::Peer(x));
         }
+        if let Ok(x) = obj.extract::<PyPeerRef>() {
+            return Ok(Self::PeerRef(x));
+        }
 
-        let cls_name = ob.get_type().qualname()?;
+        let cls_name = obj.get_type().qualname()?;
         Err(PyTypeError::new_err(format!(
-            "expected a phone, username, int, InputPeer or Peer, got '{}'",
+            "expected a phone, username, int, InputPeer, Peer or PeerRef, got '{}'",
             cls_name,
         )))
     }
@@ -74,12 +79,16 @@ impl InputPeerLike {
                 )
             })?,
             InputPeerLike::Peer(x) => Python::attach(|py| {
-                Ok::<_, PyErr>(
-                    x.clone()
-                        .into_pyobject(py)?
-                        .call_method0("__str__")?
-                        .extract::<String>()?,
-                )
+                x.clone()
+                    .into_pyobject(py)?
+                    .call_method0("__str__")?
+                    .extract::<String>()
+            })?,
+            InputPeerLike::PeerRef(x) => Python::attach(|py| {
+                x.clone()
+                    .into_pyobject(py)?
+                    .call_method0("__repr__")?
+                    .extract::<String>()
             })?,
             /*match x {
                 pytl::enums::PyInputPeer::Empty(_) => write!(f, "InputPeerEmpty()"),

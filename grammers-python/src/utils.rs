@@ -108,6 +108,11 @@ pub async fn maybe_await(obj: Py<PyAny>) -> PyResult<Py<PyAny>> {
     }
 }
 
+pub async fn into_await(coro: Py<PyAny>) -> PyResult<Py<PyAny>> {
+    let event_loop = event_loop()?;
+    into_future(&event_loop, coro).await
+}
+
 /*
 // This atomic isn't for anything critical, just to generate unique IDs without locks.
 // The worst that can happen if the load and store orderings are wrong is that the IDs

@@ -209,14 +209,14 @@ class SqliteSession(Session):
             if res is None:
                 return None
 
-            subtype = res[2]
+            subtype = res[2] or 0
             match peer.kind:
                 case PeerKind.User | PeerKind.UserSelf:
                     return PeerInfo.User(
                         id=res[0],
                         auth=PeerAuth(res[1]) if res[1] is not None else None,
-                        bot=bool(subtype & PeerSubtype.UserBot.value),
-                        is_self=bool(subtype & PeerSubtype.UserSelf.value),
+                        bot=bool(subtype & PeerSubtype.UserBot),
+                        is_self=bool(subtype & PeerSubtype.UserSelf),
                     )
                 case PeerKind.Chat:
                     return PeerInfo.Chat(id=peer.bare_id)

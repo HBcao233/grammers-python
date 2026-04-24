@@ -164,24 +164,39 @@ pub struct PyMessage {
     #[pyo3(get, set)]
     pub pinned: Option<bool>,
 
+    /// Whether this message is protected and thus cannot be forwarded; clients should also
+    /// prevent users from saving attached media (i.e. videos should only be streamed,
+    /// photos should be kept in RAM, et cetera).
     #[pyo3(get, set)]
     pub noforwards: Option<bool>,
 
+    /// If set, any eventual webpage preview will be shown on top of the message instead of at the bottom.
     #[pyo3(get, set)]
     pub invert_media: Option<bool>,
+
+    /// If set, the message was sent because of a scheduled action by the message sender,
+    /// for example, as away, or a greeting service message.
     #[pyo3(get, set)]
     pub offline: Option<bool>,
+
+    /// The video contained in the message is currently being processed by the server
+    /// (i.e. to generate alternative qualities, that will be contained in the final messageMediaDocument.alt_document)
     #[pyo3(get, set)]
     pub video_processing_pending: Option<bool>,
+
+    /// Set if this is a suggested channel post that was paid using Telegram Stars.
     #[pyo3(get, set)]
     pub paid_suggested_post_stars: Option<bool>,
+
+    /// Set if this is a suggested channel post that was paid using Toncoins.
     #[pyo3(get, set)]
     pub paid_suggested_post_ton: Option<bool>,
 
-    /// raw from_id, generally use sender_id instead.
+    /// Raw from_id, generally use `sender_id` instead.
     #[pyo3(get, set)]
     pub from_id: Option<PyPeerId>,
 
+    /// Supergroups only, contains the number of boosts this user has given the current supergroup.
     #[pyo3(get, set)]
     pub from_boosts_applied: Option<i32>,
 
@@ -655,6 +670,8 @@ impl PyMessage {
     }*/
 
     pub fn into_dict(self) -> PyResult<Py<PyDict>> {
+        let peer = self.peer();
+        let sender = self.sender();
         let PyMessage {
             client: _,
             peers: _,
@@ -676,7 +693,7 @@ impl PyMessage {
             video_processing_pending,
             paid_suggested_post_stars,
             paid_suggested_post_ton,
-            from_id,
+            from_id: _,
             from_boosts_applied,
             saved_peer_id,
             fwd_from,
@@ -712,6 +729,8 @@ impl PyMessage {
             let dict = PyDict::new(py);
             dict.set_item("_", "Message")?;
             dict.set_item("id", id)?;
+            dict.set_item("peer", peer)?;
+            dict.set_item("sender", sender)?;
             dict.set_item("out", out)?;
             dict.set_item("mentioned", mentioned)?;
             dict.set_item("media_unread", media_unread)?;
@@ -728,7 +747,7 @@ impl PyMessage {
             dict.set_item("video_processing_pending", video_processing_pending)?;
             dict.set_item("paid_suggested_post_stars", paid_suggested_post_stars)?;
             dict.set_item("paid_suggested_post_ton", paid_suggested_post_ton)?;
-            dict.set_item("from_id", from_id)?;
+            // dict.set_item("from_id", from_id)?;
             dict.set_item("from_boosts_applied", from_boosts_applied)?;
             dict.set_item("saved_peer_id", saved_peer_id)?;
             dict.set_item("fwd_from", fwd_from)?;

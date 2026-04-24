@@ -4,15 +4,15 @@ use pyo3::prelude::*;
 use std::collections::HashMap;
 use std::sync::Arc;
 
+use grammers_session_pyo3::{PyPeerAuth, PyPeerId, PyPeerRef};
+use grammers_tl_types as tl;
+use grammers_tl_types_pyo3 as pytl;
+
 use super::PyClient;
 use crate::errors::PyInvocationError;
 use crate::hints::InputPeerLike;
 use crate::peer::{PyPeer, PyPeerMap, PyUser};
-use crate::utils::{parse_phone, parse_username};
-
-use grammers_session_pyo3::PyPeerId;
-use grammers_tl_types as tl;
-use grammers_tl_types_pyo3 as pytl;
+use crate::utils::{into_await, parse_phone, parse_username};
 
 fn updates_to_chat(
     client: &PyClient,
@@ -127,11 +127,15 @@ impl PyClient {
             Some(x) => x,
             None => return Err(PyValueError::new_err("Invalid phone.")),
         };
-        let mut users = match self
+        let res = match self
             .invoke(&tl::functions::contacts::ResolvePhone { phone })
             .await
-            .map_err(PyInvocationError::new)?
         {
+            Ok(v) => v,
+            Err(err) if err.is("PHONE_NOT_OCCUPIED") => return Ok(None),
+            Err(err) => return Err(PyInvocationError::new(err)),
+        };
+        let mut users = match res {
             tl::enums::contacts::ResolvedPeer::Peer(x) => x.users,
         };
 
@@ -341,7 +345,127 @@ impl PyClient {
             InputPeerLike::Username(x) => self.resolve_username(x).await,
             InputPeerLike::InputPeer(x) => self.resolve_input_peer(x).await,
             InputPeerLike::Peer(x) => Ok(Some(x)),
+            InputPeerLike::PeerRef(x) => {
+                self.resolve_input_peer(tl::enums::InputPeer::from(x).into())
+                    .await
+            }
         }
+    }
+
+    /// Resolves any InputPeerLike to a PeerRef, with using cached access_hash.
+    ///
+    /// Both users and bots can use this method.
+    pub async fn resolve_peer_ref(&self, peer: InputPeerLike) -> PyResult<Option<PyPeerRef>> {
+        Ok(match peer {
+            InputPeerLike::Phone(x) => {
+                let user = self.resolve_phone(x).await?;
+                match user {
+                    Some(u) => {
+                        let coro = Python::attach(|py| u.call_method0(py, "to_ref"))?;
+                        let res = into_await(coro).await?;
+                        Python::attach(|py| Ok::<_, PyErr>(res.extract::<Option<PyPeerRef>>(py)?))?
+                    }
+                    None => None,
+                }
+            }
+            InputPeerLike::Username(x) => {
+                let peer = self.resolve_username(x).await?;
+                match peer {
+                    Some(p) => p.to_ref().await?,
+                    None => None,
+                }
+            }
+            InputPeerLike::InputPeer(input_peer) => {
+                use tl::enums::InputPeer as P;
+                match P::from(input_peer.clone()) {
+                    P::Empty => None,
+                    P::PeerSelf => Some(PyPeerRef {
+                        id: PyPeerId::self_user()?,
+                        auth: PyPeerAuth::default(),
+                    }),
+                    P::Chat(x) => Some(PyPeerRef {
+                        id: PyPeerId::chat(x.chat_id)?,
+                        auth: PyPeerAuth::default(),
+                    }),
+                    P::User(x) => {
+                        let peer_id = PyPeerId::user(x.user_id)?;
+                        let mut access_hash = x.access_hash;
+                        if access_hash == 0 {
+                            let session = self.session();
+                            let peer_ref = session.peer_ref(peer_id).await?;
+                            if let Some(p) = peer_ref {
+                                access_hash = p.auth().0
+                            }
+                        }
+                        if access_hash != 0 {
+                            Some(PyPeerRef {
+                                id: peer_id,
+                                auth: PyPeerAuth(access_hash),
+                            })
+                        } else {
+                            let peer = self.resolve_input_peer(input_peer).await?;
+                            match peer {
+                                Some(p) => p.to_ref().await?,
+                                None => None,
+                            }
+                        }
+                    }
+                    P::Channel(x) => {
+                        let peer_id = PyPeerId::channel(x.channel_id)?;
+                        let mut access_hash = x.access_hash;
+                        if access_hash == 0 {
+                            let session = self.session();
+                            let peer_ref = session.peer_ref(peer_id).await?;
+                            if let Some(p) = peer_ref {
+                                access_hash = p.auth().0
+                            }
+                        }
+                        if access_hash != 0 {
+                            Some(PyPeerRef {
+                                id: peer_id,
+                                auth: PyPeerAuth(access_hash),
+                            })
+                        } else {
+                            let peer = self.resolve_input_peer(input_peer).await?;
+                            match peer {
+                                Some(p) => p.to_ref().await?,
+                                None => None,
+                            }
+                        }
+                    }
+                    P::UserFromMessage(x) => {
+                        let session = self.session();
+                        let peer_id = PyPeerId::user(x.user_id)?;
+                        let peer_ref = session.peer_ref(peer_id).await?;
+                        if let Some(p) = peer_ref {
+                            Some(p)
+                        } else {
+                            let peer = self.resolve_input_peer(input_peer).await?;
+                            match peer {
+                                Some(p) => p.to_ref().await?,
+                                None => None,
+                            }
+                        }
+                    }
+                    P::ChannelFromMessage(x) => {
+                        let session = self.session();
+                        let peer_id = PyPeerId::user(x.channel_id)?;
+                        let peer_ref = session.peer_ref(peer_id).await?;
+                        if let Some(p) = peer_ref {
+                            Some(p)
+                        } else {
+                            let peer = self.resolve_input_peer(input_peer).await?;
+                            match peer {
+                                Some(p) => p.to_ref().await?,
+                                None => None,
+                            }
+                        }
+                    }
+                }
+            }
+            InputPeerLike::Peer(x) => x.to_ref().await?,
+            InputPeerLike::PeerRef(x) => Some(x),
+        })
     }
 
     /// Check the validity of a chat invite link and get basic info about it.

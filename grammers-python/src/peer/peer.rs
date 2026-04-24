@@ -1,11 +1,10 @@
 use pyo3::prelude::*;
 
-use super::{PyChannel, PyGroup, PyUser};
-
-use crate::PyClient;
-use grammers_session_pyo3::{PeerInfoLike, PyPeerAuth, PyPeerId};
+use grammers_session_pyo3::{PeerInfo, PyPeerAuth, PyPeerId, PyPeerRef};
 use grammers_tl_types as tl;
 
+use super::{PyChannel, PyGroup, PyUser};
+use crate::PyClient;
 // use crate::media::ChatPhoto;
 
 /// A user, group, or broadcast channel.
@@ -86,7 +85,42 @@ impl PyPeer {
         })
     }
 
-    pub fn info(&self) -> PeerInfoLike {
+    pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
+        Ok(match self {
+            Self::User(x) => {
+                let (id, auth, session) = Python::attach(|py| {
+                    let borrowed = x.borrow(py);
+                    (borrowed.id(), borrowed.auth(), borrowed.client.session())
+                });
+                match auth {
+                    Some(auth) => Some(PyPeerRef { id, auth }),
+                    None => session.peer_ref(id).await?,
+                }
+            }
+            Self::Group(x) => {
+                let (id, auth, session) = Python::attach(|py| {
+                    let borrowed = x.borrow(py);
+                    (borrowed.id(), borrowed.auth(), borrowed.client.session())
+                });
+                match auth {
+                    Some(auth) => Some(PyPeerRef { id, auth }),
+                    None => session.peer_ref(id).await?,
+                }
+            }
+            Self::Channel(x) => {
+                let (id, auth, session) = Python::attach(|py| {
+                    let borrowed = x.borrow(py);
+                    (borrowed.id(), borrowed.auth(), borrowed.client.session())
+                });
+                match auth {
+                    Some(auth) => Some(PyPeerRef { id, auth }),
+                    None => session.peer_ref(id).await?,
+                }
+            }
+        })
+    }
+
+    pub fn info(&self) -> PeerInfo {
         Python::attach(|py| match self {
             Self::User(x) => x.borrow(py).info(),
             Self::Group(x) => x.borrow(py).info(),

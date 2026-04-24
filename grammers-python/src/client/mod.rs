@@ -1,12 +1,14 @@
 mod auth;
 mod chats;
 mod client;
+mod iter_buffer;
 mod messages;
 mod net;
 mod updates;
 mod utilities;
 
 pub use client::PyClient;
+use iter_buffer::IterBuffer;
 use updates::{UpdateStream, UpdatesConfiguration};
 
 #[pyo3::pymodule(name = "client")]
@@ -43,4 +45,19 @@ pub(crate) mod client_ {
 
     #[pymodule_export]
     use crate::peer::PyChannel;
+
+    #[pymodule_export]
+    use crate::peer::PyPlatform;
+
+    #[pymodule_export]
+    use crate::peer::PyRestrictionReason;
+
+    #[pymodule_export]
+    use crate::peer::PyPeerMap;
+
+    #[pymodule_export]
+    use crate::message::PyMessage;
+
+    #[pymodule_export]
+    use crate::client::messages::PyHistoryMessageIter;
 }

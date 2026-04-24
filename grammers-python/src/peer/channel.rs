@@ -10,7 +10,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyDateTime, PyDict};
 
-use grammers_session_pyo3::{PeerInfoLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerRef};
+use grammers_session_pyo3::{PeerInfo, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerRef};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
@@ -491,24 +491,12 @@ impl PyChannel {
         self.access_hash
     }
 
-    pub fn info(&self) -> PeerInfoLike {
-        PeerInfoLike::Channel {
+    pub fn info(&self) -> PeerInfo {
+        PeerInfo::Channel {
             id: self.id.bare_id().unwrap(),
             auth: self.auth(),
             kind: self.kind(),
         }
-    }
-
-    /// Convert the channel to its reference.
-    ///
-    /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
-    pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
-        let id = self.id();
-        let session = self.client.inner.lock().unwrap().session.clone();
-        Ok(match self.auth() {
-            Some(auth) => Some(PyPeerRef { id, auth }),
-            None => session.peer_ref(id).await?,
-        })
     }
 
     pub fn into_dict(self) -> PyResult<Py<PyDict>> {
@@ -638,6 +626,18 @@ impl PyChannel {
 
     fn to_dict(&self) -> PyResult<Py<PyDict>> {
         self.clone().into_dict()
+    }
+
+    /// Convert the channel to its reference.
+    ///
+    /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
+    pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
+        let id = self.id();
+        let session = self.client.inner.lock().unwrap().session.clone();
+        Ok(match self.auth() {
+            Some(auth) => Some(PyPeerRef { id, auth }),
+            None => session.peer_ref(id).await?,
+        })
     }
 
     /// Additional information about this channel.

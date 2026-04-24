@@ -2,9 +2,6 @@ from ..sessions import Session, SqliteSession
 from .. import tl
 from grammers._rs.client import Client
 from .types import (
-    User,
-    Group,
-    Channel,
     LoginToken,
     SignInError,
     PaymentRequiredError,
@@ -12,6 +9,14 @@ from .types import (
     PasswordRequiredError,
     InvalidCodeError,
     InvalidPasswordError,
+    User,
+    Group,
+    Channel,
+    PeerMap,
+    Platform,
+    RestrictionReason,
+    Message,
+    HistoryMessageIter,
 )
 from typing import Callable, Protocol, Awaitable, Optional
 from getpass import getpass
@@ -30,6 +35,11 @@ __all__ = [
     'User',
     'Group',
     'Channel',
+    'PeerMap',
+    'Platform',
+    'RestrictionReason',
+    'Message',
+    'HistoryMessageIter',
 ]
 
 

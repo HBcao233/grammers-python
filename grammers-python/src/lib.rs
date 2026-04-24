@@ -6,6 +6,7 @@ mod errors;
 mod hints;
 mod message;
 mod peer;
+mod runtime;
 mod utils;
 
 use client::PyClient;

@@ -10,7 +10,7 @@ use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
 use pyo3::types::{PyDateTime, PyDict};
 
-use grammers_session_pyo3::{PeerInfoLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerRef};
+use grammers_session_pyo3::{PeerInfo, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerRef};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
@@ -636,14 +636,19 @@ impl PyGroup {
         self.id
     }
 
-    pub fn info(&self) -> PeerInfoLike {
+    /// Non-min auth stored in the group, if any.
+    pub fn auth(&self) -> Option<PyPeerAuth> {
+        self.access_hash
+    }
+
+    pub fn info(&self) -> PeerInfo {
         match self.raw_type {
             GroupRawType::ChatEmpty | GroupRawType::Chat | GroupRawType::ChatForbidden => {
-                PeerInfoLike::Chat {
+                PeerInfo::Chat {
                     id: self.id.bare_id().unwrap(),
                 }
             }
-            GroupRawType::Channel | GroupRawType::ChannelForbidden => PeerInfoLike::Channel {
+            GroupRawType::Channel | GroupRawType::ChannelForbidden => PeerInfo::Channel {
                 id: self.id.bare_id().unwrap(),
                 auth: self.auth(),
                 kind: self.kind(),
@@ -786,10 +791,16 @@ impl PyGroup {
         self.clone().into_dict()
     }
 
-    /// Non-min auth stored in the group, if any.
-    #[getter]
-    pub fn auth(&self) -> Option<PyPeerAuth> {
-        self.access_hash.clone()
+    /// Convert the group to its reference.
+    ///
+    /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
+    pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
+        let id = self.id();
+        let session = self.client.session();
+        Ok(match self.auth() {
+            Some(auth) => Some(PyPeerRef { id, auth }),
+            None => session.peer_ref(id).await?,
+        })
     }
 
     #[getter]
@@ -801,18 +812,6 @@ impl PyGroup {
         } else {
             None
         }
-    }
-
-    /// Convert the group to its reference.
-    ///
-    /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
-    pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
-        let id = self.id();
-        let session = self.client.session();
-        Ok(match self.auth() {
-            Some(auth) => Some(PyPeerRef { id, auth }),
-            None => session.peer_ref(id).await?,
-        })
     }
 
     /// Returns true if this group is a megagroup (also known as supergroups).
