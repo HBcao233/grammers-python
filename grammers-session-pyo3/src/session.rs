@@ -1,5 +1,5 @@
 use super::{
-    PeerIdLike, PeerInfoLike, PyDcOption, PyPeerId, PyPeerInfo, PyPeerRef, PyUpdateState,
+    PeerIdLike, PeerInfo, PyDcOption, PyPeerId, PyPeerInfo, PyPeerRef, PyUpdateState,
     PyUpdatesState, UpdateStateLike,
 };
 use pyo3::exceptions::{PyNotImplementedError, PyTypeError};
@@ -157,8 +157,16 @@ impl Session {
         }
     }
 
-    pub fn get_inner(&self) -> Py<PyAny> {
-        Python::attach(|py| self.inner.bind(py).clone().unbind())
+    pub fn get_inner<'py>(&self, py: Python<'py>) -> Py<PyAny> {
+        Py::clone_ref(&self.inner, py)
+    }
+
+    pub fn cls_name<'py>(&self, py: Python<'py>) -> PyResult<String> {
+        self.inner
+            .bind(py)
+            .get_type()
+            .qualname()?
+            .extract::<String>()
     }
 
     pub async fn event_loop(&self) -> &Py<PyAny> {
@@ -188,16 +196,9 @@ impl Session {
                 .map(|x| x.unbind())
         })?;
         let res = into_future(event_loop, coro).await?;
-        Python::attach(|py| res.bind(py).extract::<i32>()).map_err(|e| {
-            let cls_name = match Python::attach(|py| {
-                Ok(self
-                    .inner
-                    .bind(py)
-                    .get_type()
-                    .qualname()?
-                    .extract::<String>()?)
-            }) {
-                Ok(v) => v,
+        Python::attach(|py| res.extract(py)).map_err(|e| {
+            let cls_name = match Python::attach(|py| self.cls_name(py)) {
+                Ok(name) => name,
                 Err(e) => return e,
             };
             PyTypeError::new_err(format!("{}.home_dc_id(): {}", cls_name, e))
@@ -225,27 +226,12 @@ impl Session {
                 .map(|x| x.unbind())
         })?;
         let res = into_future(event_loop, coro).await?;
-        Python::attach(|py| {
-            let res = res.bind(py);
-            Ok(if res.is_none() {
-                None
-            } else {
-                let res = res.cast::<PyDcOption>().map_err(|e| {
-                    let cls_name = match Python::attach(|py| {
-                        Ok(self
-                            .inner
-                            .bind(py)
-                            .get_type()
-                            .qualname()?
-                            .extract::<String>()?)
-                    }) {
-                        Ok(v) => v,
-                        Err(e) => return e,
-                    };
-                    PyTypeError::new_err(format!("{}.dc_option(): {}", cls_name, e))
-                })?;
-                Some(res.borrow().clone())
-            })
+        Python::attach(|py| Ok::<_, PyErr>(res.extract(py)?)).map_err(|e| {
+            let cls_name = match Python::attach(|py| self.cls_name(py)) {
+                Ok(name) => name,
+                Err(e) => return e,
+            };
+            PyTypeError::new_err(format!("{}.dc_option(): {}", cls_name, e))
         })
     }
 
@@ -262,7 +248,7 @@ impl Session {
         Ok(())
     }
 
-    pub async fn peer(&self, peer: PyPeerId) -> PyResult<Option<PeerInfoLike>> {
+    pub async fn peer(&self, peer: PyPeerId) -> PyResult<Option<PeerInfo>> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let peer = Py::new(py, peer)?;
@@ -272,39 +258,20 @@ impl Session {
                 .map(|x| x.unbind())
         })?;
         let res = into_future(event_loop, coro).await?;
-        Python::attach(|py| {
-            let res = res.bind(py);
-            Ok(if res.is_none() {
-                None
-            } else {
-                let res = res.extract::<PeerInfoLike>().map_err(|e| {
-                    let cls_name = match Python::attach(|py| {
-                        Ok(self
-                            .inner
-                            .bind(py)
-                            .get_type()
-                            .qualname()?
-                            .extract::<String>()?)
-                    }) {
-                        Ok(v) => v,
-                        Err(e) => return e,
-                    };
-                    PyTypeError::new_err(format!("{}.peer(): {}", cls_name, e))
-                })?;
-                Some(res)
-            })
+        Python::attach(|py| res.extract(py)).map_err(|e| {
+            let cls_name = match Python::attach(|py| self.cls_name(py)) {
+                Ok(name) => name,
+                Err(e) => return e,
+            };
+            PyTypeError::new_err(format!("{}.peer(): {}", cls_name, e))
         })
     }
 
     pub async fn peer_ref(&self, peer: PyPeerId) -> PyResult<Option<PyPeerRef>> {
-        Ok(self
-            .peer(peer)
-            .await?
-            .and_then(|info| info.auth())
-            .map(|auth| PyPeerRef { id: peer, auth }))
+        Ok(self.peer(peer).await?.map(|info| info.to_ref()))
     }
 
-    pub async fn cache_peer(&self, peer_info: PeerInfoLike) -> PyResult<()> {
+    pub async fn cache_peer(&self, peer_info: PeerInfo) -> PyResult<()> {
         let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             self.inner
@@ -325,22 +292,12 @@ impl Session {
                 .map(|x| x.unbind())
         })?;
         let res = into_future(event_loop, coro).await?;
-        Python::attach(|py| {
-            let res = res.bind(py).cast::<PyUpdatesState>().map_err(|e| {
-                let cls_name = match Python::attach(|py| {
-                    Ok(self
-                        .inner
-                        .bind(py)
-                        .get_type()
-                        .qualname()?
-                        .extract::<String>()?)
-                }) {
-                    Ok(v) => v,
-                    Err(e) => return e,
-                };
-                PyTypeError::new_err(format!("{}.updates_state(): {}", cls_name, e))
-            })?;
-            Ok(res.borrow().clone())
+        Python::attach(|py| Ok::<_, PyErr>(res.extract(py)?)).map_err(|e| {
+            let cls_name = match Python::attach(|py| self.cls_name(py)) {
+                Ok(name) => name,
+                Err(e) => return e,
+            };
+            PyTypeError::new_err(format!("{}.updates_state(): {}", cls_name, e))
         })
     }
 

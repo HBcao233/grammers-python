@@ -4,8 +4,7 @@ mod types;
 pub mod utils;
 
 pub use peer::{
-    PeerIdLike, PeerInfoLike, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerKind,
-    PyPeerRef,
+    PeerIdLike, PeerInfo, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerKind, PyPeerRef,
 };
 pub use session::{PySession, Session};
 pub use types::{
@@ -26,6 +25,9 @@ pub mod sessions_ {
 
     #[pymodule_export]
     use super::PyPeerInfo;
+
+    #[pymodule_export]
+    use super::PyPeerRef;
 
     #[pymodule_export]
     use super::PyPeerKind;

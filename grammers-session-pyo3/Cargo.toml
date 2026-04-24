@@ -1,6 +1,6 @@
 [package]
 name = "grammers-session-pyo3"
-version = "0.4.2"
+version = "0.4.3"
 edition = { workspace = true }
 
 [dependencies]
