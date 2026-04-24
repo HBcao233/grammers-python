@@ -733,7 +733,195 @@ class Message(TLObject):
         Supergroups only, contains the number of boosts this user has given the current supergroup.
         """
         ...
+    @property
+    def saved_peer_id(self) -> PeerId | None:
+        """
+        Messages from a saved messages dialog will have peer=inputPeerSelf and the saved_peer_id flag set to the ID of the saved dialog.
+        Messages from a monoforum will have peer=ID of the monoforum and the saved_peer_id flag set to the ID of a topic.
+        """
+        ...
+    @property
+    def fwd_from(self) -> types.MessageFwdHeader | None:
+        """
+        Info about forwarded messages.
+        """
+        ...
+    @property
+    def via_bot_id(self) -> int | None:
+        """
+        If this message was sent @via some inline bot, return the bot's user identifier.
+        """
+        ...
+    @property
+    def via_business_bot_id(self) -> int | None:
+        """
+        Whether the message was sent by the business bot specified in via_bot_id on behalf of the user.
+        """
+        ...
+    @property
+    def reply_to(self) -> hints.MessageReplyHeader | None:
+        """
+        If this message is replying to a previous message, return the header with information
+        about that reply.
+        If you want get the reply to `Message`, use `async Message.get_reply_to()` instead.
+        """
+        ...
+    @property
+    def date(self) -> datetime | None:
+        """
+        The date when this message was produced.
+        """
+        ...
+    @property
+    def date_timestamp(self) -> int | None:
+        """
+        raw date timestamp data from telegram.
+        """
+        ...
+    @property
+    def action(self) -> types.MessageAction | None:
+        """
+        Event connected with the service message.
 
+        MessageService only.
+        """
+        ...
+    @property
+    def message(self) -> str | None:
+        """
+        The message's text.
+
+        For service or empty messages, this will be None.
+
+        If the message has media, this text is the caption commonly displayed underneath it.
+        """
+        ...
+    @property
+    def media(self) -> hints.MessageMedia | None:
+        """
+        The media displayed by this message, if any.
+
+        This not only includes photos or videos, but also contacts, polls, documents, locations
+        and many other types.
+        """
+        ...
+    @property
+    def reply_markup(self) -> hints.ReplyMarkup | None:
+        """
+        If the message has a reply markup (which can happen for messages produced by bots),
+        returns said markup.
+        """
+        ...
+    @property
+    def entities(self) -> hints.MessageEntity | None:
+        """
+        Message entities for styled text
+        """
+        ...
+    @property
+    def views(self) -> int | None:
+        """
+        How many views does this message have, when applicable.
+
+        The same user account can contribute to increment this counter indefinitedly, however
+        there is a server-side cooldown limitting how fast it can happen (several hours).
+        """
+        ...
+    @property
+    def forwards(self) -> int | None:
+        """
+        How many times has this message been forwarded, when applicable.
+        """
+        ...
+    @property
+    def replies(self) -> types.MessageReplies | None:
+        """
+        How many replies does this message have, when applicable.
+        """
+        ...
+    @property
+    def edit_date(self) -> int | None:
+        """
+        The date when this message was last edited.
+        """
+        ...
+    @property
+    def post_author(self) -> str | None:
+        """
+        If this message was sent to a channel, return the name used by the author to post it.
+        """
+        ...
+    @property
+    def grouped_id(self) -> int | None:
+        """
+         If this message belongs to a group of messages, return the unique identifier for that
+         group.
+
+        This applies to albums of media, such as multiple photos grouped together.
+
+         Note that there may be messages sent in between the messages forming a group.
+        """
+        ...
+    @property
+    def reactions(self) -> types.MessageReactions | None:
+        """
+        Reactions to this message
+        """
+        ...
+    @property
+    def restriction_reason(self) -> list[types.RestrictionReason] | None:
+        """
+        A list of reasons on why this message is restricted.
+
+        The message is not restricted if the return value is `None`.
+        """
+        ...
+    @property
+    def ttl_period(self) -> int | None:
+        """
+        Time To Live of the message, once message.date+message.ttl_period === time(), the message will be deleted on the server, and must be deleted locally as well.
+        """
+        ...
+    @property
+    def quick_reply_shortcut_id(self) -> int | None:
+        """
+        If set, this message is a quick reply shortcut message » (note that quick reply shortcut messages sent to a private chat will not have this field set).
+        """
+        ...
+    @property
+    def effect(self) -> int | None:
+        """
+        A message effect that should be played as specified here.
+        """
+        ...
+    @property
+    def factcheck(self) -> types.FactCheck | None:
+        """
+        Represents a fact-check.
+        """
+        ...
+    @property
+    def report_delivery_until_date(self) -> int | None:
+        """
+        Used for Telegram Gateway verification messages: if set and the current unixtime is bigger than the specified unixtime, invoke messages.reportMessagesDelivery passing the ID and the peer of this message as soon as it is received by the client (optionally batching requests for the same peer).
+        """
+        ...
+    @property
+    def paid_message_stars(self) -> int | None:
+        """
+        The amount of stars the sender has paid to send the message.
+        """
+        ...
+    @property
+    def suggested_post(self) -> int | None:
+        """
+        Used to suggest a post to a channel.
+        """
+        ...
+    @property
+    def schedule_repeat_period(self) -> int | None: ...
+    @property
+    def summary_from_language(self) -> str | None: ...
     def to_dict(self) -> dict: ...
 
 class HistoryMessageIter:

@@ -203,8 +203,7 @@ pub struct PyMessage {
     #[pyo3(get, set)]
     pub saved_peer_id: Option<PyPeerId>,
 
-    /// If this message was forwarded from a previous message, return the header with information
-    /// about that forward.
+    /// Info about forwarded messages.
     #[pyo3(get, set)]
     pub fwd_from: Option<pytl::enums::PyMessageFwdHeader>,
 
@@ -223,6 +222,7 @@ pub struct PyMessage {
     /// The date when this message was produced.
     #[pyo3(get)]
     pub date: Option<PyDateTimeWrapper>,
+    
     #[pyo3(get)]
     pub date_timestamp: Option<i32>,
 
