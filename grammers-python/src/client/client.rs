@@ -1,17 +1,18 @@
 use std::sync::{Arc, Mutex};
 
-use grammers_session::updates::UpdatesLike;
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
-use pyo3_async_runtimes::tokio::get_runtime;
 
 use tokio::sync::{mpsc, oneshot};
 use tokio::task::JoinHandle;
 
+use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
+use grammers_session::updates::UpdatesLike;
+use grammers_session_pyo3::{PySession, Session};
+
 use super::UpdateStream;
 use crate::peer::PyUser;
-use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
-use grammers_session_pyo3::{PySession, Session};
+use crate::runtime::RUNTIME;
 
 #[derive(Debug, Clone)]
 pub struct ApiId(pub i32);
@@ -168,7 +169,7 @@ impl PyClient {
             updates,
             handle,
         } = pool;
-        let pool_task = get_runtime().spawn(runner.run(loop_tx));
+        let pool_task = RUNTIME.spawn(runner.run(loop_tx));
 
         let inner = ClientInner {
             pool_task: Some(pool_task),
@@ -224,7 +225,7 @@ impl PyClient {
 
     #[getter(session)]
     fn get_session(&self) -> Py<PyAny> {
-        self.inner.lock().unwrap().session.get_inner()
+        Python::attach(|py| self.inner.lock().unwrap().session.get_inner(py))
     }
 
     #[getter]
