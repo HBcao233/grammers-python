@@ -15,8 +15,7 @@ build:
     # golang: "1.20"
   jobs:
     pre_build:
-      - cd docs
-      - sphinx-intl build
+      - sphinx-intl build -d docs/locale/
 
 # Build documentation in the "docs/" directory with Sphinx
 sphinx:
