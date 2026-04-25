@@ -1,6 +1,6 @@
 [package]
 name = "grammers-python"
-version = "0.4.4"
+version = "0.4.5"
 edition = { workspace = true }
 description = "Python bindings for grammers"
 
@@ -26,7 +26,6 @@ sha1 = { workspace = true }
 pyo3 = { workspace = true }
 pyo3-log = { workspace = true }
 tokio = { workspace = true }
-regex = { workspace = true }
 url = { workspace = true }
 
 [features]

@@ -12,7 +12,7 @@ python-source = "python/src/"
 
 [project]
 name = "grammers"
-version = "0.4.2"
+version = "0.4.5"
 authors = [
   { name = "HBcao233", email = "hbcaoqaq@outlook.com" }
 ]

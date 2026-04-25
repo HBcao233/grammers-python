@@ -17,7 +17,6 @@ use pyo3::call::PyCallArgs;
 use pyo3::types::{PyAnyMethods, PyDateTime};
 use pyo3::{FromPyObject, IntoPyObject, Py, PyAny, PyErr, PyResult, Python};
 
-use regex::Regex;
 use std::sync::OnceLock;
 
 use crate::hints::InputPeerLike;
@@ -174,27 +173,68 @@ pub(crate) fn peer_from_message(message: &tl::enums::Message) -> Option<tl::enum
 }
 */
 
-static PHONE_PATTERN: &'static str = r"^[+()\s0-9-]+$";
-static USERNAME_PATTERN: &'static str = r"^@?([a-zA-Z][a-zA-z0-9_]{3,}[a-zA-Z0-9])$";
+static PHONE_ALLOWED: &[char] = &['(', ')', ' ', '-'];
 
 pub fn parse_username(username: &str) -> Option<String> {
-    let pattern = Regex::new(USERNAME_PATTERN).unwrap();
-    match pattern.captures(username) {
-        Some(x) => Some(x[1].to_string()),
-        None => None,
+    if username.is_empty() {
+        return None;
     }
+    
+    // Remove the begining optional '@'
+    let username = username.strip_prefix('@').unwrap_or(&username);
+    
+    // Length at least 5
+    if username.len() < 5 {
+        return None;
+    }
+
+    let mut chars = username.chars();
+    
+    // the first one must be alphabet
+    let first = chars.next()?;
+    if !first.is_ascii_alphabetic() {
+        return None;
+    }
+
+    // the last one must be alphabet or numbers
+    let last = chars.next_back()?;
+    if !last.is_ascii_alphanumeric() {
+        return None;
+    }
+    
+    // the middle ones can be alphabet or numbers or '_'
+    for c in chars {
+        if !(c.is_ascii_alphanumeric() || c == '_') {
+            return None;
+        }
+    }
+
+    Some(username.to_string())
 }
 
 pub fn parse_phone(phone: &str) -> Option<String> {
     if phone.is_empty() {
         return None;
     }
-    let pattern = Regex::new(r"[+()\s-]").unwrap();
-    let res = pattern.replace_all(phone, "");
-    if !res.chars().all(|c| c.is_ascii_digit()) {
+    
+    let phone = phone.strip_prefix('+').unwrap_or(&phone);
+    
+    let mut result = String::with_capacity(phone.len());
+
+    for c in phone.chars() {
+        if c.is_ascii_digit() {
+            result.push(c);
+        } else if PHONE_ALLOWED.contains(&c) {
+            // Ignore the allowed symbols
+        } else {
+            return None;
+        }
+    }
+
+    if result.is_empty() {
         None
     } else {
-        Some(res.into_owned())
+        Some(result)
     }
 }
 
@@ -203,8 +243,10 @@ pub fn parse_peer_string(peer: &str) -> Option<InputPeerLike> {
         return None;
     }
 
-    let pattern = Regex::new(PHONE_PATTERN).unwrap();
-    if pattern.is_match(peer) {
+    if peer
+        .chars()
+        .all(|c| c.is_ascii_digit() || PHONE_ALLOWED.contains(&c) || c == '+')
+    {
         return parse_phone(&peer).map(InputPeerLike::Phone);
     }
 
