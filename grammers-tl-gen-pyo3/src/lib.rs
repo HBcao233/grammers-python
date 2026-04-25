@@ -81,7 +81,7 @@ fn write_pyi(
     definitions: Vec<&Definition>,
     metadata: &Metadata,
 ) -> io::Result<()> {
-    fs::create_dir_all(tl_dir)?;
+    fs::create_dir_all(&tl_dir)?;
     
     let base = match definitions[0].category {
         Category::Types => "TLObject",
