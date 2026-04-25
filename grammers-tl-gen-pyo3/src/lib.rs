@@ -6,7 +6,7 @@ mod rustifier;
 mod structs;
 
 use std::collections::HashMap;
-use std::fs::File;
+use std::fs::{self, File};
 use std::io::{self, BufWriter, Write};
 use std::path::PathBuf;
 
@@ -81,6 +81,8 @@ fn write_pyi(
     definitions: Vec<&Definition>,
     metadata: &Metadata,
 ) -> io::Result<()> {
+    fs::create_dir_all(tl_dir)?;
+    
     let base = match definitions[0].category {
         Category::Types => "TLObject",
         Category::Functions => "TLRequest",
