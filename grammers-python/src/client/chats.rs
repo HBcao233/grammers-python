@@ -49,11 +49,10 @@ impl PyClient {
     ///
     /// Both users and bots can use this method.
     ///
-    /// # Examples
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// ```ignore
-    /// await client.get_me()
-    /// ```
+    ///         await client.get_me()
     pub async fn get_me(&self) -> PyResult<Py<PyUser>> {
         let mut res = self
             .invoke(&pytl::functions::users::PyGetUsers {
@@ -74,12 +73,11 @@ impl PyClient {
     ///
     /// Both users and bots can use this method.
     ///
-    /// # Examples
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// ```ignore
-    /// if peer := await client.resolve_username("username"):
-    ///     print("Found peer!: {:?}", peer.name)
-    /// ```
+    ///         if peer := await client.resolve_username("username"):
+    ///             print("Found peer!: {:?}", peer.name)
     pub async fn resolve_username(&self, username: String) -> PyResult<Option<PyPeer>> {
         let username = match parse_username(&username) {
             Some(x) => x,
@@ -275,67 +273,6 @@ impl PyClient {
         })
     }
 
-    #[staticmethod]
-    pub fn parse_invite_link(invite_link: String) -> Option<String> {
-        let pattern = regex::Regex::new("^+?([a-zA-Z0-9_-]+)$").unwrap();
-        if let Some(x) = pattern.captures(&invite_link) {
-            return Some(x[1].to_string());
-        }
-
-        let invite_link = if !invite_link.contains("://") {
-            "http://".to_owned() + &invite_link
-        } else {
-            invite_link
-        };
-        let res = url::Url::parse(&invite_link);
-        if res.is_err() {
-            return None;
-        }
-
-        let url_parse = res.unwrap();
-        let scheme = url_parse.scheme();
-        let path = url_parse.path();
-        if url_parse.host_str().is_none() || !vec!["https", "http"].contains(&scheme) {
-            return None;
-        }
-
-        let host = url_parse.host_str().unwrap();
-        let hosts = [
-            "t.me",
-            "telegram.me",
-            "telegram.dog",
-            "tg.dev",
-            "telegram.me",
-            "telesco.pe",
-        ];
-
-        if !hosts.contains(&host) {
-            return None;
-        }
-        let paths = path.split("/").skip(1).collect::<Vec<&str>>();
-
-        if paths.len() == 1 {
-            if paths[0].starts_with("+") {
-                return Some(paths[0].replace("+", ""));
-            }
-
-            return None;
-        }
-
-        if paths.len() > 1 {
-            if paths[0].starts_with("joinchat") {
-                return Some(paths[1].to_string());
-            }
-            if paths[0].starts_with("+") {
-                return Some(paths[0].replace("+", ""));
-            }
-
-            return None;
-        }
-
-        None
-    }
-
     /// Resolves any InputPeerLike to a Peer.
     ///
     /// Both users and bots can use this method.
@@ -466,6 +403,67 @@ impl PyClient {
             InputPeerLike::Peer(x) => x.to_ref().await?,
             InputPeerLike::PeerRef(x) => Some(x),
         })
+    }
+
+    #[staticmethod]
+    pub fn parse_invite_link(invite_link: String) -> Option<String> {
+        let pattern = regex::Regex::new("^+?([a-zA-Z0-9_-]+)$").unwrap();
+        if let Some(x) = pattern.captures(&invite_link) {
+            return Some(x[1].to_string());
+        }
+
+        let invite_link = if !invite_link.contains("://") {
+            "http://".to_owned() + &invite_link
+        } else {
+            invite_link
+        };
+        let res = url::Url::parse(&invite_link);
+        if res.is_err() {
+            return None;
+        }
+
+        let url_parse = res.unwrap();
+        let scheme = url_parse.scheme();
+        let path = url_parse.path();
+        if url_parse.host_str().is_none() || !vec!["https", "http"].contains(&scheme) {
+            return None;
+        }
+
+        let host = url_parse.host_str().unwrap();
+        let hosts = [
+            "t.me",
+            "telegram.me",
+            "telegram.dog",
+            "tg.dev",
+            "telegram.me",
+            "telesco.pe",
+        ];
+
+        if !hosts.contains(&host) {
+            return None;
+        }
+        let paths = path.split("/").skip(1).collect::<Vec<&str>>();
+
+        if paths.len() == 1 {
+            if paths[0].starts_with("+") {
+                return Some(paths[0].replace("+", ""));
+            }
+
+            return None;
+        }
+
+        if paths.len() > 1 {
+            if paths[0].starts_with("joinchat") {
+                return Some(paths[1].to_string());
+            }
+            if paths[0].starts_with("+") {
+                return Some(paths[0].replace("+", ""));
+            }
+
+            return None;
+        }
+
+        None
     }
 
     /// Check the validity of a chat invite link and get basic info about it.

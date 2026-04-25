@@ -1,0 +1,182 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/concepts/sessions.rst:5 0fd54fa91ae3409993244340bf856372
+msgid "Session Files"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:7 bde22c575b154faeb1b4e652087def22
+msgid "Contents"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:9 b2c659cebd8a4d0aba401153b175734c
+msgid ""
+"They are an important part for the library to be efficient, such as "
+"caching and handling your authorization key (or you would have to login "
+"every time!)."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:13 d330aa5d0b554d17b9b9e2a0aa745eee
+msgid "What are Sessions?"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:15 a8f8ca7f40dc4321b980565b46b4f42c
+msgid ""
+"The first parameter you pass to the constructor of the :ref:`Client "
+"<grammers-client>` is the ``session``, and defaults to be the session "
+"name (or full path). That is, if you create a ``Client('anon')`` instance"
+" and connect, an ``anon.session`` file will be created in the working "
+"directory."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:21 9a3996ebb9404c4db2f8aab89ef4d999
+msgid ""
+"Note that if you pass a string it will be a file in the current working "
+"directory, although you can also pass absolute paths."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:24 c6a6d585629949e4b5c941a56dac744a
+msgid ""
+"The session file contains enough information for you to login without re-"
+"sending the code, so if you have to enter the code more than once, maybe "
+"you're changing the working directory, renaming or removing the file, or "
+"using random names."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:29 803f8dad3f5047cf8f645d56e0235d7e
+msgid ""
+"These database files using ``sqlite3`` contain the required information "
+"to talk to the Telegram servers, such as to which IP the client should "
+"connect, port, authorization key so that messages can be encrypted, and "
+"so on."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:33 e56ee4191cad4a84bb7d6ac591bf0c24
+msgid ""
+"These files will by default also save all the input entities that you've "
+"seen, so that you can get information about a user or channel by just "
+"their ID. Telegram will **not** send their ``access_hash`` required to "
+"retrieve more information about them, if it thinks you have already seem "
+"them. For this reason, the library needs to store this information "
+"offline."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:39 8e89d8b17076476096224f761f4eb41e
+msgid ""
+"The library will by default too save all the entities (chats and channels"
+" with their name and username, and users with the phone too) in the "
+"session file, so that you can quickly access them by username or phone "
+"number."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:50 e245e7ff19d94fbda6a9184bd262678f
+msgid "Different Session Storage"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:52 f7cdee3aef9d4b7eb8eee99cd2ecf604
+msgid ""
+"If you don't want to use the default SQLite session storage, you can also"
+" use one of the other implementations or implement your own storage."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:55 93db5c826d3247729d46cc450c026186
+msgid ""
+"While it's often not the case, it's possible that SQLite is slow enough "
+"to be noticeable, in which case you can also use a different storage. "
+"Note that this is rare and most people won't have this issue, but it's "
+"worth a mention."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:59 84d846525d6e495885a3987192ad4f79
+msgid ""
+"To use a custom session storage, simply pass the custom session instance "
+"to :ref:`Client <grammers-client>` instead of the session name."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:63 9e2b1c24a32441e18c9fcee703eea49c
+msgid ""
+"grammers-python contains three implementations of the abstract "
+"``Session`` class:"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:67 66340ead048a4ab18b401e00132bba88
+msgid ""
+"`SQLiteSession <SQLiteSession>`: stores sessions within on-disk SQLite "
+"databases. Default."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:69 3d7fb8e26832416090bff53900569853
+msgid ""
+"You can import these ``from grammers.sessions``. For example, using the "
+"`SQLiteSession <SQLiteSession>` is done as follows:"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:82 aa87c2a43d964e0593ccff12eb6ffc97
+msgid "String Sessions"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:84 2b5a1ccc440f40428f129b23adcba5c1
+msgid ""
+"`SQLiteSession.from_telethon_string() "
+"<SQLiteSession.from_telethon_string>` are a convenient way to embed your "
+"login credentials directly into your code for extremely easy portability,"
+" since all they take is a string to be able to login without asking for "
+"your phone and code (or faster start if you're using a bot token)."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:89 a631d4de25e9454c8abd33dc5a2723b4
+msgid "The easiest way to generate a string session is as follows:"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:101 63c8b3e7451841d382b4da6a4d971cc1
+msgid ""
+"Think of this as a way to export your authorization key (what's needed to"
+" login into your account). This will print a string in the standard "
+"output (likely your terminal)."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:107 f884f81b88e84866b31b64efdba1048a
+msgid ""
+"**Keep this string safe!** Anyone with this string can use it to login "
+"into your account and do anything they want to."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:110 5a091dbd974449d0b98f5d310dd5f3dd
+msgid ""
+"This is similar to leaking your ``*.session`` files online, but it is "
+"easier to leak a string than it is to leak a file."
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:114 82fab524dd174cf4bb5fe9bea5534f11
+msgid ""
+"Once you have the string (which is a bit long), load it into your script "
+"somehow. You can use a normal text file and ``open(...).read()`` it or "
+"you can save it in a variable directly:"
+msgstr ""
+
+#: ../../source/concepts/sessions.rst:118 f2110706377441a88738b047a54e3f70
+msgid ""
+"These strings are really convenient for using in places like Heroku since"
+" their ephemeral filesystem will delete external files once your "
+"application is over."
+msgstr ""
+

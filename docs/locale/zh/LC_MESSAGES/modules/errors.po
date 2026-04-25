@@ -1,0 +1,33 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/modules/errors.rst:5 a6b6f0146a694178b5eb9bd8c8b55f7f
+msgid "Errors"
+msgstr ""
+
+#: f813b755c42741789a0e16df42a9420a grammers.errors.BadRequestError:1 of
+msgid ""
+"The query contains errors. In the event that a request was created using "
+"a form and contains user generated data, the user should be notified that"
+" the data must be corrected before the query is repeated."
+msgstr ""
+

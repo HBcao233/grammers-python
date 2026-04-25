@@ -1,0 +1,187 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/concepts/errors.rst:5 96df6a77c67e4bd88cba366fe1dc7146
+msgid "RPC Errors"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:7 5ad9b06d2f9f4d1a8a1d1d836605f8de
+msgid ""
+"RPC stands for Remote Procedure Call, and when the library raises a "
+"``RPCError``, it's because you have invoked some of the API methods "
+"incorrectly (wrong parameters, wrong permissions, or even something went "
+"wrong on Telegram's server)."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:12 a0073100324a4151bbbb50422ef079d1
+msgid "You should import the errors from ``grammers.errors`` like so:"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:27 395d81fb9915401dadbbc169065a34cf
+msgid ""
+"There isn't any official list of all possible RPC errors, so the `list of"
+" known errors`_ is provided on a best-effort basis. When new methods are "
+"available, the list may be lacking since we simply don't know what errors"
+" can raise from them."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:32 06543434af3a43a7be478c60f2abd55a
+msgid ""
+"Once we do find out about a new error and what causes it, the list is "
+"updated, so if you see an error without a specific class, do report it "
+"(and what method caused it)!."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:36 c451027edb784733815a900dbb9aff3f
+msgid ""
+"This list is used to generate documentation for the `raw API page`_. For "
+"example, if we want to know what errors can occur from "
+"`messages.sendMessage`_ we can simply navigate to its raw API page and "
+"find it has 24 known RPC errors at the time of writing."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:43 90860a90f78c4478b8c6260816437afe
+msgid "Base Errors"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:45 86309072087c4db6af370d97ccb91008
+msgid ""
+"All the \"base\" errors are listed in :ref:`grammers-errors`. Any other "
+"more specific error will be a subclass of these."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:48 0a04f46a61784c16a23d4772394f7d01
+msgid ""
+"If the library isn't aware of a specific error just yet, it will instead "
+"raise one of these superclasses. This means you may find stuff like this:"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:55 3eeecf162b474117a5343e86ff3ddc38
+msgid ""
+"If you do, make sure to open an issue or send a pull request to update "
+"the `list of known errors`_."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:60 2dd2e89212d24ab98f93863bde084f74
+msgid "Common Errors"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:62 68c3d9d97cd54bc79c8dc1b59c69c8f9
+msgid "These are some of the errors you may normally need to deal with:"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:64 4a14a5fdccd44feeb4a9d5e9f2d85a5c
+msgid ""
+"``FloodWaitError`` (420), the same request was repeated many times. Must "
+"wait ``.value`` (you can access this attribute). For example:"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:79 1712e896726048eaaf561be1d1b9a6ae
+msgid ""
+"``SessionPasswordNeededError``, if you have setup two-steps verification "
+"on Telegram and are trying to sign in."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:81 58b382dae55b449386fcf52fabf37635
+msgid "``FilePartMissingError``, if you have tried to upload an empty file."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:82 8f3849ab42f942f0a9b6feaa9784883e
+msgid ""
+"``ChatAdminRequiredError``, you don't have permissions to perform said "
+"operation on a chat or channel. Try avoiding filters, i.e. when searching"
+" messages."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:86 2f6dc21c9faa4e1aa54505d3d6ae34b3
+msgid "The generic classes for different error codes are:"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:88 c541afb19fb34dc898c2ea75519fca7b
+msgid "``InvalidDCError`` (303), the request must be repeated on another DC."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:89 40d70fc64f6d488d8f0487fcd77332fe
+msgid "``BadRequestError`` (400), the request contained errors."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:90 4e3a1b889ad143ea8c09889748b3e6b9
+msgid "``UnauthorizedError`` (401), the user is not authorized yet."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:91 d6a3b3141e114b58bbc35bab55e6cead
+msgid "``ForbiddenError`` (403), privacy violation error."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:92 5811164d1828497eaad4242e78dbba48
+msgid "``NotFoundError`` (404), make sure you're invoking ``Request``\\ 's!"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:94 6afd28010396453ea308fd121a4b0246
+msgid "If the error is not recognised, it will only be an ``RPCError``."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:96 4d0757461fd84c23a17bbe5d209545c3
+msgid ""
+"You can refer to all errors from Python through the ``grammers.errors`` "
+"module. If you don't know what attributes they have, try printing their "
+"dir (like ``print(dir(e))``)."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:102 2c781d4a80e94a88a65cb70e48998f7c
+msgid "Attributes"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:104 7ba8d8029cf84c86b2081613629ce028
+msgid ""
+"Some of the errors carry additional data in them. When they look like "
+"``EMAIL_UNCONFIRMED_X``, the ``_X`` value will be accessible from the "
+"error instance, you can `.value` get the value."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:110 d3560126f41643d78db53d4f31517ae5
+msgid "Avoiding Limits"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:112 8032259195e0465783385b9bbec635f3
+msgid ""
+"Don't spam. You won't get ``FloodWaitError`` or your account banned or "
+"deleted if you use the library *for legit use cases*. Make cool tools. "
+"Don't spam! Nobody knows the exact limits for all requests since they "
+"depend on a lot of factors, so don't bother asking."
+msgstr ""
+
+#: ../../source/concepts/errors.rst:117 55599a45c43444d9b9b8f7d05a195f1f
+msgid ""
+"Still, if you do have a legit use case and still get those errors, the "
+"library will automatically sleep when they are smaller than 60 seconds by"
+" default. You can set different \"auto-sleep\" thresholds:"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:126 04d15f2d3fdd4cd9aca8f7117d2a90f5
+msgid "You can also except it and act as you prefer:"
+msgstr ""
+
+#: ../../source/concepts/errors.rst:137 d20ec3b39a7948f7ab9139d7c70a28bb
+msgid "VoIP numbers are very limited, and some countries are more limited too."
+msgstr ""
+

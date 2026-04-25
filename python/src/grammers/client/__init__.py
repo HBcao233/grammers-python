@@ -1,46 +1,14 @@
-from ..sessions import Session, SqliteSession
-from .. import tl
-from grammers._rs.client import Client
-from .types import (
-    LoginToken,
-    SignInError,
-    PaymentRequiredError,
-    SignUpRequiredError,
-    PasswordRequiredError,
-    InvalidCodeError,
-    InvalidPasswordError,
-    User,
-    Group,
-    Channel,
-    PeerMap,
-    Platform,
-    RestrictionReason,
-    Message,
-    HistoryMessageIter,
-)
-from typing import Callable, Protocol, Awaitable, Optional
-from getpass import getpass
 import asyncio
 import signal
+from typing import Callable, Protocol, Awaitable, Optional
+from getpass import getpass
 
-__all__ = [
-    'Client',
-    'LoginToken',
-    'SignInError',
-    'PaymentRequiredError',
-    'SignUpRequiredError',
-    'PasswordRequiredError',
-    'InvalidCodeError',
-    'InvalidPasswordError',
-    'User',
-    'Group',
-    'Channel',
-    'PeerMap',
-    'Platform',
-    'RestrictionReason',
-    'Message',
-    'HistoryMessageIter',
-]
+from grammers.sessions import Session, SqliteSession
+from grammers.tl import TLRequest, TLObject
+from grammers._rs.client import Client
+
+
+__all__ = ['Client']
 
 
 class PasswordCallback(Protocol):
@@ -133,24 +101,26 @@ class Client(Client):
         await self.stop()
         return False
 
-    async def __call__(self, request: tl.TLRequest) -> tl.TLObject:
+    async def __call__(self, request: TLRequest) -> TLObject:
         """
         Invoke a raw API call. This directly sends the request to Telegram's servers.
 
         Using function definitions corresponding to a different layer is likely to cause the
         responses to the request to not be understood.
 
-        # Examples
+        Example
+            .. code-block:: python
+                from grammers import functions
 
-        ```
-        from grammers import functions
-
-        await client(functions.Ping(ping_id=0))
-        ```
+                await client(functions.Ping(ping_id=0))
         """
         return await self.invoke(request)
 
     async def idle(self):
+        """
+        Keep the program running without exiting until it
+        receives signals such as SIGINT, SIGTERM, or SIGQUIT.
+        """
         loop = asyncio.get_running_loop()
         stop_event = asyncio.Event()
 
@@ -164,6 +134,13 @@ class Client(Client):
         await stop_event.wait()
 
     def run(self, coroutine: Awaitable | None = None):
+        """
+        Shortcut run method, which automatically invoke `Client.start()` and `Client.stop()`.
+
+        - If no parameter is provided, it runs `Client.idle()` within the async with block.
+        - If an `Awaitable` (e.g., a coroutine) is provided, it awaits that coroutine instead of `Client.idle()`,
+        """
+
         async def _run():
             async with self:
                 await (coroutine or self.idle())

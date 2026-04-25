@@ -1,0 +1,253 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/concepts/chats-vs-channels.rst:5
+#: c59fd51e2d254e3d9f2663a7b8be756d
+msgid "Chats vs Channels"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:7
+#: dc01b94a66164f83b4fc92e90f8fd507
+msgid ""
+"Telegram's raw API can get very confusing sometimes, in particular when "
+"it comes to talking about \"chats\", \"channels\", \"groups\", "
+"\"megagroups\", and all those concepts."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:11
+#: 7f1088a99fdf4cd580852c9ca275e596
+msgid "This section will try to explain what each of these concepts are."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:15
+#: 5fbb876ef1a8482d93ccc4ece4732cf2
+msgid "Chats"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:17
+#: a554dfb2dba645d0ad98063ef1c3bd05
+msgid ""
+"A ``Chat`` can be used to talk about either the common \"subclass\" that "
+"both chats and channels share, or the concrete :tl:`Chat` type."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:20
+#: ef9a7a5bf1434e74bc446c946204c949
+msgid ""
+"Technically, both :tl:`Chat` and :tl:`Channel` are a form of the `Chat "
+"type`_."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:22
+#: 93703cd5bd684e2f8571ce921f8818ff
+msgid ""
+"**Most of the time**, the term :tl:`Chat` is used to talk about *small "
+"group chats*. When you create a group through an official application, "
+"this is the type that you get. Official applications refer to these as "
+"\"Group\"."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:26
+#: f4348153c638430dbf91502eaf3141e4
+msgid ""
+"Both the bot API and Telethon will add a minus sign (negate) the real "
+"chat ID so that you can tell at a glance, with just a number, the entity "
+"type."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:29
+#: 2d11a0b1bb7a470b93ca8fd0a6a0d23f
+msgid ""
+"For example, if you create a chat with :tl:`CreateChatRequest`, the real "
+"chat ID might be something like `123`. If you try printing it from a "
+"`message.chat_id` you will see `-123`. This ID helps Telethon know you're"
+" talking about a :tl:`Chat`."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:36
+#: b3f9861a0d8b440794f864ef7c55764b
+msgid "Channels"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:38
+#: cc5d9f4739764a9fa385aca3911c8daa
+msgid ""
+"Official applications create a *broadcast* channel when you create a new "
+"channel (used to broadcast messages, only administrators can post "
+"messages)."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:41
+#: 8ce005d8c3e14d31bfd4ff71fc14693e
+msgid ""
+"Official applications implicitly *migrate* an *existing* :tl:`Chat` to a "
+"*megagroup* :tl:`Channel` when you perform certain actions (exceed user "
+"limit, add a public username, set certain permissions, etc.)."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:45
+#: 79126e3c8d4444869df44db1069122a7
+msgid ""
+"A ``Channel`` can be created directly with :tl:`CreateChannelRequest`, as"
+" either a ``megagroup`` or ``broadcast``."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:48
+#: 9c493dffa48d4792a3c8da5f9000e247
+msgid ""
+"Official applications use the term \"channel\" **only** for broadcast "
+"channels."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:50
+#: 6bc4aa2b9dd841cc8edbddc47fecf02b
+msgid ""
+"The API refers to the different types of :tl:`Channel` with certain "
+"attributes:"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:52
+#: 86246b95da144ad19ed6bb3af2ab9b4b
+msgid ""
+"A **broadcast channel** is a :tl:`Channel` with the ``channel.broadcast``"
+" attribute set to `True`."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:55
+#: cd7affc0d4c2439a85139a33d5b61bd5
+msgid ""
+"A **megagroup channel** is a :tl:`Channel` with the ``channel.megagroup``"
+" attribute set to `True`. Official applications refer to this as "
+"\"supergroup\"."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:58
+#: 3897795a356f402b87633c6f13ac4d05
+msgid ""
+"A **gigagroup channel** is a :tl:`Channel` with the ``channel.gigagroup``"
+" attribute set to `True`. Official applications refer to this as "
+"\"broadcast groups\", and is used when a megagroup becomes very large and"
+" administrators want to transform it into something where only they can "
+"post messages."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:64
+#: 9f59bd1e95e2420fbe5bdb2934bb8c1e
+msgid ""
+"Both the bot API and Telethon will \"concatenate\" ``-100`` to the real "
+"chat ID so that you can tell at a glance, with just a number, the entity "
+"type."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:67
+#: b34f5f367c8043c4aaeeac945ee5281d
+msgid ""
+"For example, if you create a new broadcast channel, the real channel ID "
+"might be something like `456`. If you try printing it from a "
+"`message.chat_id` you will see `-1000000000456`. This ID helps Telethon "
+"know you're talking about a :tl:`Channel`."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:74
+#: 5007f4bc74f2461996860206bcaf5c1e
+msgid "Converting IDs"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:76
+#: 2bdef94c1b8348649dba229955948b29
+msgid ""
+"You can convert between the \"marked\" identifiers (prefixed with a minus"
+" sign) and the real ones with ``utils.resolve_id``. It will return a "
+"tuple with the real ID, and the peer type (the class):"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:92
+#: 968f7bff90aa4f2aa174883bc88cbc59
+msgid "The reverse operation can be done with ``utils.get_peer_id``:"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:99
+#: 3001e1be83544078a5e6effefa94877c
+msgid ""
+"Note that this function can also work with other types, like :tl:`Chat` "
+"or :tl:`Channel` instances."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:102
+#: 95e710fe53b346b090c04a82b095b8a9
+msgid ""
+"If you need to convert other types like usernames which might need to "
+"perform API calls to find out the identifier, you can use "
+"``client.get_peer_id``:"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:111
+#: 85721f94450b472c9cab13e6a7eff724
+msgid ""
+"If there is no \"mark\" (no minus sign), Telethon will assume your "
+"identifier refers to a :tl:`User`. If this is **not** the case, you can "
+"manually fix it:"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:123
+#: 6127133392324d85be1aee75aaeeed10
+msgid "A note on raw API"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:125
+#: bad4ada59ed742ccb5aa6408371e50fb
+msgid ""
+"Certain methods only work on a :tl:`Chat`, and some others only work on a"
+" :tl:`Channel` (and these may only work in broadcast, or megagroup). Your"
+" code likely knows what it's working with, so it shouldn't be too much of"
+" an issue."
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:129
+#: 0127a7df042f4f79b6d5f805fd47e3b3
+msgid ""
+"If you need to find the :tl:`Channel` from a :tl:`Chat` that migrated to "
+"it, access the `migrated_to` property:"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:138
+#: 523bdbf4768a4f2c93fe15cc5180c7c9
+msgid ""
+"Channels do not have a \"migrated_from\", but a :tl:`ChannelFull` does. "
+"You can use :tl:`GetFullChannelRequest` to obtain this:"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:149
+#: 0a15a554c9be47deb3ad9c7b59ec9b23
+msgid ""
+"This way, you can also access the linked discussion megagroup of a "
+"broadcast channel:"
+msgstr ""
+
+#: ../../source/concepts/chats-vs-channels.rst:155
+#: 6a975067d67a4573bdf804dd3be87945
+msgid ""
+"You do not need to use ``client.get_entity`` to access the "
+"``migrated_from_chat_id`` :tl:`Chat` or the ``linked_chat_id`` "
+":tl:`Channel`. They are in the ``full.chats`` attribute:"
+msgstr ""
+

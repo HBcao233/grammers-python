@@ -122,18 +122,17 @@ impl PyClient {
     /// Returns `true` if the current account is authorized. Otherwise,
     /// logging in will be required before being able to invoke requests.
     ///
-    /// This will likely be the first method you want to call on a connected [`Client`]. After you
+    /// This will likely be the first method you want to call on a connected `Client`. After you
     /// determine if the account is authorized or not, you will likely want to use either
-    /// [`Client.bot_sign_in`] or [`Client.request_login_code`].
+    /// `Client.bot_sign_in()` or `Client.request_login_code()`.
     ///
-    /// # Examples
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// ```ignore
-    /// if await client.is_authorized():
-    ///     print('Client already authorized and ready to use!')
-    /// else:
-    ///     print('Client is not authorized, you will need to sign_in!')
-    /// ```
+    ///         if await client.is_authorized():
+    ///             print('Client already authorized and ready to use!')
+    ///         else:
+    ///             print('Client is not authorized, you will need to sign_in!')
     pub async fn is_authorized(&self) -> PyResult<bool> {
         let request = tl::functions::updates::GetState {};
         match self.invoke(&request).await {
@@ -144,6 +143,36 @@ impl PyClient {
     }
 
     /// Terminal interactive login.
+    ///
+    /// Pseudo-code
+    ///     .. code-block:: python
+    ///
+    ///         async def authorize(self) -> types.User:
+    ///             bot_token = self.bot_token
+    ///             if bot_token:
+    ///                 return await self.bot_sign_in(bot_token)
+    ///
+    ///             # check if session is logined
+    ///             session = self.session
+    ///             dc_id = await session.home_dc_id()
+    ///             dc_option = await session.dc_option(dc_id)
+    ///             if dc_option and dc_option.auth_key:
+    ///                 if x := await self.get_password_information():
+    ///                     return await self._check_password(x)
+    ///
+    ///             phone = utils.maybe_call(self.phone)
+    ///             phone = await utils.maybe_await(phone)
+    ///             if not isinstance(phone, str):
+    ///                 return ValueError(f"phone excepted str, got '{type(phone).__qualname__}'")
+    ///
+    ///             login_token = await self.request_login_code(phone, self.api_hash)
+    ///             code = self.code()
+    ///             code = str(await utils.maybe_await(code))
+    ///
+    ///             try:
+    ///                 return await self.sign_in(login_token, code)
+    ///             except PasswordRequiredError:
+    ///                 return await self._check_password()
     pub async fn authorize(&self) -> PyResult<Py<PyUser>> {
         let bot_token = self.bot_token();
         if bot_token.is_some() {
@@ -188,24 +217,23 @@ impl PyClient {
     /// This is the method you need to call to use the client under a bot account.
     ///
     /// It is recommended to save the session on successful login. Some session storages will do this
-    /// automatically. If saving fails, it is recommended to [`Client::sign_out`]. If the session is never
+    /// automatically. If saving fails, it is recommended to `Client.sign_out()`. If the session is never
     /// saved post-login, then the authorization will be "lost" in the list of logged-in clients, since it
     /// is unaccessible.
     ///
-    /// # Examples
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// ```ignore
-    /// # Note: these values are obviously fake.
-    /// # Obtain your own with the developer's phone at https://my.telegram.org.
-    /// API_HASH: str = "514727c32270b9eb8cc16daf17e21e57"
-    /// # Obtain your own by talking to @BotFather via a Telegram app.
-    /// BOT_TOKEN: str = "776609994:AAFXAy5-PawQlnYywUlZ_b_GOXgarR3ah_yq"
+    ///         # Note: these values are obviously fake.
+    ///         # Obtain your own with the developer's phone at https://my.telegram.org.
+    ///         API_HASH: str = "514727c32270b9eb8cc16daf17e21e57"
+    ///         # Obtain your own by talking to @BotFather via a Telegram app.
+    ///         BOT_TOKEN: str = "776609994:AAFXAy5-PawQlnYywUlZ_b_GOXgarR3ah_yq"
     ///
-    /// client = Client('bot', API_ID, API_HASH, bot_token=BOT_TOKEN)
-    /// async def main():
-    ///     user = await client.bot_sign_in()
-    ///     print('Signed in as {user.first_name}')
-    /// ```
+    ///         client = Client('bot', API_ID, API_HASH, bot_token=BOT_TOKEN)
+    ///         async def main():
+    ///             user = await client.bot_sign_in()
+    ///             print('Signed in as {user.first_name}')
     #[pyo3(signature = (bot_token=None))]
     pub async fn bot_sign_in(&self, bot_token: Option<String>) -> PyResult<Py<PyUser>> {
         let token = match bot_token {
@@ -254,23 +282,22 @@ impl PyClient {
     ///
     /// This is the method you need to call before being able to sign in to a user account.
     /// After you obtain the code and it's inside your program (e.g. ask the user to enter it
-    /// via the console's standard input), you will need to [`Client::sign_in`] to complete the
+    /// via the console's standard input), you will need to `Client.sign_in()` to complete the
     /// process.
     ///
-    /// # Examples
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// ```ignore
-    /// # Note: these values are obviously fake.
-    /// # Obtain your own with the developer's phone at https://my.telegram.org.
-    /// API_HASH: str = "514727c32270b9eb8cc16daf17e21e57"
-    /// # The phone used here does NOT need to be the same as the one used by the developer
-    /// # to obtain the API ID and hash.
-    /// PHONE: str = "+1 415 555 0132"
+    ///         # Note: these values are obviously fake.
+    ///         # Obtain your own with the developer's phone at https://my.telegram.org.
+    ///         API_HASH: str = "514727c32270b9eb8cc16daf17e21e57"
+    ///         # The phone used here does NOT need to be the same as the one used by the developer
+    ///         # to obtain the API ID and hash.
+    ///         PHONE: str = "+1 415 555 0132"
     ///
-    /// if not await client.is_authorized():
-    ///     # We're not logged in, so request the login code.
-    ///     token = await client.request_login_code(PHONE, API_HASH)
-    /// ```
+    ///         if not await client.is_authorized():
+    ///             # We're not logged in, so request the login code.
+    ///             token = await client.request_login_code(PHONE, API_HASH)
     pub async fn request_login_code(
         &self,
         phone: String,
@@ -340,40 +367,39 @@ impl PyClient {
 
     /// Signs in to the user account.
     ///
-    /// You must call [`Client.request_login_code`] before using this method in order to obtain
+    /// You must call `Client.request_login_code` before using this method in order to obtain
     /// necessary login token, and also have asked the user for the login code.
     ///
     /// It is recommended to save the session on successful login. Some session storages will do this
-    /// automatically. If saving fails, it is recommended to [`Client.sign_out`]. If the session is never
+    /// automatically. If saving fails, it is recommended to `Client.sign_out()`. If the session is never
     /// saved post-login, then the authorization will be "lost" in the list of logged-in clients, since it
     /// is unaccessible.
     ///
-    /// # Examples
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// ```ignore
-    /// # API_HASH: str = ""
-    /// # PHONE: str = ""
-    /// def ask_code_to_user() -> str:
-    ///     pass
+    ///         # API_HASH: str = ''
+    ///         # PHONE: str = ''
+    ///         def ask_code_to_user() -> str:
+    ///             return input('Please input code you received:')
     ///
-    /// token = await client.request_login_code(PHONE, API_HASH)
-    /// code = ask_code_to_user()
+    ///         token = await client.request_login_code(PHONE, API_HASH)
+    ///         code = ask_code_to_user()
     ///
-    /// try:
-    ///     let user = await client.sign_in(token, code)
-    /// except errors.PasswordRequiredError as e:
-    ///     token = e.token
-    ///     print('Please provide a password)
-    /// except errors.SignUpRequiredError:
-    ///     print('Sign up required')
-    /// except errors.RPCError as e:
-    ///     print('Failed to sign in as a user:\n', traceback.format_exc(e))
+    ///         try:
+    ///             user = await client.sign_in(token, code)
+    ///         except errors.PasswordRequiredError as e:
+    ///             token = e.token
+    ///             print('Please provide a password')
+    ///         except errors.SignUpRequiredError:
+    ///             print('Sign up required')
+    ///         except errors.RPCError as e:
+    ///             print('Failed to sign in as a user:\n', traceback.format_exc(e))
     ///
-    /// if user.first_name:
-    ///     print(f"Signed in as {user.first_name}!")
-    /// else:
-    ///     println!("Signed in!")
-    /// ```
+    ///         if user.first_name:
+    ///             print(f"Signed in as {user.first_name}!")
+    ///         else:
+    ///             print("Signed in!")
     pub async fn sign_in(&self, token: PyLoginToken, code: String) -> PyResult<Py<PyUser>> {
         match self
             .invoke(&tl::functions::auth::SignIn {
@@ -411,36 +437,34 @@ impl PyClient {
 
     /// Sign in using two-factor authentication (user password).
     ///
-    /// [`password_token`] can be obtained from [`PasswordRequiredError`] error after the
-    /// [`Client.sign_in`] method fails.
+    /// `password_token` can be obtained from `PasswordRequiredError` error after the
+    /// `Client.sign_in()` method fails.
     ///
-    /// # Examples
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// ```ignore
-    /// # const API_HASH: &str = "";
-    /// # const PHONE: &str = "";
-    /// def get_user_password(hint: str) -> String:
-    ///     pass
+    ///         # API_HASH: str = ''
+    ///         # PHONE: str = ''
+    ///         def get_user_password(hint: str) -> String:
+    ///             return getpass.getpass(f'Please input password: (hint: {hint})')
     ///
-    /// # let token = await client.request_login_code(PHONE, API_HASH)
-    /// # let code = "";
+    ///         # token = await client.request_login_code(PHONE, API_HASH)
+    ///         # code = ''
     ///
-    /// # ... enter phone number, request login code ...
+    ///         # ... enter phone number, request login code ...
     ///
-    /// try:
-    ///     let user = await client.sign_in(token, code)
-    /// except errors.PasswordRequiredError as e:
-    ///     password_token = e.password_token
-    ///     password = get_user_password(password_token.hint)
+    ///         try:
+    ///             let user = await client.sign_in(token, code)
+    ///         except errors.PasswordRequiredError as e:
+    ///             password_token = e.password_token
+    ///             password = get_user_password(password_token.hint)
     ///
-    ///     try:
-    ///         user = await client.check_password(password_token, password)
-    ///     except errors.RpcError as e:
-    ///         print('Sign in required')
-    /// except errors.RpcError as e:
-    ///     print('Failed to sign in as a user:', traceback.format_exc(e))
-    ///
-    /// ```
+    ///             try:
+    ///                 user = await client.check_password(password_token, password)
+    ///             except errors.RpcError as e:
+    ///                 print('Sign in required')
+    ///         except errors.RpcError as e:
+    ///             print('Failed to sign in as a user:', traceback.format_exc(e))
     pub async fn check_password(
         &self,
         password_info: pytl::types::account::PyPassword,
@@ -500,28 +524,39 @@ impl PyClient {
     /// Note that after using this method you will have to sign in again. If all you want to do
     /// is disconnect, simply call `await client.stop()`.
     ///
-    /// # Examples
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// ```ignore
-    /// from grammers import errors
+    ///         from grammers import errors
     ///
-    /// try:
-    ///     await client.sign_out()
-    /// except errors.RpcError:
-    ///     print("No user was signed in, so nothing has changed...");
-    /// else:
-    ///     print("Signed out successfully!");
-    /// ```
+    ///         try:
+    ///             await client.sign_out()
+    ///         except errors.RpcError:
+    ///             print("No user was signed in, so nothing has changed...");
+    ///         else:
+    ///             print("Signed out successfully!");
     pub async fn sign_out(&self) -> PyResult<pytl::enums::auth::PyLoggedOut> {
         let request = pytl::functions::auth::PyLogOut {};
         self.invoke(&request).await.map_err(PyInvocationError::new)
     }
 
-    /// Signals all clients sharing the same sender pool to disconnect.
-    pub fn disconnect(&self) {
-        self.inner.lock().unwrap().handle.quit();
-    }
-
+    /// Check password used by `Client.authorize()`
+    ///
+    /// Pseudo-code
+    ///     .. code-block:: python
+    ///
+    ///         async def _check_password(self, password_info: types.account.Password | None = None) -> types.User:
+    ///             if password_info is None:
+    ///                 password_info = await self.get_password_information()
+    ///
+    ///             hint = password_info.hint
+    ///             password = self.password
+    ///             password = utils.maybe_call(password, [hint])
+    ///             password = await utils.maybe_await(password)
+    ///             if not isinstance(password, str):
+    ///                 raise ValueError(f"password excepted str, got '{type(password).__qualname__}'")
+    ///
+    ///             return await sekf.check_password(password_info, password)
     #[pyo3(signature = (password_info=None))]
     async fn _check_password(
         &self,
@@ -546,6 +581,45 @@ impl PyClient {
         self.check_password(password_info, password).await
     }
 
+    /// Complete login, will cache peer and save update state.
+    ///
+    /// Pseudo-code
+    ///     .. code-block:: python
+    ///
+    ///         async def _complete_login(self, auth: types.auth.Authorization) -> types.User:
+    ///             user = auth.user
+    ///             user_id = user.id
+    ///             bot = getattr(user, 'bot', None)
+    ///             session = self.session
+    ///             auth = None
+    ///             if not getattr(user, 'min', False):
+    ///                 auth = user.access_hash
+    ///             else:
+    ///                 peer = await session.peer(user_id)
+    ///                 if peer:
+    ///                     auth = peer.auth
+    ///
+    ///             await session.cache_peer(PeerInfo.User(
+    ///                 user_id,
+    ///                 auth,
+    ///                 bot,
+    ///                 True,
+    ///             ))
+    ///
+    ///             try:
+    ///                 state = await self.client(functions.updates.GetState())
+    ///             except errors.RpcError:
+    ///                 pass
+    ///             else:
+    ///                 await session.set_update_state(UpdateState.All(
+    ///                     state.pts,
+    ///                     state.qts,
+    ///                     state.date,
+    ///                     state.seq,
+    ///                     [],
+    ///                 ))
+    ///
+    ///             return user
     async fn _complete_login(
         &self,
         auth: pytl::types::auth::PyAuthorization,

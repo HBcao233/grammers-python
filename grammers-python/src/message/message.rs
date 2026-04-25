@@ -83,6 +83,7 @@ struct MessageData {
 #[derive(Clone)]
 #[pyclass(name = "Message", module = "grammers.client", extends = pytl::TLObject)]
 pub struct PyMessage {
+    #[pyo3(get)]
     pub(crate) client: PyClient,
 
     // When fetching messages or receiving updates, a set of peers will be present. A single
@@ -222,7 +223,7 @@ pub struct PyMessage {
     /// The date when this message was produced.
     #[pyo3(get)]
     pub date: Option<PyDateTimeWrapper>,
-    
+
     #[pyo3(get)]
     pub date_timestamp: Option<i32>,
 
@@ -841,6 +842,17 @@ impl PyMessage {
     //       Methods
     // ====================
 
+    /// Fetch the message that this message is replying to, or `None` if this message is not a
+    /// reply to a previous message.
+    ///
+    /// Shorthand for `Client.get_reply_to_message`.
+    pub async fn get_reply_to(&self) -> PyResult<Option<Py<PyMessage>>> {
+        /*self.client
+        .get_reply_to_message(self)
+        .await*/
+        Err(PyTypeError::new_err("TODO!"))
+    }
+
     /*
     /// React to this message.
     ///
@@ -888,19 +900,6 @@ impl PyMessage {
             )
             .await?;
         Ok(())
-    }
-    */
-
-    /*
-    /// Fetch the message that this message is replying to, or `None` if this message is not a
-    /// reply to a previous message.
-    ///
-    /// Shorthand for `Client::get_reply_to_message`.
-    pub async fn get_reply(&self) -> Result<Option<Self>, InvocationError> {
-        self.client
-            .clone() // TODO don't clone
-            .get_reply_to_message(self)
-            .await
     }
     */
 

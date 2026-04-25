@@ -1,0 +1,127 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/quick-references/objects-reference.rst:3
+#: e326d7732a81435e861a7d363b5ca6cb
+msgid "Objects Reference"
+msgstr "Objects 摘要"
+
+#: ../../source/quick-references/objects-reference.rst:5
+#: 820611d4e9894acb8643c9d10c3a5f01
+msgid ""
+"This is the quick reference for those objects returned by client methods "
+"or other useful modules that the library has to offer. They are kept in a"
+" separate page to help finding and discovering them."
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:9
+#: 5d048489c3064c819300a3413a663fed
+msgid ""
+"Remember that this page only shows properties and methods, **not "
+"attributes**. Make sure to open the full documentation to find out about "
+"the attributes."
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:13
+#: 14c4cbfc5f394b82bdfda11477247bd4
+msgid "Contents"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:16
+#: 671ec20e7e1845af8b07b42fe513ea65
+msgid "Message"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:20
+#: 41ddb4ada6d24c9f9095941afc7bf59a
+msgid ""
+"The `Message` type is very important, mostly because we are working with "
+"a library for a *messaging* platform, so messages are widely used: in "
+"events, when fetching history, replies, etc."
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:25
+#: 10b4e33c41524b0d8613ceca5a069dbf
+msgid "Properties"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:29
+#: b34585375b46451da5e088002724d2cc
+msgid ""
+"We document *custom properties* here, not all the attributes of the "
+"`Message` (which is the information Telegram actually returns)."
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:39:<autosummary>:1
+#: 4f0b5ae87f0b4ab5afd0a2f0b5f2b1b8
+msgid ":py:obj:`client <grammers.custom.Message.client>`"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:41
+#: ba033f1759ce4557830c10d9716f67e9
+msgid "Methods"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:48:<autosummary>:1
+#: 1d9c3a2928a0408994688e16b72cced6
+msgid ":py:obj:`get_reply_to <grammers.custom.Message.get_reply_to>`"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:48:<autosummary>:1
+#: a78e2ae57f4a4850a424354cbc8ffa7e
+msgid ""
+"Fetch the message that this message is replying to, or `None` if this "
+"message is not a reply to a previous message."
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:50
+#: 6252e4e3addd4b75b2c0fd3bdfb867c4
+msgid "Utils"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:52
+#: c8872577437e455c8f72c3c52ce84dde
+msgid ""
+"The `grammers.utils` module has plenty of methods that make using the "
+"library a lot easier. Only the interesting ones will be listed here."
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:62:<autosummary>:1
+#: c6b4e776ba90497899c158b34ca1ff93
+msgid ":py:obj:`parse_phone <grammers.utils.parse_phone>`"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:62:<autosummary>:1
+#: 44b3feda43874ea492f652ffdfdddb02
+msgid "Parses the given phone, or returns `None` if it's invalid."
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:62:<autosummary>:1
+#: f54a2de5af4e4175b0c4a8fc9f7c4ccc
+msgid ":py:obj:`maybe_call <grammers.utils.maybe_call>`"
+msgstr ""
+
+#: ../../source/quick-references/objects-reference.rst:62:<autosummary>:1
+#: 078d52cb4dfb47c999f8d7864fd42666
+msgid ":py:obj:`maybe_await <grammers.utils.maybe_await>`"
+msgstr ""
+

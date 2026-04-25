@@ -1,0 +1,375 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/quick-references/client-reference.rst:5
+#: 1bc2441f1fc14c8f9cccacb23bc4f384
+msgid "Client Reference"
+msgstr "Client 参考"
+
+#: ../../source/quick-references/client-reference.rst:7
+#: 68978ef82f204c19937ba310a64f08b4
+msgid ""
+"This page contains a summary of all the important methods and properties "
+"that you may need when using Grammers-Python. They are sorted by relevance and "
+"are not in alphabetical order."
+msgstr ""
+"此页面列出了在使用 Grammers-Python 时您可能需要的所有重要方法和属性的概述。"
+"这些内容是按照相关性排序的，并非按字母顺序排列。"
+
+#: ../../source/quick-references/client-reference.rst:11
+#: 0473f120518849dea43ad3e17b1a280d
+msgid ""
+"You should use this page to learn about which methods are available, and "
+"if you need a usage example or further description of the arguments, be "
+"sure to follow the links."
+msgstr ""
+"您可以利用此页面来了解有哪些可用的方法。"
+"如果您需要使用示例或有关参数的进一步说明，请点击相关链接。"
+
+#: ../../source/quick-references/client-reference.rst:15
+#: 19dbef52d5814d1798a413b34bbed225
+msgid "Contents"
+msgstr "目录"
+
+#: ../../source/quick-references/client-reference.rst:18
+#: 9aaf4fd81c974f51921a5217f1dcf708
+msgid "Client"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:20
+#: 45935f42ec554e48aa1ded777828b242
+msgid ""
+"This is a summary of the methods and properties you will find at :ref"
+":`grammers-client`."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:24
+#: cf9e8f4dbab94411937b6fb250cd929c
+msgid "Net"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:33:<autosummary>:1
+#: ea9078e313a9486bafca434ca75b5d84
+msgid ":py:obj:`invoke <grammers.client.Client.invoke>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:33:<autosummary>:1
+#: d8496bbc5885429f9223459979d188cf
+msgid "Invoke a raw API call."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:33:<autosummary>:1
+#: 1fca49befad342f7abc11489291798bb
+msgid ":py:obj:`invoke_raw <grammers.client.Client.invoke_raw>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:33:<autosummary>:1
+#: 0441b7ac4bde46fe8f204a30a7555b1a
+msgid "low-level api, send data to telegram directly."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:35
+#: 64ac41c76f3e4cc18140425a0fb16e14
+msgid "Utilities"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:46:<autosummary>:1
+#: 172783f4eac14865b767c945be6a5dad
+msgid ":py:obj:`start <grammers.client.Client.start>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:46:<autosummary>:1
+#: a4298fb9cbd642e1b131effc1c6a60f0
+msgid "Start login in to telegram"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:46:<autosummary>:1
+#: 64d2daf5d4154abfbe7c6b95d31fa1e1
+msgid ":py:obj:`stop <grammers.client.Client.stop>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:46:<autosummary>:1
+#: a303e5c2de764b378e0463182b5a824d
+msgid ""
+"Stop client Calling clent's methods after stopping will raise "
+"ClientStoppedError."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:46:<autosummary>:1
+#: b2f9a4a2a1d84685a8fbdbf3f79bcbd1
+msgid ":py:obj:`idle <grammers.client.Client.idle>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:46:<autosummary>:1
+#: f75c188531f24c06940555c193e0a501
+msgid ""
+"Keep the program running without exiting until it receives signals such "
+"as SIGINT, SIGTERM, or SIGQUIT."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:46:<autosummary>:1
+#: 8e3dc28c390b400ca0057b21ac25f6eb
+msgid ":py:obj:`run <grammers.client.Client.run>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:46:<autosummary>:1
+#: 7f994dd7acc545fca9be701f9cd6c987
+msgid ""
+"Shortcut run method, which automatically invoke `Client.start()` and "
+"`Client.stop()`."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:48
+#: 7a1cd7eec3d74d848d6bdd8c203a44ae
+msgid "Auth"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 4938edb679394affa911426a0a7b6a1f
+msgid ":py:obj:`is_authorized <grammers.client.Client.is_authorized>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: d835e91404ec44b5a7d680670cbee855
+msgid "Returns `true` if the current account is authorized."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: b01201e451184ee5ba9cbca7200f4a9a
+msgid ":py:obj:`authorize <grammers.client.Client.authorize>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 0a17eeea4376499c8012306ad08bff80
+msgid "Terminal interactive login."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 76fdc35dcb4f4290bf80b1ac6c606ec3
+msgid ":py:obj:`bot_sign_in <grammers.client.Client.bot_sign_in>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: b975718fe69948eea0af66a83b2370ec
+msgid "Signs in to the bot account associated with this token."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: cc911b4445d34e7a901751409b2bc19d
+msgid ":py:obj:`request_login_code <grammers.client.Client.request_login_code>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 8e28a6a469de4752a593125c6b3d263e
+msgid ""
+"Requests the login code for the account associated to the given phone "
+"number via another Telegram application or SMS."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 0e46b06e78d841d49aec988381647c94
+msgid ":py:obj:`sign_in <grammers.client.Client.sign_in>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: a685c29abd0e4c6c854e3b3c134ca800
+msgid "Signs in to the user account."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 137bdf487eea4f7aae623f56eb4d8290
+msgid ""
+":py:obj:`get_password_information "
+"<grammers.client.Client.get_password_information>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 8e1ff665417140628e3913114ec9adb2
+msgid ""
+"Extract information needed for the two-factor authentication It's called "
+"automatically when we get SESSION_PASSWORD_NEEDED error during sign in."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 2b735f8b42c44963b377c5076764469f
+msgid ":py:obj:`check_password <grammers.client.Client.check_password>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: d7c1078fa52d48b98416dec74e299770
+msgid "Sign in using two-factor authentication (user password)."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: d886aa0267cc4c8da891babe9bc67de1
+msgid ":py:obj:`sign_out <grammers.client.Client.sign_out>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: feab09a12515410e818615e1bc073248
+msgid "Signs out of the account authorized by this client's session."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: db4775dafb594c43a98c309875164c4c
+msgid ":py:obj:`disconnect <grammers.client.Client.disconnect>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: a8a65aa530f94e7884eab1637c451421
+msgid "Signals all clients sharing the same sender pool to disconnect."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: bb102c7651384683b65538eb7687bb1a
+msgid ":py:obj:`_check_password <grammers.client.Client._check_password>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: abefaeb1d51c4d789c47f845554df3a9
+msgid "Check password used by `Client.authorize()`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: cd8fb83dfdb04e04b6ade4e7d24a5389
+msgid ":py:obj:`_complete_login <grammers.client.Client._complete_login>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:66:<autosummary>:1
+#: 129d86381cdf4844991ef695fb8865e6
+msgid "Complete login, will cache peer and save update state."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:68
+#: d715e391a7f046b587973d0c011ef135
+msgid "Chats"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 75bb69ca1c8c4160913481f146e227db
+msgid ":py:obj:`get_me <grammers.client.Client.get_me>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: eff15dd61ed049d2b425a33d4310d4fc
+msgid "Fetch information about the currently logged-in user."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 6df90aafadb84a0fa5dd8bd3e39a9340
+msgid ":py:obj:`resolve_username <grammers.client.Client.resolve_username>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: fe70949811a84affa200e52545b2d16d
+msgid ""
+"Resolves a username (not prefix with '@') into the peer that owns it, if "
+"any."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 7f1fab1c5cb04ba4b58ff62fc98ca32b
+msgid ":py:obj:`resolve_phone <grammers.client.Client.resolve_phone>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 0c927279bfa9474497a577df6f1e93e6
+msgid "Resolves a phone to a User."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 9e08837d7ebe4475a1520b6f1577a871
+msgid ":py:obj:`resolve_input_peer <grammers.client.Client.resolve_input_peer>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 280ba58614f74b47833305a52dc89e69
+msgid "Resolves a InputPeer into a Peer."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 1d79549459b445dda0fac48c921409c8
+msgid ":py:obj:`resolve_peer <grammers.client.Client.resolve_peer>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 77dd98398d8c4725941f73e3fc53e7d3
+msgid "Resolves any InputPeerLike to a Peer."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 7bcf91ddb7f14bf08ca8dc22a4c2efab
+msgid ":py:obj:`resolve_peer_ref <grammers.client.Client.resolve_peer_ref>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: dce70b70e83048e7addb1ef9f520987b
+msgid "Resolves any InputPeerLike to a PeerRef, with using cached access_hash."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 26bfff522b1a402a975c558802847aeb
+msgid ":py:obj:`check_invite_link <grammers.client.Client.check_invite_link>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: d8bc717be9454b5a988beed57ac02d42
+msgid "Check the validity of a chat invite link and get basic info about it."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: 58ab00772bdd418197e435ac459a0aab
+msgid ":py:obj:`accept_invite_link <grammers.client.Client.accept_invite_link>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:83:<autosummary>:1
+#: cacc1063567b44f0a51e0a156fe5ba25
+msgid "Import a chat invite and join a private chat/supergroup/channel."
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:85
+#: 6bc26fa6e504495a98e5f3450bb2c46b
+msgid "Messages"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:93:<autosummary>:1
+#: a46eee8481854eaaa41480c24e37e336
+msgid ":py:obj:`get_messages_by_id <grammers.client.Client.get_messages_by_id>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:93:<autosummary>:1
+#: 90a2dcaead7e41d9acd79ef777edc16a
+msgid "Get messages by id"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:93:<autosummary>:1
+#: 26d91ff6f1e64794a48ef481765226b2
+msgid ""
+":py:obj:`iter_history_messages "
+"<grammers.client.Client.iter_history_messages>`"
+msgstr ""
+
+#: ../../source/quick-references/client-reference.rst:93:<autosummary>:1
+#: aca90691b85344438f0f728978430e92
+msgid "Returns the conversation history with one interlocutor / within a chat"
+msgstr ""
+

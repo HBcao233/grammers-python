@@ -1,0 +1,49 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/modules/utils.rst:5 40b31d4bf49d423e9bf494bedf18dcb6
+msgid "Utils"
+msgstr ""
+
+#: ../../source/modules/utils.rst 03476353193946c982d15db8abd3c1c0
+#: 2e879f317ac64ca39dee742c4c30abe7 502a9a7cecc2456fad608e12ef2a227c
+msgid "Return type"
+msgstr ""
+
+#: 08d654a0fba44e2fa2f3d2593706aee4 3391f0b970a84433b55319bdd36d9367
+#: grammers.utils.maybe_await:1 grammers.utils.maybe_call:1 of
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:data\\:\\`\\~typing.Any\\``"
+msgstr ""
+
+#: ../../source/modules/utils.rst 88affcdcf56447ba9d2181ddccd1c322
+#: 8f149ed4ffb4486e85d009b144be55e2 a72ef2f634e64628bbfb672eb693c3f1
+msgid "Parameters"
+msgstr ""
+
+#: 23df50b173a2479fa097df81c9f84d9a grammers.utils.parse_phone:1 of
+msgid "Parses the given phone, or returns `None` if it's invalid."
+msgstr ""
+
+#: af561b3396794a90b1d31756415d3452 grammers.utils.parse_phone:3 of
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`str\\``"
+msgstr ""
+

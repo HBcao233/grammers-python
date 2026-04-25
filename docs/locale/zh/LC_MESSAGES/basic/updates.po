@@ -1,0 +1,158 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/basic/updates.rst:3 04a879757fd44de7a65c5d58c2734fd8
+msgid "Updates"
+msgstr ""
+
+#: ../../source/basic/updates.rst:6 27864b5d1c5946cdb992206b01602c1b
+msgid "The content of this chapter is all TODO"
+msgstr "TODO: 未实现"
+
+#: ../../source/basic/updates.rst:8 0e2ea1ca88514cfeba8813ddbe212ba2
+msgid ""
+"Updates are an important topic in a messaging platform like Telegram. "
+"After all, you want to be notified when a new message arrives, when a "
+"member joins, when someone starts typing, etc. For that, you can use "
+"**events**."
+msgstr ""
+"在像 Telegram 这样的消息平台中，Updates 是一个重要的话题。"
+"毕竟，你总会想要能够在收到消息、新成员加入等情况下收到通知。"
+"为此，你可以使用 **events**。"
+
+#: ../../source/basic/updates.rst:15 9611e0708acb463fa69cc9cf4041ccfb
+msgid ""
+"It is strongly advised to enable logging when working with events, since "
+"exceptions in event handlers are hidden by default. Please add the "
+"following snippet to the very top of your file:"
+msgstr ""
+
+#: ../../source/basic/updates.rst:27 bf95e0c8b9234c5a842bf82cea8dffc6
+msgid "Getting Started"
+msgstr ""
+
+#: ../../source/basic/updates.rst:29 f40f3251f54d480ca86ab37b5b1ec6d2
+msgid "Let's start things with an example to automate replies:"
+msgstr ""
+
+#: ../../source/basic/updates.rst:45 8b50f5fadcd14c9fa768cab6c4f1e9de
+msgid ""
+"This code isn't much, but there might be some things unclear. Let's break"
+" it down:"
+msgstr ""
+
+#: ../../source/basic/updates.rst:55 45586b7ac2a3445abaaa9b74e0d027df
+msgid ""
+"This is normal creation (of course, pass session name, API ID and hash). "
+"Nothing we don't know already."
+msgstr ""
+
+#: ../../source/basic/updates.rst:63 9d25204c94e846c7a9571830eb32242c
+msgid ""
+"This Python decorator will attach itself to the ``my_event_handler`` "
+"definition, and basically means that *on* a `NewMessage "
+"<grammers.events.NewMessage>` *event*, the callback function you're about"
+" to define will be called:"
+msgstr ""
+
+#: ../../source/basic/updates.rst:75 b8590c7d7fde4782933e78c7775c881a
+msgid ""
+"If a `NewMessage <grammers.events.NewMessage>` event occurs, and "
+"``'hello'`` is in the text of the message, we `reply() "
+"<grammers.custom.Message.reply>` to the event with a ``'hi!'`` message."
+msgstr ""
+
+#: ../../source/basic/updates.rst:83 8a1864fae08a4eb1af16e2dfb1d3752e
+msgid ""
+"Event handlers **must** be ``async def``. After all, grammers-python is "
+"an asynchronous library based on `asyncio`, which is a safer and often "
+"faster approach to threads."
+msgstr ""
+
+#: ../../source/basic/updates.rst:87 65e26787ec844630be5584f2ac3997a2
+msgid ""
+"You **must** ``await`` all method calls that use network requests, which "
+"is most of them."
+msgstr ""
+
+#: ../../source/basic/updates.rst:92 bfc5e1a70ad2417c8bf85e6df6c44e59
+msgid "More Examples"
+msgstr ""
+
+#: ../../source/basic/updates.rst:94 827977c5a66b4502bcce0b130a2c72a2
+msgid "Replying to messages with hello is fun, but, can we do more?"
+msgstr ""
+
+#: ../../source/basic/updates.rst:106 86f82129eced4f33a3a60ac7bb311b27
+msgid ""
+"We could also get replies. This event filters outgoing messages (only "
+"those that we send will trigger the method), then we filter by the regex "
+"``r'\\.save'``, which will match messages starting with ``\".save\"``."
+msgstr ""
+
+#: ../../source/basic/updates.rst:111 6133c7e42ae648a784abb8328ad1b9b6
+msgid ""
+"Inside the method, we check whether the event is replying to another "
+"message or not. If it is, we get the reply message and the sender of that"
+" message, and download their profile photo."
+msgstr ""
+
+#: ../../source/basic/updates.rst:115 dad1bd589b3f4524899cb6dda1f8c840
+msgid ""
+"Let's delete messages which contain \"heck\". We don't allow swearing "
+"here."
+msgstr ""
+
+#: ../../source/basic/updates.rst:124 fe3c173c255e40e493d5622da8665320
+msgid ""
+"With the ``r'(?i).*heck'`` regex, we match case-insensitive \"heck\" "
+"anywhere in the message. Regex is very powerful and you can learn more at"
+" https://regexone.com/."
+msgstr ""
+
+#: ../../source/basic/updates.rst:128 07df1e58d10c48f79d314f15bf0dd56b
+msgid ""
+"So far, we have only seen the `NewMessage "
+"<telethon.events.newmessage.NewMessage>`, but there are many more which "
+"will be covered later. This is only a small introduction to updates."
+msgstr ""
+
+#: ../../source/basic/updates.rst:133 31981fa3bee94967955edf73e008f58d
+msgid "Entities"
+msgstr ""
+
+#: ../../source/basic/updates.rst:148 bcddc665c08b4f1abb389532f3151f69
+msgid ""
+"Events are like messages, but don't have all the information a message "
+"has! When you manually get a message, it will have all the information it"
+" needs. When you receive an update about a message, it **won't** have all"
+" the information, so you have to **use the methods**, not the properties."
+msgstr ""
+
+#: ../../source/basic/updates.rst:153 41dafd4a1c11455ab62fd2fd5dc86cb3
+msgid ""
+"Make sure you understand the code seen here before continuing! As a rule "
+"of thumb, remember that new message events behave just like message "
+"objects, so you can do with them everything you can do with a message "
+"object."
+msgstr ""
+

@@ -1,0 +1,54 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/index.rst:31
+msgid "First Steps"
+msgstr "第一步"
+
+#: ../../source/index.rst:41
+msgid "Quick References"
+msgstr "快速参考摘要"
+
+#: ../../source/index.rst:49
+msgid "Concepts"
+msgstr "概念"
+
+#: ../../source/index.rst:63
+msgid "Grammers-Python Modules"
+msgstr ""
+
+#: ../../source/index.rst:8 512a09de1018477a93216d467e0c14c8
+msgid "grammers-python's documentation"
+msgstr "grammers-python 文档"
+
+#: ../../source/index.rst:25 a18775cfa8f447abb25fb0a4cb6bc4fc
+msgid "What is this?"
+msgstr "这是什么？"
+
+#: ../../source/index.rst:27 4247a648f5fc4cc7b149ef9eb821a818
+msgid ""
+"grammers-python is the Python bindings of `gramme.rs "
+"<https://codeberg.org/Lonami/grammers>`_. This library aims to balance "
+"the performance of Rust and the ease of use of Python."
+msgstr ""
+"grammers-python 是 `gramme.rs <https://codeberg.org/Lonami/grammers>`_ 的 Python 绑定库。"
+"旨在兼顾 Rust 的性能和 Python 的易用性。"

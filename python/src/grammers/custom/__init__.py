@@ -1,4 +1,4 @@
-from grammers._rs.client import (
+from grammers._rs.custom import (
     LoginToken,
     SignInError,
     PaymentRequiredError,
@@ -15,8 +15,6 @@ from grammers._rs.client import (
     Message,
     HistoryMessageIter,
 )
-
-Peer = User | Group | Channel
 
 __all__ = [
     'LoginToken',

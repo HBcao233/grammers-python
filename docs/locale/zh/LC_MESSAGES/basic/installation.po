@@ -1,0 +1,75 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/basic/installation.rst:5 c2f32b98f23642f4aaf40418a64b96de
+msgid "Installation"
+msgstr "安装"
+
+#: ../../source/basic/installation.rst:7 04ea9ef1c1484206bd5b36de06d3f909
+msgid ""
+"Grammers-Python is a Python library, which means you need to download and"
+" install Python from https://www.python.org/downloads/ if you haven't "
+"already. Once you have Python installed, `upgrade pip <https://pythonspeed.com/articles/upgrade-pip/>`_ and run:"
+msgstr ""
+"grammers-python 是一个 Python  库，这意味着你需要先安装 Python。"
+"你可以在 https://www.python.org/downloads/ 下载 Python。"
+"安装好后运行以下命令来 `更新pip <https://pythonspeed.com/articles/upgrade-pip/>`_："
+
+#: ../../source/basic/installation.rst:16 1c212a7dd43e4c5f9634a68565768921
+msgid "…to install or upgrade the library to the latest version."
+msgstr "...以及安装或更新本库"
+
+#: ../../source/basic/installation.rst:21 f8c5f1b8f2f046c98d97caa6688e030f
+msgid "Installing Development Versions"
+msgstr "安装正在开发的版本"
+
+#: ../../source/basic/installation.rst:23 003be7814e1644e89f3b32cba22eff37
+msgid ""
+"If you want the *latest* unreleased changes, you can run the following "
+"command instead:"
+msgstr ""
+"如果你想体验未发布的最新功能，你可以运行下面的命令:"
+
+#: ../../source/basic/installation.rst:32 31c56380a0d941ef86f7ef49e69ff619
+msgid ""
+"The development version may have bugs and is not recommended for "
+"production use. However, when you are `reporting a library bug <https://github.com/HBcao233/grammers-python/issues/>`_, you "
+"should try if the bug still occurs in this version."
+msgstr ""
+"开发版本可能会有一些意想不到的 bugs，所以不建议用于生产。"
+"然而，如果你想 `反馈库的bug <https://github.com/HBcao233/grammers-python/issues/>`_，你应该在开发版本测试一下这个bug是否仍然存在。"
+
+#: ../../source/basic/installation.rst:40 4524f87eede146a38c63e4e044213f61
+msgid "Verification"
+msgstr "验证"
+
+#: ../../source/basic/installation.rst:42 e0fefdc34f83452ea95148c411fbd4f4
+msgid ""
+"To verify that the library is installed correctly, run the following "
+"command:"
+msgstr ""
+"运行以下命令来验证你是否成功安装："
+
+#: ../../source/basic/installation.rst:48 8ac3c57166474398861959320f83566e
+msgid "The version number of the library should show in the output."
+msgstr "该命令应该输出已安装库的版本号"
+

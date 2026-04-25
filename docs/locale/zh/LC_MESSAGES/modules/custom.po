@@ -1,0 +1,639 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/modules/custom.rst:3 0827de85899d4b779c316cf1b233e103
+msgid "Custom"
+msgstr ""
+
+#: 6d3c92678bce4198be23d9905cde7f48 grammers.client.Channel:1 of
+msgid "A broadcast channel."
+msgstr ""
+
+#: 945cbd0ed23b4e8db5f7f6521c7e1e13 grammers.client.Channel:3 of
+msgid ""
+"In a broadcast channel, only administrators can broadcast messages to all"
+" the subscribers. The rest of users can only join and see messages."
+msgstr ""
+
+#: 771db754752e4ecf94706b5b91d90a04 grammers.client.Channel:6 of
+msgid ""
+"Broadcast channels and megagroups both are treated as \"channels\" by "
+"Telegram's API, but this variant will always represent a broadcast "
+"channel. The only difference between a broadcast channel and a megagroup "
+"are the permissions (default, and available)."
+msgstr ""
+
+#: 6b168efd0ea9439ab09513bc6e52464b grammers.custom.Channel.id:1 of
+msgid "Return the unique identifier for this channel."
+msgstr ""
+
+#: e17092c901b645cda91d0cb84809756f grammers.custom.Channel.kind:1 of
+msgid "Additional information about this channel."
+msgstr ""
+
+#: 6bd4a66c2115430689634c327845349d grammers.custom.Channel.photo:1 of
+msgid "Return the photo of this channel, if any."
+msgstr ""
+
+#: 15d7b973b33242d8ae4f0434981ccf89 grammers.custom.Channel.title:1 of
+msgid "Return the title of this channel."
+msgstr ""
+
+#: b2bb6f1c2cee403a80c84721db57f180 grammers.custom.Channel.to_ref:1 of
+msgid "Convert the channel to its reference."
+msgstr ""
+
+#: 897654bc65d34df0bac41304e62a12fa 952788e58290426e8e2bb40875200bd3
+#: c14d74253e0c4661813844c9472e63c7 grammers.custom.Channel.to_ref:3
+#: grammers.custom.Group.to_ref:3 grammers.custom.User.to_ref:3 of
+msgid ""
+"This is only possible if the peer would be usable on all methods or if it"
+" is in the session cache."
+msgstr ""
+
+#: ba88123048a04bbd907c1f9bb1bd6f04 grammers.custom.Channel.username:1 of
+msgid "Return the public @username of this channel, if any."
+msgstr ""
+
+#: 6b27a1f0405c496e83e32afd77332af2 a1a523ac0d6e412b9ad473be1d5198d8
+#: grammers.custom.Channel.username:3 grammers.custom.Group.username:3 of
+msgid "The returned username does not contain the \"@\" prefix."
+msgstr ""
+
+#: 92adcde813194513ba22af2051d484db c619c9c5850c4065a9a858d9bccdbe16
+#: grammers.custom.Channel.username:5 grammers.custom.Group.username:5 of
+msgid ""
+"Outside of the application, people may link to this user with one of "
+"Telegram's URLs, such as https://t.me/username."
+msgstr ""
+
+#: 7fd2a44af04849b0a343fa97141d34c3 grammers.custom.Channel.usernames:1 of
+msgid "Return collectible usernames of this channel, if any."
+msgstr ""
+
+#: a541e7ea915a4d7bac1e607ec38a72a2 eb1689c918be47b187661648b45d4f6a
+#: grammers.custom.Channel.usernames:3 grammers.custom.Group.usernames:3 of
+msgid "The returned usernames do not contain the \"@\" prefix."
+msgstr ""
+
+#: 3c80e0ec25cd41fe90908e4bc75f6c32 f1b3005bba1f4b19b2f57bd5e187bab7
+#: grammers.custom.Channel.usernames:5 grammers.custom.Group.usernames:5 of
+msgid ""
+"Outside of the application, people may link to this user with one of its "
+"username, such as https://t.me/username."
+msgstr ""
+
+#: a435efbaf78a4502985c1bcd744a7d2f grammers.client.Group:1 of
+msgid "A group chat."
+msgstr ""
+
+#: d7b2556f22a54ad595cc9c2d5099e9ab grammers.client.Group:3 of
+msgid ""
+"Telegram's API internally distinguishes between \"small group chats\" and"
+" \"megagroups\", also known as \"supergroups\" in the UI of Telegram "
+"applications."
+msgstr ""
+
+#: cd3ba45c96e84e409196649685872cbc grammers.client.Group:6 of
+msgid ""
+"Small group chats are the default, and offer less features than "
+"megagroups, but you can join more of them. Certain actions in official "
+"clients, like setting a chat's username, silently upgrade the chat to a "
+"megagroup."
+msgstr ""
+
+#: fc1383ff163d4abba714c69a43277987 grammers.custom.Group.admin_rights:1 of
+msgid "Return the permissions of the logged-in user in this channel."
+msgstr ""
+
+#: 0cd5daea2a0a4e8ba38029dc384836e7 grammers.custom.Group.broadcast:1 of
+msgid "Is this a channel, always false."
+msgstr ""
+
+#: 545e3e98993947f7b3dead89c9a76492 grammers.custom.Group.creator:1 of
+msgid "Whether the current user is the creator of this channel."
+msgstr ""
+
+#: 42ce90d1bc3b4c298e8c7ba5af8a8a1c grammers.custom.Group.date:1 of
+msgid ""
+"Date when the user joined the supergroup/channel, or if the user isn't a "
+"member, its creation date"
+msgstr ""
+
+#: 09e7a4f70c2d49f79671ee00c753b24f grammers.custom.Group.gigagroup:1 of
+msgid "Whether this supergroup is a gigagroup."
+msgstr ""
+
+#: 35660d5f37f84bdda80942f91e7b554b grammers.custom.Group.id:1 of
+msgid "Return the unique identifier for this group."
+msgstr ""
+
+#: d20a3554fe154bd09168106940a73a67 grammers.custom.Group.id:3 of
+msgid ""
+"Note that if this group is migrated to a megagroup, both this group and "
+"the new one will exist as separate chats, with different identifiers."
+msgstr ""
+
+#: cc6b58f8b0194613802d4b6b0d6753de grammers.custom.Group.is_megagroup:1 of
+msgid "Returns true if this group is a megagroup (also known as supergroups)."
+msgstr ""
+
+#: 35ba54c7255943858b5d81a982da6980 grammers.custom.Group.is_megagroup:3 of
+msgid "In case inner type of group is Channel, that means it's a megagroup."
+msgstr ""
+
+#: e0f32e88c3ac4556b7797b5eaa5b20a2 grammers.custom.Group.join_to_send:1 of
+msgid ""
+"Whether a user needs to join the supergroup before they can send "
+"messages: can be false only for discussion groups. toggle using "
+"`channels.toggleJoinToSend`"
+msgstr ""
+
+#: f7ac5a097c0c4165af55c4e62629ae58 grammers.custom.Group.left:1 of
+msgid "Whether the current user has left or is not a member of this channel."
+msgstr ""
+
+#: 3baeb6d030554c08b45aaaf2110a44f9 grammers.custom.Group.megagroup:1 of
+msgid "Whether this is a supergroup, always true."
+msgstr ""
+
+#: 73decbd286784a3e98ef1cab4d24b806 grammers.custom.Group.noforwards:1 of
+msgid ""
+"Whether this channel or group is protected, thus does not allow "
+"forwarding messages from it."
+msgstr ""
+
+#: a9a2473420c4489d9cb94b392203f0bd
+#: grammers.custom.Group.subscription_until_date:1 of
+msgid ""
+"Expiration date of the Telegram Star subscription the current user has "
+"bought to gain access to this channel."
+msgstr ""
+
+#: 97895e0065b049ddbb89219c0c5c81a0 grammers.custom.Group.title:1 of
+msgid "Return the title of this group."
+msgstr ""
+
+#: 39beaae2a47c47aa8f7cc7e7ae8d0c02 grammers.custom.Group.title:3 of
+msgid "The title may be the empty string if the group is not accessible."
+msgstr ""
+
+#: 5c4f5e14c1b64129840854a3b462b850 e9b95b5012344a42923bbeb851d1593b
+#: grammers.custom.Group.to_ref:1 grammers.custom.User.to_ref:1 of
+msgid "Convert the group to its reference."
+msgstr ""
+
+#: 6a836bf8edbd49dea32e88731ff5e581 grammers.custom.Group.until_date:1 of
+msgid "The ban is valid until the specified date."
+msgstr ""
+
+#: c00bcd502e1c494db33c452cda9e2cdb grammers.custom.Group.username:1 of
+msgid "Return the public @username of this group, if any."
+msgstr ""
+
+#: a9c1b85766c44f56b5db2e23c1482559 grammers.custom.Group.usernames:1 of
+msgid "Return collectible usernames of this group, if any."
+msgstr ""
+
+#: 81188edd25de4d15a6e73cdab3fb23a7 grammers.custom.Group.verified:1 of
+msgid "Whether this channel is verified by telegram."
+msgstr ""
+
+#: d66589e3e0574aada8faab65425b4a7b grammers.custom.HistoryMessageIter.next:1
+#: of
+msgid ""
+"Returns the next `Message` from the internal buffer, filling the buffer "
+"previously if it's empty."
+msgstr ""
+
+#: 14bcdf263ddd4e16b524d8c314d7007e grammers.custom.HistoryMessageIter.next:4
+#: of
+msgid "Returns `None` if the `limit` is reached or there are no messages left."
+msgstr ""
+
+#: d6befa6b041d47399273eb05bfe12575 grammers.custom.HistoryMessageIter.total:1
+#: of
+msgid "Determines how many messages there are in total."
+msgstr ""
+
+#: aac8af5f3f7940a3b00c70be719e118c grammers.custom.HistoryMessageIter.total:3
+#: of
+msgid "This only performs a network call if `next` has not been called before."
+msgstr ""
+
+#: d04a3e5df9d3454f89e8dc683df39ddc grammers.errors.InvalidCodeError:1 of
+msgid "The code used to complete login was not valid."
+msgstr ""
+
+#: 4c35816b2ccf439ea9c20caaee658b8b grammers.errors.InvalidPasswordError:1 of
+msgid "The 2FA password used to complete login was not valid."
+msgstr ""
+
+#: 380d84cfd50140b5bc53029efbc1b760 grammers.LoginToken:1 of
+msgid "Login token needed to continue the login process after sending the code."
+msgstr ""
+
+#: 424dbda25ca64cb0be748350416959c6 grammers.client.Message:1 of
+msgid ""
+"Represents a Telegram message, which includes text messages, messages "
+"with media, and service messages."
+msgstr ""
+
+#: dcbc0ea540704ab79178f44df3bb7312 grammers.client.Message:4 of
+msgid ""
+"This message should be treated as a snapshot in time, that is, if the "
+"message is edited while using this object, those changes won't alter this"
+" structure."
+msgstr ""
+
+#: f49eff0143734bc1948ea59d11ba37a9 grammers.custom.Message.action:1 of
+msgid "Event connected with the service message."
+msgstr ""
+
+#: 89ea5d68569145e7a34d993d44823b9a aecd9f84b85e4558a03e255ee96e0cb2
+#: grammers.custom.Message.action:3
+#: grammers.custom.Message.reactions_are_possible:3 of
+msgid "MessageService only."
+msgstr ""
+
+#: f6a01a2f07bb4b9ca8231c1738e85e0b grammers.custom.Message.date:1 of
+msgid "The date when this message was produced."
+msgstr ""
+
+#: 5d8fbba822484c9a8208f7c502fb2b16 grammers.custom.Message.edit_date:1 of
+msgid "The date when this message was last edited."
+msgstr ""
+
+#: 705ce1c6e1e64feba9cbfdffcdc4f97b grammers.custom.Message.edit_hide:1 of
+msgid ""
+"Whether the edited mark of this message is edited should be hidden (e.g. "
+"in GUI clients) or shown."
+msgstr ""
+
+#: 9f7c256881a943139ea95edfb28d901b grammers.custom.Message.forwards:1 of
+msgid "How many times has this message been forwarded, when applicable."
+msgstr ""
+
+#: e92b6467dc5d4a479822bf2021fb94ba
+#: grammers.custom.Message.from_boosts_applied:1 of
+msgid ""
+"Supergroups only, contains the number of boosts this user has given the "
+"current supergroup."
+msgstr ""
+
+#: 17dc10b6d7d54a37b2be225963b4963f grammers.custom.Message.from_id:1 of
+msgid "Raw from_id, generally use `sender_id` instead."
+msgstr ""
+
+#: c3b9af9279094bd892701809a9f726ce grammers.custom.Message.from_scheduled:1 of
+msgid ""
+"Whether this message was originated from a previously-scheduled message "
+"or not."
+msgstr ""
+
+#: bb31b4129c0745878de2f38df6c8de96 grammers.custom.Message.fwd_from:1 of
+msgid "Info about forwarded messages."
+msgstr ""
+
+#: 167a7445a251438a8e955077272b30ee grammers.custom.Message.get_reply_to:1 of
+msgid ""
+"Fetch the message that this message is replying to, or `None` if this "
+"message is not a reply to a previous message."
+msgstr ""
+
+#: d63d3af0f4bb46d297e640dba45371f2 grammers.custom.Message.get_reply_to:4 of
+msgid "Shorthand for `Client.get_reply_to_message`."
+msgstr ""
+
+#: 856c2047ab9a4205b2d4acc2ffc6c276 grammers.custom.Message.grouped_id:1 of
+msgid ""
+"If this message belongs to a group of messages, return the unique "
+"identifier for that group."
+msgstr ""
+
+#: c5600db886f44da388710a0303a0649e grammers.custom.Message.grouped_id:4 of
+msgid "This applies to albums of media, such as multiple photos grouped together."
+msgstr ""
+
+#: 7acce28eac054a65a7c461882e14e59e grammers.custom.Message.grouped_id:6 of
+msgid ""
+"Note that there may be messages sent in between the messages forming a "
+"group."
+msgstr ""
+
+#: 370f5c0e135b4887b8773a714af5ef59 grammers.custom.Message.id:1 of
+msgid "The ID of this message."
+msgstr ""
+
+#: 0199c1846b9344b992dcf8f29462e099 grammers.custom.Message.id:3 of
+msgid ""
+"Message identifiers are counters that start at 1 and grow by 1 for each "
+"message produced."
+msgstr ""
+
+#: 37a5352033f34af89ba8acb55d3d3d58 grammers.custom.Message.id:5 of
+msgid ""
+"Every channel has its own unique message counter. This counter is the "
+"same for all users, but unique to each channel."
+msgstr ""
+
+#: 63561c48b2e245719638d8c2253b4db9 grammers.custom.Message.id:8 of
+msgid ""
+"Every account has another unique message counter which is used for "
+"private conversations and small group chats. This means different "
+"accounts will likely have different message identifiers for the same "
+"message in a private conversation or small group chat. This also implies "
+"that the message identifier alone is enough to uniquely identify the "
+"message, without the need to know the chat ID."
+msgstr ""
+
+#: 6d1c3b9425474ae696c466dab32707af grammers.custom.Message.id:14 of
+msgid ""
+"**You cannot use the message ID of User A when running as User B**, "
+"unless this message belongs to a megagroup or broadcast channel. Beware "
+"of this when using methods like [`Client::delete_messages`], which "
+"**cannot** validate the peer where the message should be deleted for "
+"those cases."
+msgstr ""
+
+#: e774056239e746d184936bf6022e42ef grammers.custom.Message.invert_media:1 of
+msgid ""
+"If set, any eventual webpage preview will be shown on top of the message "
+"instead of at the bottom."
+msgstr ""
+
+#: 8b49715816ec44cca8e6a38c6b919193 grammers.custom.Message.legacy:1 of
+msgid "it has to be refetched with the new layer."
+msgstr ""
+
+#: a555c232cc2a4ac5800c5a122ac0fddc grammers.custom.Message.legacy of
+msgid "type"
+msgstr ""
+
+#: 29eb89b01dc4456e840e689ab0582957 grammers.custom.Message.legacy:3 of
+msgid "Whether this is a legacy message"
+msgstr ""
+
+#: cba21c000d7143c7a00fd3d54d03c399 grammers.custom.Message.media:1 of
+msgid "The media displayed by this message, if any."
+msgstr ""
+
+#: d15aa8b537c74241aa1756aa1897d3db grammers.custom.Message.media:3 of
+msgid ""
+"This not only includes photos or videos, but also contacts, polls, "
+"documents, locations and many other types."
+msgstr ""
+
+#: 67dad00c90054fbe8ff3ae13a47e1960 grammers.custom.Message.media_unread:1 of
+msgid "Whether you have read the media in this message or not."
+msgstr ""
+
+#: 63001798ce3941a49d5d1bbc66e09896 grammers.custom.Message.media_unread:3 of
+msgid "Most commonly, these are voice notes that you have not played yet."
+msgstr ""
+
+#: c75c5872a8d44a99b7eb5d81989db6c9 grammers.custom.Message.mentioned:1 of
+msgid "Whether you were mentioned in this message or not."
+msgstr ""
+
+#: 3be0ee6d01b8478f9ff16dbe578fe92b grammers.custom.Message.mentioned:3 of
+msgid ""
+"This includes @username mentions, text mentions, and messages replying to"
+" one of your previous messages (even if it contains no mention in the "
+"message text)."
+msgstr ""
+
+#: 015062b1950d49038a1942eaf3819c86 grammers.custom.Message.message:1 of
+msgid "The message's text."
+msgstr ""
+
+#: 27e70279e7d74f15b2eb685e7e9bb120 grammers.custom.Message.message:3 of
+msgid "For service or empty messages, this will be None."
+msgstr ""
+
+#: ad607764f49a42449a8376d9b3030e43 grammers.custom.Message.message:5 of
+msgid ""
+"If the message has media, this text is the caption commonly displayed "
+"underneath it."
+msgstr ""
+
+#: 8c3ba33e4c4f43fe8579bed33f148925 grammers.custom.Message.noforwards:1 of
+msgid ""
+"Whether this message is protected and thus cannot be forwarded; clients "
+"should also prevent users from saving attached media (i.e. videos should "
+"only be streamed, photos should be kept in RAM, et cetera)."
+msgstr ""
+
+#: f279b9d6402d4e9690f07ce4dff0e2a5 grammers.custom.Message.offline:1 of
+msgid ""
+"If set, the message was sent because of a scheduled action by the message"
+" sender, for example, as away, or a greeting service message."
+msgstr ""
+
+#: 3260c6912ba64363a9d2326a5eca2faa grammers.custom.Message.out:1 of
+msgid ""
+"Whether the message is outgoing (i.e. you sent this message to some other"
+" peer) or incoming (i.e. someone else sent it to you or the peer)."
+msgstr ""
+
+#: b7ca3db7ac5845bf8d728e2eec105ce9
+#: grammers.custom.Message.paid_suggested_post_stars:1 of
+msgid ""
+"Set if this is a suggested channel post that was paid using Telegram "
+"Stars."
+msgstr ""
+
+#: 6d90f121b8804a0a8fe0669255538400
+#: grammers.custom.Message.paid_suggested_post_ton:1 of
+msgid "Set if this is a suggested channel post that was paid using Toncoins."
+msgstr ""
+
+#: 77a678c6190843f09456319f89e29068 grammers.custom.Message.peer:1 of
+msgid "The peer where this message was sent to."
+msgstr ""
+
+#: e2c45f4c600a4189851af8a95d616a03 grammers.custom.Message.peer:3 of
+msgid ""
+"This might be the user you're talking to for private conversations, or "
+"the group or channel where the message was sent."
+msgstr ""
+
+#: ae3dcb747a4b47f7a502d481483fbd50 grammers.custom.Message.peer_id:1 of
+msgid "The [`Self::peer`]'s identifier."
+msgstr ""
+
+#: 983a3f2043254c1781cfe8f04732019d grammers.custom.Message.pinned:1 of
+msgid "Whether this message is currently pinned or not."
+msgstr ""
+
+#: 20ccfe1391c54647a6c378492841747f grammers.custom.Message.post:1 of
+msgid "Whether this message is a post in a broadcast channel or not."
+msgstr ""
+
+#: 48579790c29441ada3f4bfbfc64d488e grammers.custom.Message.post_author:1 of
+msgid ""
+"If this message was sent to a channel, return the name used by the author"
+" to post it."
+msgstr ""
+
+#: 4e6f20c5682343d5934535db32a0875b
+#: grammers.custom.Message.reactions_are_possible:1 of
+msgid "Whether you can react to this message."
+msgstr ""
+
+#: e42d277fb6fe4281b8af02631c834019 grammers.custom.Message.replies:1 of
+msgid "How many replies does this message have, when applicable."
+msgstr ""
+
+#: fbae34ae15084e28941e753027496bfc grammers.custom.Message.reply_markup:1 of
+msgid ""
+"If the message has a reply markup (which can happen for messages produced"
+" by bots), returns said markup."
+msgstr ""
+
+#: 6b4911c38e1f40818f4ee2afb9d7453b grammers.custom.Message.reply_to:1 of
+msgid ""
+"If this message is replying to a previous message, return the header with"
+" information about that reply."
+msgstr ""
+
+#: 6cb1268928894ac5a926bc1ffa11af29
+#: grammers.custom.Message.restriction_reason:1 of
+msgid "A list of reasons on why this message is restricted."
+msgstr ""
+
+#: 445e74242bd74e01a403b9ea7c67dcc0
+#: grammers.custom.Message.restriction_reason:3 of
+msgid "The message is not restricted if the return value is `None`."
+msgstr ""
+
+#: 81f96bf8b075439791f0e627ee1f9249 grammers.custom.Message.sender:1 of
+msgid ""
+"The sender of this message, if there is a sender **and** the sender is in"
+" cache."
+msgstr ""
+
+#: d26e623387084640b3fcd70b9785925d grammers.custom.Message.sender_id:1 of
+msgid "The [`Self::sender`]'s identifier, if there is a sender."
+msgstr ""
+
+#: edc36cff5d174b0d9bb4d905d8e6d407 grammers.custom.Message.silent:1 of
+msgid "Whether the message should notify people with sound or not."
+msgstr ""
+
+#: b276f732895b498bbcf33d68c5b17ee1 grammers.custom.Message.via_bot_id:1 of
+msgid ""
+"If this message was sent @via some inline bot, return the bot's user "
+"identifier."
+msgstr ""
+
+#: ef8fcbfa3ff3433784c9d1739856cd35
+#: grammers.custom.Message.video_processing_pending:1 of
+msgid ""
+"The video contained in the message is currently being processed by the "
+"server (i.e. to generate alternative qualities, that will be contained in"
+" the final messageMediaDocument.alt_document)"
+msgstr ""
+
+#: 7680ceaca1f6463b8ec89f7512b57f3e grammers.custom.Message.views:1 of
+msgid "How many views does this message have, when applicable."
+msgstr ""
+
+#: 5f4141b9f17a4f5cafb91b88ade30a5c grammers.custom.Message.views:3 of
+msgid ""
+"The same user account can contribute to increment this counter "
+"indefinitedly, however there is a server-side cooldown limitting how fast"
+" it can happen (several hours)."
+msgstr ""
+
+#: 361ee3d846ff449abb6771d07052556c grammers.errors.PasswordRequiredError:1 of
+msgid "The account has 2FA enabled, and the password is required."
+msgstr ""
+
+#: 77f539cfeca34f1c801cff946082a0f3 grammers.errors.PaymentRequiredError:1 of
+msgid ""
+"Indicating that due to the high cost of SMS verification codes for the "
+"user's country/provider, the user must purchase a Telegram Premium "
+"subscription in order to proceed with the login/signup."
+msgstr ""
+
+#: dcdefb5c660d46adbb5e5df4e125333d grammers.client.PeerMap:1 of
+msgid "Helper structure to efficiently retrieve peers via their peer."
+msgstr ""
+
+#: b78f1bf0bca14b05948c5af6349c5c36 grammers.client.PeerMap:3 of
+msgid ""
+"A lot of responses include the peers related to them in the form of a "
+"list of users and peers, making it annoying to extract a specific peer. "
+"This structure lets you save those separate vectors in a single place and"
+" query them by using a `Peer`."
+msgstr ""
+
+#: 824ae935dbcf4c348e546f07e02f1780 grammers.client.PeerMap:7 of
+msgid ""
+"While this type derives `Clone` for convenience, it is recommended to use"
+" [`PeerMap::handle`] instead to signal that it is a cheap clone."
+msgstr ""
+
+#: 09bfcf54ac2a486d8c5b720d463cdcdd grammers.client.Platform:1 of
+msgid "Platform Identifier referenced only by [`RestrictionReason`]."
+msgstr ""
+
+#: bef8e4719b1d4f28bef037eca6b2f103 grammers.client.RestrictionReason:1 of
+msgid "Reason why a user is globally restricted."
+msgstr ""
+
+#: 423ad28c999a4d949c1938d8ecd9e58f grammers.errors.SignInError:1 of
+msgid "Login-related errors."
+msgstr ""
+
+#: 512d933263d34320916bbc4c2c5aa0e2 grammers.errors.SignUpRequiredError:1 of
+msgid ""
+"Sign-up with an official client is required. (Third-party applications "
+"cannot be used to register new accounts.)"
+msgstr ""
+
+#: 350f4c52ad7543b9959f85f77882b975 grammers.client.User:1 of
+msgid "A user."
+msgstr ""
+
+#: 250134dc515b45f8be9aa0e8f7c655bb grammers.client.User:3 of
+msgid ""
+"Users include your contacts, members of a group, bot accounts created by "
+"[@BotFather], or anyone with a Telegram account."
+msgstr ""
+
+#: e2608ef0ad1f4558bc50c7eb86edf20e grammers.client.User:6 of
+msgid ""
+"A \"normal\" (non-bot) user may also behave like a \"bot\" without "
+"actually being one, for example, when controlled with a program as "
+"opposed to being controlled by a human through a Telegram application. "
+"These are commonly known as \"userbots\", and some people use them to "
+"enhance their Telegram experience (for example, creating \"commands\" so "
+"that the program automatically reacts to them, like translating "
+"messages)."
+msgstr ""
+
+#: c58ea429550f4f93a52f2814e4e6bb47 grammers.client.User:12 of
+msgid "[@BotFather]: https://t.me/BotFather"
+msgstr ""
+

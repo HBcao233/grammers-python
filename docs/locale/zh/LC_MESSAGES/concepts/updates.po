@@ -1,0 +1,217 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/concepts/updates.rst:3 6a25e8d9c604457dbf389ab3a2f1a46c
+msgid "Updates in Depth"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:6 a47601aef9ab4fe8bf562cd90c9a9100
+msgid "Properties vs. Methods"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:8 87ddc4d8594f42e0ba86d2c93d64fe13
+msgid ""
+"The event shown above acts just like a `custom.Message "
+"<telethon.tl.custom.message.Message>`, which means you can access all the"
+" properties it has, like ``.sender``."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:12 d43a6bd43ce14a17a3cef38f0c10ebbb
+msgid ""
+"**However** events are different to other methods in the client, like "
+"`client.get_messages "
+"<telethon.client.messages.MessageMethods.get_messages>`. Events *may not*"
+" send information about the sender or chat, which means it can be `None`,"
+" but all the methods defined in the client always have this information "
+"so it doesn't need to be re-fetched. For this reason, you have ``get_`` "
+"methods, which will make a network call if necessary."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:19 33a90a425e3740bfb0488e94b31d09d8
+msgid "In short, you should do this:"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:37 52f5e8cd651a4425b12fb6914a28b405
+msgid ""
+"Notice, properties (`message.sender "
+"<telethon.tl.custom.message.Message.sender>`) don't need an ``await``, "
+"but methods (`message.get_sender "
+"<telethon.tl.custom.message.Message.get_sender>`) **do** need an "
+"``await``, and you should use methods in events for these properties that"
+" may need network."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:44 e4817cad77b746c3b09bf14827cd9e0e
+msgid "Events Without the client"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:46 bf5efed1e7414cf6b79c1beba64d9060
+msgid ""
+"The code of your application starts getting big, so you decide to "
+"separate the handlers into different files. But how can you access the "
+"client from these files? You don't need to! Just `events.register "
+"<telethon.events.register>` them:"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:63 f5d65e9f48a04a16b51b65138d8eeed6
+msgid ""
+"Registering events is a way of saying \"this method is an event "
+"handler\". You can use `telethon.events.is_handler` to check if any "
+"method is a handler. You can think of them as a different approach to "
+"Flask's blueprints."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:67 cea9bce46fc046b894447ca04a03da3a
+msgid ""
+"It's important to note that this does **not** add the handler to any "
+"client! You never specified the client on which the handler should be "
+"used. You only declared that it is a handler, and its type."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:71 b4dc9586cf39467a9de948a0a7d48598
+msgid ""
+"To actually use the handler, you need to `client.add_event_handler "
+"<telethon.client.updates.UpdateMethods.add_event_handler>` to the client "
+"(or clients) where they should be added to:"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:86 d28ace8b3e014c5ea9868c79e80c2cfa
+msgid ""
+"This also means that you can register an event handler once and then add "
+"it to many clients without re-declaring the event."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:91 874fd9314f9f4669ba67f58dc5ec25ec
+msgid "Events Without Decorators"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:93 021c1a6889034e9dabb4a08964298801
+msgid ""
+"If for any reason you don't want to use `telethon.events.register`, you "
+"can explicitly pass the event handler to use to the mentioned "
+"`client.add_event_handler "
+"<telethon.client.updates.UpdateMethods.add_event_handler>`:"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:110 4bc905b611b94ffda4ffb548eeec244f
+msgid ""
+"Similarly, you also have `client.remove_event_handler "
+"<telethon.client.updates.UpdateMethods.remove_event_handler>` and "
+"`client.list_event_handlers "
+"<telethon.client.updates.UpdateMethods.list_event_handlers>`."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:115 785c595764f54b4894de7a1b1f7f0a75
+msgid ""
+"The ``event`` argument is optional in all three methods and defaults to "
+"`events.Raw <telethon.events.raw.Raw>` for adding, and `None` when "
+"removing (so all callbacks would be removed)."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:121 b0a74ce5fd77481392db661b41c72aa7
+msgid ""
+"The ``event`` type is ignored in `client.add_event_handler "
+"<telethon.client.updates.UpdateMethods.add_event_handler>` if you have "
+"used `telethon.events.register` on the ``callback`` before, since that's "
+"the point of using such method at all."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:128 d28110d3b6a8457fa10a08fb43ca1e4d
+msgid "Stopping Propagation of Updates"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:130 b4ca4b2fab1a4504813480f9ba8e5a49
+msgid ""
+"There might be cases when an event handler is supposed to be used "
+"solitary and it makes no sense to process any other handlers in the "
+"chain. For this case, it is possible to raise a "
+"`telethon.events.StopPropagation` exception which will cause the "
+"propagation of the update through your handlers to stop:"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:154 86b3005feedc4e879853aa3919b578aa
+msgid ""
+"Remember to check :ref:`grammers-events` if you're looking for the "
+"methods reference."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:158 ce6ce576884b4fa09ea92db398d4bbc2
+msgid "Understanding asyncio"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:161 a3a77eb874e5466cb8262ada74445bb7
+msgid ""
+"With `asyncio`, the library has several tasks running in the background. "
+"One task is used for sending requests, another task is used to receive "
+"them, and a third one is used to handle updates."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:165 85eebdf5db1e405eb1581f2a4fa24f93
+msgid ""
+"To handle updates, you must keep your script running. You can do this in "
+"several ways. For instance, if you are *not* running `asyncio`'s event "
+"loop, you should use `client.run_until_disconnected "
+"<telethon.client.updates.UpdateMethods.run_until_disconnected>`:"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:180 1ed7de047fb54c458876158a2c51cb9b
+msgid ""
+"Behind the scenes, this method is ``await``'ing on the "
+"`client.disconnected "
+"<telethon.client.telegrambaseclient.TelegramBaseClient.disconnected>` "
+"property, so the code above and the following are equivalent:"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:197 0c48489bb11a49e9a9039230563fccd8
+msgid ""
+"You could also run `client.disconnected "
+"<telethon.client.telegrambaseclient.TelegramBaseClient.disconnected>` "
+"until it completed."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:201 256f291967c5414c94564340ef29281e
+msgid ""
+"But if you don't want to ``await``, then you should know what you want to"
+" be doing instead! What matters is that you shouldn't let your script "
+"die. If you don't care about updates, you don't need any of this."
+msgstr ""
+
+#: ../../source/concepts/updates.rst:205 4bc6f9fd5ac4452fb5dae3835db04a10
+msgid ""
+"Notice that unlike `client.disconnected "
+"<telethon.client.telegrambaseclient.TelegramBaseClient.disconnected>`, "
+"`client.run_until_disconnected "
+"<telethon.client.updates.UpdateMethods.run_until_disconnected>` will "
+"handle ``KeyboardInterrupt`` for you. This method is special and can also"
+" be ran while the loop is running, so you can do this:"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:220 22b0245daffc47c6a2ff3a133922f448
+msgid "Sequential Updates"
+msgstr ""
+
+#: ../../source/concepts/updates.rst:222 900a79140ffd4397922deeda9dbc3cbe
+msgid ""
+"If you need to process updates sequentially (i.e. not in parallel), you "
+"should set ``sequential_updates=True`` when creating the client:"
+msgstr ""
+

@@ -1,0 +1,64 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/concepts/strings.rst:3 b956e314862d4708b773b53c1c6cfa8b
+msgid "String-based Debugging"
+msgstr ""
+
+#: ../../source/concepts/strings.rst:5 f62eb19851664b068fe84b3ffb2c4219
+msgid ""
+"Debugging is *really* important. Telegram's API is really big and there "
+"are a lot of things that you should know. Such as, what attributes or "
+"fields does a result have? Well, the easiest thing to do is printing it:"
+msgstr ""
+
+#: ../../source/concepts/strings.rst:14 c1fa7467d52146d29b712dcada4f74d4
+msgid "That will show a huge **string** similar to the following:"
+msgstr ""
+
+#: ../../source/concepts/strings.rst:76 b0f794f6ea944034a7396568edf1cd63
+msgid ""
+"That's a lot of text. But as you can see, all the properties are there. "
+"So if you want the title you **don't use regex** or anything like "
+"splitting ``str(peer)`` to get what you want. You just access the "
+"attribute you need:"
+msgstr ""
+
+#: ../../source/concepts/strings.rst:85 505ab995cc12498a9541bf14d521a32e
+msgid ""
+"Now it's easy to see how we could get, for example, the ``year`` value. "
+"It's inside ``date``:"
+msgstr ""
+
+#: ../../source/concepts/strings.rst:92 ffcefae2c97c4e04a0e4d6a0ee2bf477
+msgid ""
+"You don't need to print everything to see what all the possible values "
+"can be. You can just search in http://tl.telethon.dev/."
+msgstr ""
+
+#: ../../source/concepts/strings.rst:95 626ccb556a584649a423a3fd2592ce69
+msgid ""
+"Remember that you can use Python's `isinstance "
+"<https://docs.python.org/3/library/functions.html#isinstance>`_ to check "
+"the type of something. For example:"
+msgstr ""
+

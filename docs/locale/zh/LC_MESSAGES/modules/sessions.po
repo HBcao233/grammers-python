@@ -1,0 +1,243 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/modules/sessions.rst:5 873ba2df342444b983948e61877bbc0c
+msgid "Sessions"
+msgstr ""
+
+#: ../../source/modules/sessions.rst 044251002d334953a48ee888e865037e
+#: 06a46e4ba28346618264b511d196b8de 3239126d67b447ec8302b4a9fd4bfab7
+#: 56c98d53a4a6436abf137c6f57ac1814 74e45da29e5b4d4590fa957294e3aa64
+#: 853cfc5a90794b3a8061cdbb5a83e056 b4ff482ef13a4ddea331268b4963486f
+#: d01ef35146504d4a83138e21aff6d694 d0ef479db7cd46ef8d194d6e1b918570
+#: e50591fe5fd447c098b5478aa841256f
+msgid "Return type"
+msgstr ""
+
+#: 65ffab37f34940209e4765c7fbb6ef37
+#: grammers.sessions.sqlite.SqliteSession.from_telethon_string:1 of
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~typing.Self\\``"
+msgstr ""
+
+#: ../../source/modules/sessions.rst 1594d74773d94a9b8d0908bee8643632
+#: 43e3fac618c64d83bf5be211ddd5ae1c 5d468033d9614c2bae5448bb8e077f50
+#: b95a7d2058b9405fbab331651c555884 d45fec43cec946ceaa98fe60bac8ff24
+#: e8f7b98f3fb149308fc9bb77fd20c8f2 f8de06d29c2d4bf19bd65d2b8a7808db
+msgid "Parameters"
+msgstr ""
+
+#: 1f47bb87c62943d8af9992f4fb446843 8e3b5a290a4e4c19bedbc2fb16a135dd
+#: b63d4028b8a24b5d88888fb79674d6d6 b879dc4214c74d2485706bd00e0e9d43
+#: ead112d04beb4ac8995819f177e5d88e
+#: grammers.sessions.sqlite.SqliteSession.cache_peer:1
+#: grammers.sessions.sqlite.SqliteSession.init:1
+#: grammers.sessions.sqlite.SqliteSession.set_dc_option:1
+#: grammers.sessions.sqlite.SqliteSession.set_home_dc_id:1
+#: grammers.sessions.sqlite.SqliteSession.set_update_state:1 of
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:obj\\:\\`None\\``"
+msgstr ""
+
+#: a4a6b773a79e4296aedd8dce111cd4e3
+#: grammers.sessions.sqlite.SqliteSession.home_dc_id:1 of
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`int\\``"
+msgstr ""
+
+#: 178ae73651e14a899eb74734cb38d9c7
+#: grammers.sessions.sqlite.SqliteSession.dc_option:1 of
+msgid ""
+":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~grammers.sessions.DcOption\\`"
+" \\| \\:py\\:obj\\:\\`None\\``"
+msgstr ""
+
+#: 52ee3fb641684d4dae45186b991f3f83
+#: grammers.sessions.sqlite.SqliteSession.peer:1 of
+msgid ""
+":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~grammers.sessions.PeerInfo\\`"
+" \\| \\:py\\:obj\\:\\`None\\``"
+msgstr ""
+
+#: 0d869693a9e743c8a71c034eadc05346
+#: grammers.sessions.sqlite.SqliteSession.updates_state:1 of
+msgid ":sphinx_autodoc_typehints_type:`\\:py\\:class\\:\\`\\~grammers.sessions.UpdatesState\\``"
+msgstr ""
+
+#: bf2b3632e4d449c9bc7ac7f5819039d8 grammers.sessions.PeerId:1 of
+msgid "Sentinel value used to represent empty chats."
+msgstr ""
+
+#: 83fe88dc82a3433d82d35cce154cbc7b grammers.sessions.PeerId:3 of
+msgid ""
+"Per <https://core.telegram.org/api/bots/ids>: > \\[…] transformed range "
+"for bot API chat dialog IDs is -999999999999 to -1 inclusively > > \\[…] "
+"transformed range for bot API channel dialog IDs is -1997852516352 to "
+"-1000000000001 inclusively"
+msgstr ""
+
+#: 5131abfdab8e4754b925a6204cc2a4d6 grammers.sessions.PeerId:8 of
+msgid ""
+"`chat_id` parameters are in Telegram's API use the bare identifier, so "
+"there's no empty constructor, but it can be mimicked by picking the value"
+" in the correct range hole. This value is closer to \"channel with ID 0\""
+" than \"chat with ID 0\", but there's no distinct `-0` integer, and "
+"channels have a proper constructor for empty already."
+msgstr ""
+
+#: 157f4b12b6c84c62b6cc63bfc39c8d80 grammers.sessions.PeerId.bare_id:1 of
+msgid ""
+"Unpacked peer identifier. Panics if [`Self::kind`] is "
+"[`PeerKind::UserSelf`]."
+msgstr ""
+
+#: 83d6826629e8462c96d0412b96e01311
+#: grammers.sessions.PeerId.bot_api_dialog_id:1 of
+msgid "Returns the identity using the Bot API Dialog ID format."
+msgstr ""
+
+#: e0f47716fec942949450f0674d927337
+#: grammers.sessions.PeerId.bot_api_dialog_id:3 of
+msgid ""
+"Will return an arbitrary value if [`Self::kind`] is "
+"[`PeerKind::UserSelf`]. This value should not be relied on and may change"
+" between releases."
+msgstr ""
+
+#: 00eacf3894f3400991b712bb87ccd0cb grammers.sessions.PeerId.channel:1 of
+msgid ""
+"Creates a peer identity for a broadcast channel, megagroup, gigagroup or "
+"monoforum."
+msgstr ""
+
+#: 658a1d165d7f4ae6b1702fbffc6d5f7f grammers.sessions.PeerId.chat:1 of
+msgid "Creates a peer identity for a small group chat."
+msgstr ""
+
+#: a340dddc2f32463991e28cd9f6978a3d grammers.sessions.PeerId.kind:1 of
+msgid "Peer kind."
+msgstr ""
+
+#: 5e5ebd5241be4727bc7cc92c720e901b grammers.sessions.PeerId.self_user:1 of
+msgid "Creates a peer identity for the currently-logged-in user or bot account."
+msgstr ""
+
+#: 3f360209e73d4f9ea479171cb37e1be1 grammers.sessions.PeerId.self_user:3 of
+msgid ""
+"Internally, this will use a special sentinel value outside of any valid "
+"Bot API Dialog ID range."
+msgstr ""
+
+#: 89157db885594db0aea5eac64d163564 grammers.sessions.PeerId.user:1 of
+msgid "Creates a peer identity for a user or bot account."
+msgstr ""
+
+#: 6cd8032c78f44872ae3f83924b5447cc grammers.sessions.PeerInfo:1 of
+msgid ""
+"An exploded peer reference along with any known useful information about "
+"the peer."
+msgstr ""
+
+#: 93aa6041c6704006b3a45ab73751136a grammers.sessions.DcOption:1 of
+msgid "A datacenter option."
+msgstr ""
+
+#: a16740fbb0574a5c87ab8b20abdc1205 grammers.sessions.DcOption:3 of
+msgid ""
+"This is very similar to Telegram's own `dcOption` type, except it also "
+"contains the permanent authentication key and serves as a stable "
+"interface."
+msgstr ""
+
+#: 532883b8049a4fb8bf575098c0f521e2 grammers.sessions.DcOption.auth_key:1 of
+msgid ""
+"Permanent authentication key generated for encrypted communication with "
+"this datacenter."
+msgstr ""
+
+#: 46eb8c3358aa48d9aa210b246d769bbd grammers.sessions.DcOption.auth_key:3 of
+msgid "A logged-in user may or not be bound to this authentication key."
+msgstr ""
+
+#: 1162cc8bd82a4287a636a321b4e676d3 grammers.sessions.DcOption.id:1 of
+msgid "Datacenter identifier."
+msgstr ""
+
+#: f8023f2dd8394d9b9a74efe9bcbc353a grammers.sessions.DcOption.id:3 of
+msgid ""
+"The primary datacenters have IDs from 1 to 5 inclusive, and are known "
+"statically by the session. ``` let data = "
+"grammers_session::SessionData::default(); "
+"assert_eq!(data.dc_options.len(), 5); (1..=5).for_each(|dc_id| "
+"assert!(data.dc_options.contains_key(&dc_id))); ```"
+msgstr ""
+
+#: 993b28b70bbb4f7db540990f16c1f88e grammers.sessions.DcOption.ipv4:1 of
+msgid "IPv4 address corresponding to this datacenter."
+msgstr ""
+
+#: bd73fdf6aee445dcb9815b4a299fd1d5 grammers.sessions.DcOption.ipv6:1 of
+msgid ""
+"IPv6 address corresponding to this datacenter. May actually be embedding "
+"the [`Self::ipv4`] address."
+msgstr ""
+
+#: fa992c2ebff04c398d8060a942106ba1 grammers.sessions.ChannelState:1 of
+msgid "Update state for a single channel."
+msgstr ""
+
+#: c67cfac938bd4f5eb758707684746a64 grammers.sessions.ChannelState.id:1 of
+msgid "The [`PeerId::bare_id`] of the channel."
+msgstr ""
+
+#: 75fac0e251014ffcbecc6eea8e84acd1 grammers.sessions.ChannelState.pts:1 of
+msgid "Persistent timestamp value."
+msgstr ""
+
+#: b1b4dd259420460d848dcf3bb895f8c0 grammers.sessions.UpdatesState:1 of
+msgid "Full update state needed to process updates in order without gaps."
+msgstr ""
+
+#: 7e0f233f80d6451599192dacc6dbbec8 grammers.sessions.UpdatesState.channels:1
+#: of
+msgid "Persistent timestamp of each known channel."
+msgstr ""
+
+#: 5a2b5cadf82f499d99cf6f82f3881ecf grammers.sessions.UpdatesState.date:1 of
+msgid "Auxiliary date value."
+msgstr ""
+
+#: 81df7ba4d69b491598e0547d3a91ebf4 grammers.sessions.UpdatesState.pts:1 of
+msgid "Primary persistent timestamp value."
+msgstr ""
+
+#: f7417d9a0f594a73bad959fa68487cb6 grammers.sessions.UpdatesState.qts:1 of
+msgid "Secondary persistent timestamp value."
+msgstr ""
+
+#: 27b1b78f7eed41c1bab3d20c538cc0ac grammers.sessions.UpdatesState.seq:1 of
+msgid "Auxiliary sequence value."
+msgstr ""
+
+#: 4d20ce00f46e4b42b46b5911c0ff79da grammers.sessions.UpdateState:1 of
+msgid ""
+"Used in [`crate::Session::set_update_state`] to update parts of the "
+"overall [`UpdatesState`]."
+msgstr ""
+

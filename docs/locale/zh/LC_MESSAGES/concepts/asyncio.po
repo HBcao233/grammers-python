@@ -1,0 +1,241 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/concepts/asyncio.rst:5 429d08b8ff0549049b426fd18e195b17
+msgid "Mastering asyncio"
+msgstr "掌握 asyncio"
+
+#: ../../source/concepts/asyncio.rst:8 32c3e9b423df4da0a6b30d554a1c2db7
+msgid "Contents"
+msgstr "目录"
+
+#: ../../source/concepts/asyncio.rst:11 fc68e4633ab64d2f89e2f311c03b6ca8
+msgid "What's asyncio?"
+msgstr "什么是 asyncio？"
+
+#: ../../source/concepts/asyncio.rst:13 d30f81618fb8480b8735fecc4fb1ea59
+msgid ""
+"`asyncio`_ is a Python 3's built-in library. This means it's already "
+"installed if you have Python 3. Since Python 3.5, it is convenient to "
+"work with asynchronous code. Before (Python 3.4) we didn't have ``async``"
+" or ``await``, but now we do."
+msgstr ""
+"`asyncio` 是 Python 3 的一个标准库。这意味着当你安装了 Python 3，"
+"它就已经安装好了。自 Python 3.5 以来，使用异步代码变得非常方便。"
+"在以前（Python 3.4 之前），我们没有 ``async``, ``await``，但现在有了。"
+
+#: ../../source/concepts/asyncio.rst:17 b8c76f66853340ad8c2806a466493183
+msgid ""
+"`asyncio`_ stands for *Asynchronous Input Output*. This is a very powerful"
+" concept to use whenever you work IO. Interacting with the web or "
+"external APIs such as Telegram's makes a lot of sense this way."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:23 71b9f4b75cfd46a28e2476d5b7a87308
+msgid "Why asyncio?"
+msgstr "为什么要使用 asyncio？"
+
+#: ../../source/concepts/asyncio.rst:25 0612896b47754fe0aacf82d08eed9b43
+msgid ""
+"Asynchronous IO makes a lot of sense in a library like Telethon. You send"
+" a request to the server (such as \"get some message\"), and thanks to "
+"`asyncio`_, your code won't block while a response arrives."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:29 a980259db0a0405eab17a20b5afaa1e3
+msgid ""
+"The alternative would be to spawn a thread for each update so that other "
+"code can run while the response arrives. That is *a lot* more expensive."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:33 61e0c59b73be4c67bd65650ffe1f3bf2
+msgid ""
+"The code will also run faster, because instead of switching back and "
+"forth between the OS and your script, your script can handle it all. "
+"Avoiding switching saves quite a bit of time, in Python or any other "
+"language that supports asynchronous IO. It will also be cheaper, because "
+"tasks are smaller than threads, which are smaller than processes."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:41 da72bce3801f444c823d69f522050f26
+msgid "What are asyncio basics?"
+msgstr "asyncio 基础"
+
+#: ../../source/concepts/asyncio.rst:43 50cd0398d396430998965fcc9275b06e
+msgid ""
+"The code samples below assume that you have Python 3.7 or greater "
+"installed."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:62 6393841b16b8492d9c80b8cece5ddae2
+msgid "What does `Client.run <grammers.Client.run>`_ do?"
+msgstr "`Client.run <grammers.Client.run>`_ 做了什么？"
+
+#: ../../source/concepts/asyncio.rst:64 9d05fc87fc5a43c1876a62065efbb536
+msgid "The moment you import any of these:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:74 4ef7d9bbf5184c2c9abfc9d95f300785
+msgid ""
+"The above code (`Client.run <grammers.Client.run>`_ input None) is "
+"equivalent to this:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:89 e11cfddf9000441e9d79f2301d439ab1
+msgid "When `Client.run <grammers.Client.run>`_ input a coroutine, for example:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:104 974666561c2b4e6c97c3f80ac22db6e6
+msgid "And the above code is equivalent to this:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:126 211b81a4b8fd49cb9520d10924e3c12a
+msgid "What are async, await and coroutines?"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:128 ce089808f30e43aeabb84966fb452751
+msgid ""
+"The ``async`` keyword lets you define asynchronous functions, also known "
+"as coroutines, and also iterate over asynchronous loops or use ``async "
+"with``:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:153 a8e41ca761c144f48ddc99a4cd407fe3
+msgid ""
+"The ``await`` keyword blocks the *current* task, and the loop can run "
+"other tasks. Tasks can be thought of as \"threads\", since many can run "
+"concurrently:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:181 ad89bd1a53b941138fb16d6057565458
+msgid "The same example, but without the comment noise:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:207 b3337a015f0840ad9714cc65ab9ddd19
+msgid "Can I use threads?"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:209 afe084b18ffe4e2fbed942e4dca2407b
+msgid ""
+"Yes, you can, but you must understand that the loops themselves are not "
+"thread safe. and you must be sure to know what is happening. The easiest "
+"and cleanest option is to use `asyncio.run` to create and manage the new "
+"event loop for you:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:229 3ac16ddacf3b419c823234ed565f458a
+msgid ""
+"Generally, **you don't need threads** unless you know what you're doing. "
+"Just create another task, as shown above. If you're using the Telethon "
+"with a library that uses threads, you must be careful to use "
+"`threading.Lock` whenever you use the client."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:234 d7f063e4eba249be84162e0c27f993d0
+msgid "You may have seen this error:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:240 4e5cc80c126b42eeb59cf011f787fee8
+msgid ""
+"It just means you didn't create a loop for that thread. Please refer to "
+"the ``asyncio`` documentation to correctly learn how to set the event "
+"loop for non-main threads."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:246 78abb76073dc487fbe8881a8cc1c0f1a
+msgid "What else can asyncio do?"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:248 c1168d5cdec64b32a48f875908893de8
+msgid ""
+"Asynchronous IO is a really powerful tool, as we've seen. There are "
+"plenty of other useful libraries that also use `asyncio` and that you can"
+" integrate with Telethon."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:252 253c3db081ad4095abae7d183181997e
+msgid ""
+"`aiohttp <https://github.com/aio-libs/aiohttp>`_ is like the infamous "
+"`requests <https://github.com/requests/requests/>`_ but asynchronous."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:254 077c51caa18d450cb77ed76cc587c6c1
+msgid ""
+"`quart <https://gitlab.com/pgjones/quart>`_ is an asynchronous "
+"alternative to `Flask <http://flask.pocoo.org/>`_."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:256 78096d372c3143339588aa990deaf0b9
+msgid ""
+"`aiocron <https://github.com/gawel/aiocron>`_ lets you schedule things to"
+" run things at a desired time, or run some tasks hourly, daily, etc."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:259 4b9ceac2af0e4c55b46af2b1ef150a8a
+msgid ""
+"And of course, `asyncio "
+"<https://docs.python.org/3/library/asyncio.html>`_ itself! It has a lot "
+"of methods that let you do nice things. For example, you can run requests"
+" in parallel:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:275 75f973259374442c98bfcdb7df122ebe
+msgid ""
+"This code will get the 10 last messages from `@telegram "
+"<https://t.me/telegram>`_, send one to the chat with yourself, and also "
+"download the profile photo of the channel. `asyncio` will run all these "
+"three tasks at the same time. You can run all the tasks you want this "
+"way."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:280 761a8ff5d5d8468799e794a3e43c093c
+msgid "A different way would be:"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:288 d1fa379469364683a583c66f1814cba0
+msgid "They will run in the background as long as the loop is running too."
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:290 adc9da9b61f24d2badc4380755cee778
+msgid ""
+"You can also `start an asyncio server <https://docs.python.org/3/library"
+"/asyncio-stream.html#asyncio.start_server>`_ in the main script, and from"
+" another script, `connect to it <https://docs.python.org/3/library"
+"/asyncio-stream.html#asyncio.open_connection>`_ to achieve `Inter-Process"
+" Communication <https://en.wikipedia.org/wiki/Inter-"
+"process_communication>`_. You can get as creative as you want. You can "
+"program anything you want. When you use a library, you're not limited to "
+"use only its methods. You can combine all the libraries you want. People "
+"seem to forget this simple fact!"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:302 78fb6e56320e475dae5e7ece8556b445
+msgid "Where can I read more?"
+msgstr ""
+
+#: ../../source/concepts/asyncio.rst:304 bba2532e17004500807f99b87a421143
+msgid ""
+"`Check out Lonami's blog post <https://lonami.dev/blog/asyncio/>`_ about "
+"`asyncio`, which has some more examples and pictures to help you "
+"understand what happens when the loop runs."
+msgstr ""
+

@@ -1,1 +1,1 @@
-from .tl.functions import *
+from grammers.tl.functions import *

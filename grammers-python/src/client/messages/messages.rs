@@ -16,11 +16,12 @@ use crate::message::PyMessage;
 impl PyClient {
     /// Get messages by id
     ///
-    /// # Examples
+    /// Both users and bots can use this method.
     ///
-    /// ```ignore
-    /// messages = await client.get_messages_by_id()
-    /// ```
+    /// Example
+    ///     .. code-block:: python
+    ///
+    ///         messages = await client.get_messages_by_id(peer, [123])
     pub async fn get_messages_by_id(
         &self,
         peer: InputPeerLike,
@@ -87,13 +88,31 @@ impl PyClient {
     /// Returns the conversation history with one interlocutor / within a chat
     ///
     /// Only users can use this method
+    ///
+    /// Example
+    ///     .. code-block:: python
+    ///
+    ///         # Get the latest message of Telegram.
+    ///         async for m in client.iter_history_messages(777000, limit=1)
+    ///             print(m.date)
+    ///             print(m.message)
+    ///
+    ///         # Or without using async for
+    ///         iterator = client.iter_history_messages(
+    ///             777000,
+    ///             limit=None,
+    ///         )
+    ///         # Determines how many messages there are in total.
+    ///         print(await iterator.total())
+    ///         # Get the next `Message`.
+    ///         print(await iterator.next())  # or await anext(iterator)
     #[pyo3(signature = (
         peer,
+        limit=None,
         *,
         offset_id=0,
         offset_date=0,
         add_offset=0,
-        limit=None,
         page_limit=0,
         max_id=0,
         min_id=0,
@@ -101,10 +120,10 @@ impl PyClient {
     pub fn iter_history_messages(
         &self,
         peer: InputPeerLike,
+        limit: Option<usize>,
         offset_id: i32,
         offset_date: i32,
         add_offset: i32,
-        limit: Option<usize>,
         page_limit: i32,
         max_id: i32,
         min_id: i32,
@@ -112,10 +131,10 @@ impl PyClient {
         let res = PyHistoryMessageIter::new(
             self.clone(),
             peer,
+            limit,
             offset_id,
             offset_date,
             add_offset,
-            limit,
             page_limit,
             max_id,
             min_id,

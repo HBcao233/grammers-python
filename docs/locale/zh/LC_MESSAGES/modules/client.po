@@ -1,0 +1,319 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/modules/client.rst:5 5cb2c15b4f1a4377a162d5006baea4f5
+msgid "Client"
+msgstr ""
+
+#: ../../source/modules/client.rst:9 720355b6684a4bd9b5eed50bd133694b
+msgid "**In short, to create a client you can use:**"
+msgstr ""
+
+#: ../../source/modules/client.rst:24 2c323be8c7ba41018c581d86cfa94782
+msgid "See :ref:`client-ref` for a short summary."
+msgstr ""
+
+#: ../../source/modules/client.rst 3771b062f4964ea48855708ffc0666cb
+#: b7cbb671402b48228efc287f93b819d6
+msgid "Parameters"
+msgstr ""
+
+#: fffd3d4e325e447bb02f721d5a1bbc36 grammers.client.Client.idle:1 of
+msgid ""
+"Keep the program running without exiting until it receives signals such "
+"as SIGINT, SIGTERM, or SIGQUIT."
+msgstr ""
+
+#: 5194c5d5d11f4bda9e86979433e1ca56 grammers.client.Client.run:1 of
+msgid ""
+"Shortcut run method, which automatically invoke `Client.start()` and "
+"`Client.stop()`."
+msgstr ""
+
+#: 75ba5f6c876d4a9fb9ac34cce55d1b2b grammers.client.Client.run:3 of
+msgid ""
+"If no parameter is provided, it runs `Client.idle()` within the async "
+"with block."
+msgstr ""
+
+#: 808100840e9a425ea80c5d2276d9662c grammers.client.Client.run:4 of
+msgid ""
+"If an `Awaitable` (e.g., a coroutine) is provided, it awaits that "
+"coroutine instead of `Client.idle()`,"
+msgstr ""
+
+#: 7a741d99c2f84337bbcc014f04013c35
+#: grammers._rs.client.Client.accept_invite_link:1 of
+msgid "Import a chat invite and join a private chat/supergroup/channel."
+msgstr ""
+
+#: bcc9b71fe71348fd91d8ec9da6b8e570 dc1d6ed407484498942ab4b6e9901df1
+#: grammers._rs.client.Client.accept_invite_link:3
+#: grammers._rs.client.Client.check_invite_link:3 of
+msgid "Only users can use this method."
+msgstr ""
+
+#: 7768e7ad32d34cbe9da4c5d2d91abf03 grammers._rs.client.Client.authorize:1 of
+msgid "Terminal interactive login."
+msgstr ""
+
+#: 2c87425d35a94bd5a8061b09c14c2fe0 grammers._rs.client.Client.authorize:3 of
+msgid "Pseudo-code"
+msgstr ""
+
+#: dfa32bf59d974440814fa5740249f026 grammers._rs.client.Client.bot_sign_in:1 of
+msgid "Signs in to the bot account associated with this token."
+msgstr ""
+
+#: 1fe75a09f3b449c6b827a2f643d9a54b grammers._rs.client.Client.bot_sign_in:3 of
+msgid "This is the method you need to call to use the client under a bot account."
+msgstr ""
+
+#: 5a437d87713d4140a07ec209e70ad224 dfc1eff06272475182033412902a600d
+#: grammers._rs.client.Client.bot_sign_in:5
+#: grammers._rs.client.Client.sign_in:6 of
+msgid ""
+"It is recommended to save the session on successful login. Some session "
+"storages will do this automatically. If saving fails, it is recommended "
+"to `Client.sign_out()`. If the session is never saved post-login, then "
+"the authorization will be \"lost\" in the list of logged-in clients, "
+"since it is unaccessible."
+msgstr ""
+
+#: 0d9f77d9a30b416bbdeb49b35931b94c 1cf973382a624915859778753d42209b
+#: 5835875e2e4c43778914ceb1fcd6b8ab 613bf01f475d4883b1d4ab4afbd3ec72
+#: 719bf2ef94c54c74b0d40a61d12e013f 77d1cc3e804045c8a368491778e0d063
+#: a88a956e3c9547d89640bd8fa85c99e5 acb6d4058d454e56b85252075239ec5f
+#: c4ad66ce305d49beae9243a0397a7afe f45350489ac643c6b901466616fcbd2b
+#: f9348ef9262b484a8ba970c00d503b1d grammers._rs.client.Client.bot_sign_in:10
+#: grammers._rs.client.Client.check_password:6
+#: grammers._rs.client.Client.get_me:8
+#: grammers._rs.client.Client.get_messages_by_id:5
+#: grammers._rs.client.Client.invoke:11
+#: grammers._rs.client.Client.is_authorized:8
+#: grammers._rs.client.Client.iter_history_messages:5
+#: grammers._rs.client.Client.request_login_code:9
+#: grammers._rs.client.Client.resolve_username:7
+#: grammers._rs.client.Client.sign_in:11 grammers._rs.client.Client.sign_out:10
+#: of
+msgid "Example"
+msgstr ""
+
+#: 87da2db3cf27455c9c4340b73277d36a
+#: grammers._rs.client.Client.check_invite_link:1 of
+msgid "Check the validity of a chat invite link and get basic info about it."
+msgstr ""
+
+#: c10289b0046a43c9bf63a97f48bec1e6 grammers._rs.client.Client.check_password:1
+#: of
+msgid "Sign in using two-factor authentication (user password)."
+msgstr ""
+
+#: 085b8a9bb66b47ed9527367821eb44b3 grammers._rs.client.Client.check_password:3
+#: of
+msgid ""
+"`password_token` can be obtained from `PasswordRequiredError` error after"
+" the `Client.sign_in()` method fails."
+msgstr ""
+
+#: d1d7095b44a640849dc0909b69ec046b grammers._rs.client.Client.disconnect:1 of
+msgid "Signals all clients sharing the same sender pool to disconnect."
+msgstr ""
+
+#: acd4eb70edad432787e7f60a290e5981 grammers._rs.client.Client.get_me:1 of
+msgid "Fetch information about the currently logged-in user."
+msgstr ""
+
+#: 81eb817179594e7f895685b71a646495 grammers._rs.client.Client.get_me:3 of
+msgid ""
+"Although this method is cheap to call, you might want to use the "
+"`Client.me` attribute which automatically cached by `Client.start()` "
+"method."
+msgstr ""
+
+#: 0e5a272acf234f5c91462782ebfd721f 589e6b78569d4fea9fb90d76dd83f1df
+#: 9296a42ef82446beae1ea8affdd93639 96534459e2d84f6e9758703ddc7c026f
+#: b40a3adb3d384ecfbb7544e961206f07 bf649569b48e43e3ad446b346e62e08a
+#: grammers._rs.client.Client.get_me:6
+#: grammers._rs.client.Client.get_messages_by_id:3
+#: grammers._rs.client.Client.resolve_input_peer:3
+#: grammers._rs.client.Client.resolve_peer:3
+#: grammers._rs.client.Client.resolve_peer_ref:3
+#: grammers._rs.client.Client.resolve_username:5 of
+msgid "Both users and bots can use this method."
+msgstr ""
+
+#: 35a67bd5f24e449aa351a98fec8b2e0c
+#: grammers._rs.client.Client.get_messages_by_id:1 of
+msgid "Get messages by id"
+msgstr ""
+
+#: 46087fa656674ea18dd6dce84ebac3cf
+#: grammers._rs.client.Client.get_password_information:1 of
+msgid ""
+"Extract information needed for the two-factor authentication It's called "
+"automatically when we get SESSION_PASSWORD_NEEDED error during sign in."
+msgstr ""
+
+#: 55e8fbd0688d45a2bf55250b8773bc44 grammers._rs.client.Client.invoke:1 of
+msgid ""
+"Invoke a raw API call. This directly sends the request to Telegram's "
+"servers."
+msgstr ""
+
+#: 2f725b986cc94f89ad6648a5647be580 grammers._rs.client.Client.invoke:3 of
+msgid ""
+"Using function definitions corresponding to a different layer is likely "
+"to cause the responses to the request to not be understood."
+msgstr ""
+
+#: f982ded1dc5a4c6f983ec6e26bb800b3 grammers._rs.client.Client.invoke:7 of
+msgid ""
+"This method is **not** part of the stability guarantees of semantic "
+"versioning. It **may** break during *minor* version changes (but not on "
+"patch version changes). Use with care."
+msgstr ""
+
+#: d534809c6e364a518022bb63303a514a grammers._rs.client.Client.invoke_raw:1 of
+msgid "low-level api, send data to telegram directly."
+msgstr ""
+
+#: a83eefcdc2084012a048b43a73f4fd49 grammers._rs.client.Client.is_authorized:1
+#: of
+msgid ""
+"Returns `true` if the current account is authorized. Otherwise, logging "
+"in will be required before being able to invoke requests."
+msgstr ""
+
+#: d76d26c0423e4526bfee0d2ac55404fd grammers._rs.client.Client.is_authorized:4
+#: of
+msgid ""
+"This will likely be the first method you want to call on a connected "
+"`Client`. After you determine if the account is authorized or not, you "
+"will likely want to use either `Client.bot_sign_in()` or "
+"`Client.request_login_code()`."
+msgstr ""
+
+#: 44ca511cc7bf4ad3b0e6ca158908138c
+#: grammers._rs.client.Client.iter_history_messages:1 of
+msgid "Returns the conversation history with one interlocutor / within a chat"
+msgstr ""
+
+#: 6016aaa8b4e040e4bd5634f49b50e909
+#: grammers._rs.client.Client.iter_history_messages:3 of
+msgid "Only users can use this method"
+msgstr ""
+
+#: 3f421d67447f41baab839b055358a3d6
+#: grammers._rs.client.Client.request_login_code:1 of
+msgid ""
+"Requests the login code for the account associated to the given phone "
+"number via another Telegram application or SMS."
+msgstr ""
+
+#: 30217ca7556642159b8a8ced74b518ba
+#: grammers._rs.client.Client.request_login_code:4 of
+msgid ""
+"This is the method you need to call before being able to sign in to a "
+"user account. After you obtain the code and it's inside your program "
+"(e.g. ask the user to enter it via the console's standard input), you "
+"will need to `Client.sign_in()` to complete the process."
+msgstr ""
+
+#: 92fb4e85cc7b4ea3856edbbd7d03dd65
+#: grammers._rs.client.Client.resolve_input_peer:1 of
+msgid "Resolves a InputPeer into a Peer."
+msgstr ""
+
+#: d9a7e25feb6240e7976db519e4cae3c8 grammers._rs.client.Client.resolve_peer:1
+#: of
+msgid "Resolves any InputPeerLike to a Peer."
+msgstr ""
+
+#: 13cc257697fb42578352301b972c62f9
+#: grammers._rs.client.Client.resolve_peer_ref:1 of
+msgid "Resolves any InputPeerLike to a PeerRef, with using cached access_hash."
+msgstr ""
+
+#: 29414dafaaa2445e9f74c0e3563b650e grammers._rs.client.Client.resolve_phone:1
+#: of
+msgid "Resolves a phone to a User."
+msgstr ""
+
+#: 0c07738322054cd389da4e3487bbe133 grammers._rs.client.Client.resolve_phone:3
+#: of
+msgid "Both users and bots can use this method"
+msgstr ""
+
+#: cbff7dfb369a45d9a18a3b033be6268b
+#: grammers._rs.client.Client.resolve_username:1 of
+msgid ""
+"Resolves a username (not prefix with '@') into the peer that owns it, if "
+"any."
+msgstr ""
+
+#: 98b16e1ff0644912a99d0e5c180884ab
+#: grammers._rs.client.Client.resolve_username:3 of
+msgid ""
+"Note that this method is expensive to call, and can quickly cause long "
+"flood waits."
+msgstr ""
+
+#: 76afea17243e4879a1e8c24383f71f8e grammers._rs.client.Client.sign_in:1 of
+msgid "Signs in to the user account."
+msgstr ""
+
+#: 20b8ed7bc5e44ac180c8a0d30f1486ed grammers._rs.client.Client.sign_in:3 of
+msgid ""
+"You must call `Client.request_login_code` before using this method in "
+"order to obtain necessary login token, and also have asked the user for "
+"the login code."
+msgstr ""
+
+#: cda729d4e9154373b8f3fa19c14ede69 grammers._rs.client.Client.sign_out:1 of
+msgid "Signs out of the account authorized by this client's session."
+msgstr ""
+
+#: de56119ea9a6412aba018e738e3c864c grammers._rs.client.Client.sign_out:3 of
+msgid "If the client was not logged in, this method raise RpcError."
+msgstr ""
+
+#: 386930510edc4305abf894f4f8b108f2 grammers._rs.client.Client.sign_out:5 of
+msgid "The client is not disconnected after signing out."
+msgstr ""
+
+#: ebd9e87c981646fbba37a2cf06d05944 grammers._rs.client.Client.sign_out:7 of
+msgid ""
+"Note that after using this method you will have to sign in again. If all "
+"you want to do is disconnect, simply call `await client.stop()`."
+msgstr ""
+
+#: d745f10f687c42868281909ea2f948b2 grammers._rs.client.Client.start:1 of
+msgid "Start login in to telegram"
+msgstr ""
+
+#: 1b3c5567cc09488a94be8218d071dc13 grammers._rs.client.Client.stop:1 of
+msgid ""
+"Stop client Calling clent's methods after stopping will raise "
+"ClientStoppedError."
+msgstr ""
+

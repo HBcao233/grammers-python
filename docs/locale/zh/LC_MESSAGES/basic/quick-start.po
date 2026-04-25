@@ -1,0 +1,62 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/basic/quick-start.rst:3 c7e1bd4d59de461c94b82937b309696d
+msgid "Quick-Start"
+msgstr "快速开始"
+
+#: ../../source/basic/quick-start.rst:5 1c3c54e57e654ac695f99c405eb8b6ca
+msgid ""
+"Let's see a longer example to learn some of the methods that the library "
+"has to offer. These are known as \"friendly methods\", and you should "
+"always use these if possible."
+msgstr ""
+"让我们来看一个更长的例子，以便学习一下库所提供的方法。"
+"这些方法被称为 \"友好方法\"，你应该会总是使用它们的。"
+
+#: ../../source/basic/quick-start.rst:81 33ec021b46f4454d921cb70370d1cc94
+msgid ""
+"Here, we show how to sign in, get information about yourself, send "
+"messages, files, getting chats, printing messages, and downloading files."
+msgstr ""
+"上面的例子展示了如何进行登录、获取个人信息、发送消息、文件、参与聊天、打印消息以及下载文件。"
+
+#: ../../source/basic/quick-start.rst:85 2305b02eda604b84911e4623b1aea973
+msgid ""
+"You should make sure that you understand what the code shown here does, "
+"take note on how methods are called and used and so on before proceeding."
+" We will see all the available methods later on."
+msgstr ""
+"在继续之前，您务必要确保自己理解此处所展示的代码的作用，明白方法是如何被调用和使用的等等。"
+"稍后我们会介绍所有可用的方法。"
+
+#: ../../source/basic/quick-start.rst:91 32e28252322c41bcaff06117b6101cd5
+msgid ""
+"Note that grammers is an asynchronous library, and as such, you should "
+"get used to it and learn a bit of basic `asyncio`. This will help a lot. "
+"As a quick start, this means you generally want to write all your code "
+"inside some ``async def`` like so:"
+msgstr ""
+"请注意，grammers 是一个异步库，因此您需要习惯使用它，"
+"并学习一些基本的 `asyncio` 知识。这将非常有帮助。"
+"作为快速入门，你可以简单的理解成，"
+"只需要将所有代码都写在用 ``async def`` 声明的函数内部就可以了："

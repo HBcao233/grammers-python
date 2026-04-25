@@ -1,10 +1,11 @@
-from .tl import types
-from .sessions import PeerIdLike
+from grammers import custom, types
+from grammers.sessions import PeerIdLike
 
 Phone = str
 Username = str
 InviteLink = str
 InputPeerLike = Phone | Username | types.InputPeer | PeerIdLike
+Peer = custom.User | custom.Group | custom.Channel
 
 Message = types.MessageEmpty | types.Message | types.MessageService
 MessageReplyHeader = types.MessageReplyHeader | types.MessageReplyStoryHeader

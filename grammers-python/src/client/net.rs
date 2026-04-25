@@ -10,24 +10,25 @@ use crate::errors::PyInvocationError;
 
 #[pymethods]
 impl PyClient {
+    /// Signals all clients sharing the same sender pool to disconnect.
+    pub fn disconnect(&self) {
+        self.inner.lock().unwrap().handle.quit();
+    }
+
     /// Invoke a raw API call. This directly sends the request to Telegram's servers.
     ///
     /// Using function definitions corresponding to a different layer is likely to cause the
     /// responses to the request to not be understood.
     ///
-    /// <div class="warning">
+    /// .. warning::
+    ///     This method is **not** part of the stability guarantees of semantic
+    ///     versioning. It **may** break during *minor* version changes (but not on patch version
+    ///     changes). Use with care.
     ///
-    /// This method is **not** part of the stability guarantees of semantic
-    /// versioning. It **may** break during *minor* version changes (but not on patch version
-    /// changes). Use with care.
+    /// Example
+    ///     .. code-block:: python
     ///
-    /// </div>
-    ///
-    /// Examples
-    ///
-    /// ```ignore
-    /// await client.invoke(functions.Ping(ping_id=0))
-    /// ```
+    ///         await client.invoke(functions.Ping(ping_id=0))
     #[pyo3(name = "invoke")]
     async fn py_invoke(&self, request: TLRequestLike) -> PyResult<TLObjectLike> {
         let dc_id = self.session().home_dc_id().await?;
@@ -45,6 +46,7 @@ impl PyClient {
             .map_err(PyInvocationError::new)
     }
 
+    /// low-level api, send data to telegram directly.
     #[pyo3(name = "invoke_raw")]
     async fn py_invoke_raw(&self, request_body: Vec<u8>) -> PyResult<Vec<u8>> {
         let dc_id = self.session().home_dc_id().await?;

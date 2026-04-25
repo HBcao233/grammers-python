@@ -464,7 +464,7 @@ dependencies = [
 
 [[package]]
 name = "grammers-python"
-version = "0.4.2"
+version = "0.4.4"
 dependencies = [
  "grammers-crypto",
  "grammers-mtproto",
@@ -496,7 +496,7 @@ dependencies = [
 
 [[package]]
 name = "grammers-session-pyo3"
-version = "0.4.2"
+version = "0.4.3"
 dependencies = [
  "grammers-session",
  "grammers-tl-types",
@@ -516,7 +516,7 @@ dependencies = [
 
 [[package]]
 name = "grammers-tl-gen-pyo3"
-version = "0.4.1"
+version = "0.4.4"
 dependencies = [
  "grammers-tl-parser",
 ]
@@ -540,7 +540,7 @@ dependencies = [
 
 [[package]]
 name = "grammers-tl-types-pyo3"
-version = "0.4.2"
+version = "0.4.4"
 dependencies = [
  "grammers-tl-gen-pyo3",
  "grammers-tl-parser",

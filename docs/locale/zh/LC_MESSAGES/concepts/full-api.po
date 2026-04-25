@@ -1,0 +1,477 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/concepts/full-api.rst:5 c9a775ad4c23425db9d76670390804e5
+msgid "The Full API"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:9 f7b3ec94b89c4e038539c4f096eddbc4
+msgid ""
+"While you have access to this, you should always use the friendly methods"
+" listed on :ref:`client-ref` unless you have a better reason not to, like"
+" a method not existing or you wanting more control."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:14 f240aad3645f4982b6bf34fb71463a7c
+msgid "Contents"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:17 84f4f2c44bb249cea8fa678b5e6b3bae
+msgid "Introduction"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:19 323f5cade26947e59e90e5c39666e038
+msgid ""
+"The :ref:`grammers-client` doesn't offer a method for every single "
+"request the Telegram API supports. However, it's very simple to *call* or"
+" *invoke* any request defined in Telegram's API."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:23 54b115e014ac4aa2ad33b91b025f0a3a
+msgid ""
+"This section will teach you how to use what Telethon calls the `TL "
+"reference`_. The linked page contains a list and a way to search through "
+"*all* types generated from the definition of Telegram's API (in ``.tl`` "
+"file format, hence the name). These types include requests and "
+"constructors."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:30 b4b41fd3866446068cdfa4625d62cd5c
+msgid ""
+"The reason to keep both https://tl.telethon.dev and this documentation "
+"alive is that the former allows instant search results as you type, and a"
+" \"Copy import\" button. If you like namespaces, you can also do ``from "
+"telethon.tl import types, functions``. Both work."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:35 1c85a7ad44d74318bcde45791fb296e4
+msgid ""
+"Telegram makes these ``.tl`` files public, which other implementations, "
+"such as Telethon, can also use to generate code. These files are "
+"versioned under what's called \"layers\". ``.tl`` files consist of "
+"thousands of definitions, and newer layers often add, change, or remove "
+"them. Each definition refers to either a Remote Procedure Call (RPC) "
+"function, or a type (which the `TL reference`_ calls \"constructors\", as"
+" they construct particular type instances)."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:43 a087e161c3bc498db310b847b5d412ea
+msgid ""
+"As such, the `TL reference`_ is a good place to go to learn about all "
+"possible requests, types, and what they look like. If you're curious "
+"about what's been changed between layers, you can refer to the `TL diff`_"
+" site."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:49 83d913620183432c9bc204a521a4cde3
+msgid "Navigating the TL reference"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:52 f9dd5016e5d042c28c811239d7abf73c
+msgid "Functions"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:54 5eb0252e7bb549b687d1524bc0f532d1
+msgid ""
+"\"Functions\" is the term used for the Remote Procedure Calls (RPC) that "
+"can be sent to Telegram to ask it to perform something (e.g. \"send "
+"message\"). These requests have an associated return type. These can be "
+"invoked (\"called\"):"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:66 992ead0bf0004ed1b5200f1ec2b163db
+msgid ""
+"Whenever you find the type for a function in the `TL reference`_, the "
+"page will contain the following information:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:69 afaca07f65e9490bb9038b9c06db1990
+msgid ""
+"What type of account can use the method. This information is regenerated "
+"from time to time (by attempting to invoke the function under both "
+"account types and finding out where it fails). Some requests can only be "
+"used by bot accounts, others by user accounts, and others by both."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:73 a15b5c043e294b4ba1d966973ecc1f2b
+msgid ""
+"The TL definition. This helps you get a feel for the what the function "
+"looks like. This is not Python code. It just contains the definition in a"
+" concise manner."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:76 c89f5d7c4d1f4e06bd81805b94e8c99c
+msgid ""
+"\"Copy import\" button. Does what it says: it will copy the necessary "
+"Python code to import the function to your system's clipboard for easy "
+"access."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:78 b866deed74ec4ad283729957b5c8fe26
+msgid ""
+"Returns. The returned type. When you invoke the function, this is what "
+"the result will be. It also includes which of the constructors can be "
+"returned inline, to save you a click."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:81 aabec52b5c3a405086293b784c2d8a7e
+msgid ""
+"Parameters. The parameters accepted by the function, including their "
+"type, whether they expect a list, and whether they're optional."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:83 79c79557614244bca4444055ef74a162
+msgid ""
+"Known RPC errors. A best-effort list of known errors the request may "
+"cause. This list is not complete and may be out of date, but should "
+"provide an overview of what could go wrong."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:86 f30af443bf134060b07ee142dabcdb06
+msgid ""
+"Example. Autogenerated example, showcasing how you may want to call it. "
+"Bear in mind that this is *autogenerated*. It may be spitting out non-"
+"sense. The goal of this example is not to show you everything you can do "
+"with the request, only to give you a feel for what it looks like to use "
+"it."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:91 efb7e4fea1ea443e8698a3fa7de05677
+msgid ""
+"It is very important to click through the links and navigate to get the "
+"full picture. A specific page will show you what the specific function "
+"returns and needs as input parameters. But it may reference other types, "
+"so you need to navigate to those to learn what those contain or need."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:97 a28820908cf9453fbb20cae26e36410c
+msgid "Types"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:99 7bc47a8e2af04abdbb4751c8d20c0308
+msgid ""
+"\"Types\" as understood by TL are not actually generated in Telethon. "
+"They would be the \"abstract base class\" of the constructors, but since "
+"Python is duck-typed, there is hardly any need to generate mostly "
+"unnecessary code. The page for a type contains:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:104 caf7c89e3d31429e819bd22adbf20297
+msgid ""
+"Constructors. Every type will have one or more constructors. These "
+"constructors *are* generated and can be immported and used."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:106 32e288a7708945b292d0fc1028a9e153
+msgid ""
+"Requests returning this type. A helpful way to find out \"what requests "
+"can return this?\". This is how you may learn what request you need to "
+"use to obtain a particular instance of a type."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:109 4c5d89d71dec44f39a87a443fad81d13
+msgid ""
+"Requests accepting this type as input. A helpful way to find out \"what "
+"requests can use this type as one of their input parameters?\". This is "
+"how you may learn where a type is used."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:112 c603348bf7b247a29eb19a022eddc973
+msgid ""
+"Other types containing this type. A helpful way to find out \"where else "
+"does this type appear?\". This is how you can walk back through nested "
+"objects."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:117 7ddfa40def8e47b5a367574d1fc509e8
+msgid "Constructors"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:119 09f6c60f8230403bbb487f6b94bcc3aa
+msgid ""
+"Constructors are used to create instances of a particular type, and are "
+"also returned when invoking requests. You will have to create instances "
+"yourself when invoking requests that need a particular type as input. The"
+" page for a constructor contains:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:124 e31a3192bee94f77a0c7090190d01172
+msgid ""
+"Belongs to. The parent type. This is a link back to the types page for "
+"the specific constructor. It also contains the sibling constructors "
+"inline, to save you a click."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:127 417874c1aa7b4d2fb352e68a037af639
+msgid "Members. Both the input parameters *and* fields the constructor contains."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:131 4b3399a37c544d769e2a6463f889b5d0
+msgid "Using the TL reference"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:133 94d36a6ec1604bffb7dd3864dd923ec1
+msgid ""
+"After you've found a request you want to send, a good start would be to "
+"simply copy and paste the autogenerated example into your script. Then "
+"you can simply tweak it to your needs."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:137 204c2bcb974749b3b6a520c759363be0
+msgid ""
+"If you want to do it from scratch, first, make sure to import the request"
+" into your code (either using the \"Copy import\" button near the top, or"
+" by manually spelling out the package under ``telethon.tl.functions.*``)."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:141 1118bcc68a1a4b9b99812d3f55b480e6
+msgid ""
+"Then, start reading the parameters one by one. If the parameter cannot be"
+" omitted, you **will** need to specify it, so make sure to spell it out "
+"as an input parameter when constructing the request instance. Let's look "
+"at `PingRequest`_ for example. First, we copy the import:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:150 09bd44ce6f1543c5849f31291585402a
+msgid "Then, we look at the parameters:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:152 5dce8c1ba09f4072890dfc535c1479b1
+msgid "ping_id - long"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:154 fb6aca98008540ebbb808c009b315442
+msgid ""
+"A single parameter, and it's a long (a integer number with a large range "
+"of values). It doesn't say it can be omitted, so we must provide it, like"
+" so:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:163 0ec0efee84c64c7b92f2abf20c204c58
+msgid ""
+"(In this case, the ping ID is a random number. You often have to guess "
+"what the parameter needs just by looking at the name.)"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:166 27b78514f96944dfae45df082dc1a3d8
+msgid "Now that we have our request, we can invoke it:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:174 ee6cf8de15a14b0dbebb4f61772a0196
+msgid ""
+"To find out what ``response`` looks like, we can do as the autogenerated "
+"example suggests and \"stringify\" the result as a pretty-printed string:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:181 b982bdd812bf4dde8245da68e7ae81ba
+msgid "This will print out the following:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:190 8adb2c4542c943c497e46dfb2546d615
+msgid ""
+"Which is a very easy way to get a feel for a response. You should nearly "
+"always print the stringified result, at least once, when trying out "
+"requests, to get a feel for what the response may look like."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:194 687d5ad4b6064e65bf5e43bc0fc33d80
+msgid ""
+"But of course, you don't need to do that. Without writing any code, you "
+"could have navigated through the \"Returns\" link to learn "
+"``PingRequest`` returns a ``Pong``, which only has one constructor, and "
+"the constructor has two members, ``msg_id`` and ``ping_id``."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:199 caf5d38bd0a848009bfacf6967b8fb3d
+msgid ""
+"If you wanted to create your own ``Pong``, you would use both members as "
+"input parameters:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:209 2f6842d1c2994a79b6e877fa0c6d6028
+msgid ""
+"(Yes, constructing object instances can use the same code that "
+"``.stringify`` would return!)"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:212 85dd57981fd74b1e84e2918406da7eb6
+msgid ""
+"And if you wanted to access the ``msg_id`` member, you would simply "
+"access it like any other attribute access in Python:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:221 b7ac30349971437c94ea9a1028fe532f
+msgid "Example walkthrough"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:223 e9813b567ddc40aaaa05297c9a24bed1
+msgid ""
+"Say `client.send_message() "
+"<telethon.client.messages.MessageMethods.send_message>` didn't exist, we "
+"could `use the search`_ to look for \"message\". There we would find "
+"`SendMessageRequest`, which we can work with."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:228 67601db5e3da4d77b39d6fcce7da2f08
+msgid ""
+"Every request is a Python class, and has the parameters needed for you to"
+" invoke it. You can also call ``help(request)`` for information on what "
+"input parameters it takes. Remember to \"Copy import to the clipboard\", "
+"or your script won't be aware of this class! Now we have:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:237 26b4e68a608b453d850211d6212a0f22
+msgid "If you're going to use a lot of these, you may do:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:244 acb008a6a52f4a7eba9164bb6148dce2
+msgid ""
+"We see that this request must take at least two parameters, a ``peer`` of"
+" type `InputPeer <https:://tl.telethon.dev/?q=InputPeer>`, and a "
+"``message`` which is just a Python `str`\\ ing."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:248 bb33010070004d468b076cdd7d9e9675
+msgid ""
+"How can we retrieve this `InputPeer "
+"<https:://tl.telethon.dev/?q=InputPeer>`? We have two options. We "
+"manually construct one, for instance:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:257 9eaae301767b4f7f8343af9de063c25a
+msgid ""
+"Or we call `client.get_input_entity() "
+"<telethon.client.users.UserMethods.get_input_entity>`:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:271 00623ee9099d4d3da83dcc3026f7b310
+msgid ""
+"Remember that ``await`` must occur inside an ``async def``. Every full "
+"API example assumes you already know and do this."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:275 ad2d397561e54c91ae482fbeba64845b
+msgid ""
+"When you're going to invoke an API method, most require you to pass an "
+"`InputUser <https:://tl.telethon.dev/?q=InputUser>`, `InputChat "
+"<https:://tl.telethon.dev/?q=InputChat>`, or so on, this is why using "
+"`client.get_input_entity() "
+"<telethon.client.users.UserMethods.get_input_entity>` is more "
+"straightforward (and often immediate, if you've seen the user before, "
+"know their ID, etc.). If you also **need** to have information about the "
+"whole user, use `client.get_entity() "
+"<telethon.client.users.UserMethods.get_entity>` instead:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:287 f6795781777d46b5a6a8f3fc88503137
+msgid ""
+"In the later case, when you use the entity, the library will cast it to "
+"its \"input\" version for you. If you already have the complete user and "
+"want to cache its input version so the library doesn't have to do this "
+"every time its used, simply call `telethon.utils.get_input_peer`:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:300 d0d70d74f3754bcca768451146c07d9d
+msgid ""
+"Since ``v0.16.2`` this is further simplified. The ``Request`` itself will"
+" call `client.get_input_entity "
+"<telethon.client.users.UserMethods.get_input_entity>` for you when "
+"required, but it's good to remember what's happening."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:305 0c2ca623fd0b44828023312ba702bf54
+msgid ""
+"After this small parenthesis about `client.get_entity "
+"<telethon.client.users.UserMethods.get_entity>` versus "
+"`client.get_input_entity() "
+"<telethon.client.users.UserMethods.get_input_entity>`, we have everything"
+" we need. To invoke our request we do:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:315 08ffe6b22b2c4647982b20e7cb65b78a
+msgid ""
+"Message sent! Of course, this is only an example. There are over 250 "
+"methods available as of layer 80, and you can use every single of them as"
+" you wish. Remember to use the right types! To sum up:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:326 ec4f960608a34127af3b985da8c6f87a
+msgid "This can further be simplified to:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:336 11846f98b3004e9baee7397bc97f1d40
+msgid ""
+"Note that some requests have a \"hash\" parameter. This is **not** your "
+"``api_hash``! It likely isn't your self-user ``.access_hash`` either."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:339 92959ad827f8440f9aa21a0fedda9f04
+msgid ""
+"It's a special hash used by Telegram to only send a difference of new "
+"data that you don't already have with that request, so you can leave it "
+"to 0, and it should work (which means no hash is known yet)."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:343 0d99dfb461da46fa87c44785c69b2720
+msgid ""
+"For those requests having a \"limit\" parameter, you can often set it to "
+"zero to signify \"return default amount\". This won't work for all of "
+"them though, for instance, in \"messages.search\" it will actually return"
+" 0 items."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:349 79a748821f9d44efaf1507958f408c62
+msgid "Requests in Parallel"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:351 cb542469a9db4e909de1dea239653e3a
+msgid ""
+"The library will automatically merge outgoing requests into a single "
+"*container*. Telegram's API supports sending multiple requests in a "
+"single container, which is faster because it has less overhead and the "
+"server can run them without waiting for others. You can also force using "
+"a container manually:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:377 8d0da95a355c42069c5d275a742aa338
+msgid ""
+"Note that you cannot guarantee the order in which they are run. Try "
+"running the above code more than one time. You will see the order in "
+"which the messages arrive is different."
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:381 c9afbc81757243d6a70636438e2e4f4a
+msgid ""
+"If you use the raw API (the first option), you can use ``ordered`` to "
+"tell the server that it should run the requests sequentially. This will "
+"still be faster than going one by one, since the server knows all "
+"requests directly:"
+msgstr ""
+
+#: ../../source/concepts/full-api.rst:395 69c66b14858d4fe9a05a9da2c1512508
+msgid ""
+"If any of the requests fails with a Telegram error (not connection errors"
+" or any other unexpected events), the library will raise "
+"`telethon.errors.common.MultiError`. You can ``except`` this and still "
+"access the successful results:"
+msgstr ""
+

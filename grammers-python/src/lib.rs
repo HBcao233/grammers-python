@@ -2,6 +2,7 @@
 
 mod client;
 mod crypto;
+mod custom;
 mod errors;
 mod hints;
 mod message;
@@ -28,6 +29,9 @@ mod _rs {
     use super::crypto::crypto_;
 
     #[pymodule_export]
+    use super::custom::custom_;
+
+    #[pymodule_export]
     use super::errors::errors_;
 
     #[pymodule_export]
@@ -41,7 +45,6 @@ mod _rs {
 
     #[pymodule_init]
     fn init(_m: &Bound<'_, PyModule>) -> PyResult<()> {
-        // pyo3_asyncio::tokio::init_multi_thread();
         pyo3_log::init();
         Ok(())
     }

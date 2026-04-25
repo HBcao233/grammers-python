@@ -93,8 +93,8 @@ fn main() -> std::io::Result<()> {
     outputs.flush()?;
 
     let root = find_workspace_root().unwrap();
-    let tl_dir = root.join("python").join("src").join("grammers").join("tl");
-    generate_python_code(tl_dir, &definitions, layer)?;
+    let module_dir = root.join("python").join("src").join("grammers");
+    generate_python_code(module_dir, &definitions, layer)?;
 
     Ok(())
 }

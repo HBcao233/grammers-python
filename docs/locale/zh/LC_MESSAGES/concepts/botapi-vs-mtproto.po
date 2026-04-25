@@ -1,0 +1,327 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:5
+#: b743e8337d504687ac254aeffc44f553
+msgid "HTTP Bot API vs MTProto"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:8
+#: 3e1e60288b3f4bb4b3498642046b2ef4
+msgid ""
+"Telethon is more than just another viable alternative when developing "
+"bots for Telegram. If you haven't decided which wrapper library for bots "
+"to use yet, using Telethon from the beginning may save you some headaches"
+" later."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:13
+#: c15e032fc03a41a28c703238d16fc9f9
+msgid "Contents"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:16
+#: 9e8a47b3f4c64652b1235a312a92f9e5
+msgid "What is Bot API?"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:18
+#: b530e5c7ef0543be8584823464e2b71e
+msgid ""
+"The `Telegram Bot API`_, also known as HTTP Bot API and from now on "
+"referred to as simply \"Bot API\" is Telegram's official way for "
+"developers to control their own Telegram bots. Quoting their main page:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:22
+#: 8fa4e2e41b554e54a2670647bc5c1f00
+msgid ""
+"The Bot API is an HTTP-based interface created for developers keen on "
+"building bots for Telegram."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:25
+#: e3979a65736d4b52af19179073a2c489
+msgid ""
+"To learn how to create and set up a bot, please consult our `Introduction"
+" to Bots`_ and `Bot FAQ`_."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:28
+#: fc4a1d0d073e427b9c18208edd8dc767
+msgid ""
+"Bot API is simply an HTTP endpoint which translates your requests to it "
+"into MTProto calls through tdlib_, their bot backend."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:31
+#: ebd314bc46eb4e8594505beed298727b
+msgid ""
+"Configuration of your bot, such as its available commands and auto-"
+"completion, is configured through `@BotFather <https://t.me/BotFather>`_."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:36
+#: 77a2f4bd2e5f475195b491a90180b0c0
+msgid "What is MTProto?"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:38
+#: 0af2bc30b47d417fbcf93e2e20837de4
+msgid ""
+"MTProto_ is Telegram's own protocol to communicate with their API when "
+"you connect to their servers."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:41
+#: aeca32cc34d949e9a80b953a06447d6b
+msgid ""
+"Telethon is an alternative MTProto-based backend written entirely in "
+"Python and much easier to setup and use."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:44
+#: 3158a17da0904a5899d794d8b80c5f09
+msgid ""
+"Both official applications and third-party clients (like your own "
+"applications) logged in as either user or bots **can use MTProto** to "
+"communicate directly with Telegram's API (which is not the HTTP bot API)."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:48
+#: 2faf213ce51e4f4ca63964072eab7a7f
+msgid "When we talk about MTProto, we often mean \"MTProto-based clients\"."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:52
+#: 3fc79c1d50a84e78a513a1abffa20a9b
+msgid "Advantages of MTProto over Bot API"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:54
+#: aac2bbb288bf46b79cf2f2b52fa629a7
+msgid ""
+"MTProto clients (like Telethon) connect directly to Telegram's servers, "
+"which means there is no HTTP connection, no \"polling\" or \"web hooks\"."
+" This means **less overhead**, since the protocol used between you and "
+"the server is much more compact than HTTP requests with responses in "
+"wasteful JSON."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:59
+#: 71e56928804441cc8f2016c194e617d1
+msgid ""
+"Since there is a direct connection to Telegram's servers, even if their "
+"Bot API endpoint is down, you can still have connection to Telegram "
+"directly."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:62
+#: 3f6eb276cdfd47178515acc5fe939bf5
+msgid ""
+"Using a MTProto client, you are also not limited to the public API that "
+"they expose, and instead, **you have full control** of what your bot can "
+"do. Telethon offers you all the power with often **much easier usage** "
+"than any of the available Python Bot API wrappers."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:67
+#: 2c2c799ee2104825b8f830296a0775f8
+msgid ""
+"If your application ever needs user features because bots cannot do "
+"certain things, you will be able to easily login as a user and even keep "
+"your bot without having to learn a new library."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:71
+#: e768fdbd15ca43eba45c4e99c496fc34
+msgid ""
+"If less overhead and full control didn't convince you to use Telethon "
+"yet, check out the wiki page `MTProto vs HTTP Bot API`_ with a more "
+"exhaustive and up-to-date list of differences."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:77
+#: 826e8ad4069b472bbfda68117a141e24
+msgid "Migrating from Bot API to Telethon"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:79
+#: 748873b9d2c5481db8f48ca99e06aa43
+msgid ""
+"It doesn't matter if you wrote your bot with requests_ and you were "
+"making API requests manually, or if you used a wrapper library like "
+"python-telegram-bot_ or pyTelegramBotAPI_. It's never too late to migrate"
+" to Telethon!"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:84
+#: 7ccdc66a979b403b91322d925ba9045c
+msgid ""
+"If you were using an asynchronous library like aiohttp_ or a wrapper like"
+" aiogram_ or dumbot_, it will be even easier, because Telethon is also an"
+" asynchronous library."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:88
+#: 6fa710c6966d4220b3ec27ae4c9ee70f
+msgid "Next, we will see some examples from the most popular libraries."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:92
+#: 76d192af38124549be944b86da4fa2b9
+msgid "Migrating from python-telegram-bot"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:94
+#: 4944b4dbea2941c29f2171da3a7ff0f1
+msgid "Let's take their `echobot.py`_ example and shorten it a bit:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:123
+#: 45c11b0726e748388d7f9fe8594dbcb2
+msgid "After using Telethon:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:149
+#: ../../source/concepts/botapi-vs-mtproto.rst:197
+#: ../../source/concepts/botapi-vs-mtproto.rst:265
+#: ../../source/concepts/botapi-vs-mtproto.rst:316
+#: 81301869ac4143c9adfd3cc05c9cfb10 9178dd4ca5b6429c99946f07bc6242bc
+#: a7dc1038692c440f91c1c1295d12a0a6 d3faf88b3daa499ebba56f1e8cd1ef01
+msgid "Key differences:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:151
+#: 47914bab33264bc79979fcf352365f96
+msgid "The recommended way to do it imports fewer things."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:152
+#: dbf8ba2eb92c4d379ac9139574e98be6
+msgid "All handlers trigger by default, so we need ``events.StopPropagation``."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:153
+#: 37feb351436e48b282ecd1b2cea72649
+msgid "Adding handlers, responding and running is a lot less verbose."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:154
+#: 978d056f3add43879c114caada9821a3
+msgid "Telethon needs ``async def`` and ``await``."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:155
+#: fecf20ae4d5d4390ab3c2db518797bd5
+msgid "The ``bot`` isn't hidden away by ``Updater`` or ``Dispatcher``."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:159
+#: c3daa33cf5fe4ccf8c4bd0eefe370067
+msgid "Migrating from pyTelegramBotAPI"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:161
+#: 03851f153ac04b8dad2a9e444bb8aefb
+msgid "Let's show another echobot from their README:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:179
+#: 8bbae88da10847fb903931d03a581c3c
+msgid "Now we rewrite it to use Telethon:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:199
+#: 972adae6c7c44e81ae8087c2e88abdd7
+msgid ""
+"Instead of doing ``bot.reply_to(message)``, we can do ``event.reply``. "
+"Note that the ``event`` behaves just like their ``message``."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:201
+#: fc464da9dbaa4b3ca162220c2b243770
+msgid "Telethon also supports ``func=lambda m: True``, but it's not necessary."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:205
+#: 15bb50e168b84f8cae1f9f62bf818452
+msgid "Migrating from aiogram"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:207
+#: bc918f4fd07b4ad4a08491c7890b25d0
+msgid "From their GitHub:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:240
+#: 94f499bd30ea4f3e928542994ad4d3c2
+msgid "After rewrite:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:267
+#: e7f239efcb7740ebbd4d620e3e813bc3
+msgid ""
+"Telethon offers convenience methods to avoid retyping "
+"``bot.send_photo(message.chat.id, ...)`` all the time, and instead let "
+"you type ``event.reply``."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:270
+#: 7117c11c8cd84218acff9d87a807c8a4
+msgid ""
+"Sending files is **a lot** easier. The methods for sending photos, "
+"documents, audios, etc. are all the same!"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:274
+#: 1075798b10ce44f28f66a7d34c73cf9d
+msgid "Migrating from dumbot"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:276
+#: 23693f2e5865473bbceb6a2e55d2ba6a
+msgid "Showcasing their subclassing example:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:294
+#: 91ae3cdf698149bc8427d1635132e591
+msgid "After rewriting:"
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:318
+#: 913d8228f180421e90747be76acacf43
+msgid "Telethon method names are ``snake_case``."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:319
+#: 42111507094f48a8ad631a8356bedee0
+msgid "dumbot does not offer friendly methods like ``update.reply``."
+msgstr ""
+
+#: ../../source/concepts/botapi-vs-mtproto.rst:320
+#: cfdc204e0c4d405482126ecb56c0e25d
+msgid ""
+"Telethon does not have an implicit ``on_update`` handler, so we need to "
+"manually register one."
+msgstr ""
+

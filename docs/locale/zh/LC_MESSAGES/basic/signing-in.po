@@ -1,0 +1,221 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/basic/signing-in.rst:5 ../../source/basic/signing-in.rst:46
+#: 0f7ebd8c45714fd68ddc564b1329ad9f b7c25066fea445fb8cd1972f6d6f5b68
+msgid "Signing In"
+msgstr "登录"
+
+#: ../../source/basic/signing-in.rst:7 db561c137a2f45cf960137423f0ee731
+msgid ""
+"Before working with Telegram's API, you need to get your own API ID and "
+"hash:"
+msgstr ""
+"在使用 Telegram's API 之前，你需要获得你自己的 api_id 和 api_hash："
+
+#: ../../source/basic/signing-in.rst:9 3b125301e1fa40b89683b6bfe874a726
+msgid ""
+"`Login to your Telegram account <https://my.telegram.org/>`_ with the "
+"phone number of the developer account to use."
+msgstr ""
+"使用你的手机号 `登录你的 Telegram 账号 <https://my.telegram.org/>`_"
+
+#: ../../source/basic/signing-in.rst:12 eef6f22c1b454e069e129f69cd4f9af1
+msgid "Click under API Development tools."
+msgstr "点击 API development tools"
+
+#: ../../source/basic/signing-in.rst:14 ba0a41b616394651b9a89f312c0240b3
+msgid ""
+"A *Create new application* window will appear. Fill in your application "
+"details. There is no need to enter any *URL*, and only the first two "
+"fields (*App title* and *Short name*) can currently be changed later."
+msgstr ""
+"一个 *Create new application* 窗口将会出现。你无需输入任何 *URL*，"
+"目前只有前两个字段（*App title* 和 *Short name*）可以在后续修改。"
+
+#: ../../source/basic/signing-in.rst:18 3041173dd69142f2a4fda961798a21d7
+msgid ""
+"Click on *Create application* at the end. Remember that your **API hash "
+"is secret** and Telegram won't let you revoke it. Don't post it anywhere!"
+msgstr ""
+"点击页面底部的 *Create application*。记住你的 API hash 是保密信息。"
+"而且 Telegram 不允许你重新生成它。切勿将其发布到任何地方！"
+
+#: ../../source/basic/signing-in.rst:24 059eb8d82d3548e3bf779cba8bd0f072
+msgid ""
+"This API ID and hash is the one used by *your application*, not your "
+"phone number. You can use this API ID and hash with *any* phone number or"
+" even for bot accounts."
+msgstr ""
+"此 API ID 和 hash 是用于*你的应用程序*，不仅限于你的手机号码。"
+"你可以用这个 API ID 和 hash 登录*任何*手机号甚至bots。"
+
+#: ../../source/basic/signing-in.rst:30 62a6fbe328ca49d6b0a0f0e1d50447f8
+msgid "Editing the Code"
+msgstr "如何编写代码"
+
+#: ../../source/basic/signing-in.rst:32 09083a133fdd45e6ae1fad5f1aa27220
+msgid ""
+"This is a little introduction for those new to Python programming in "
+"general."
+msgstr ""
+"这是一个给 Python 编程新手的简单教程。"
+
+#: ../../source/basic/signing-in.rst:34 d87f13b10a92406082afc6e2b80688ac
+msgid ""
+"We will write our code inside ``hello.py``, so you can use any text "
+"editor that you like. To run the code, use ``python3 hello.py`` from the "
+"terminal."
+msgstr ""
+"我们将把代码写在一个 ``hello.py`` 文件里，你可以使用任何你喜欢的文本编辑器。"
+"要运行代码，请在终端中使用 ``python3 hello.py``"
+
+#: ../../source/basic/signing-in.rst:40 2389bf1580144321bcb2fcf0440f0113
+msgid ""
+"Don't call your script ``grammers.py``! Python will try to import the "
+"client from there and it will fail with an error such as \"ImportError: "
+"cannot import name 'Client' ...\"."
+msgstr ""
+"不要将你的脚本命名为 ``grammers.py``！Python 会尝试从那里导入 Client，"
+"但程序会失败，并输出像这样的错误提示: \"ImportError: cannot import name 'Client' ...\"。”"
+
+#: ../../source/basic/signing-in.rst:48 eefb21fd8cf44447b61a52601e0582b0
+msgid "We can finally write some code to log into our account!"
+msgstr "现在我们终于可以编写一些代码来登录我们的账户了！"
+
+#: ../../source/basic/signing-in.rst:67 a22b47accc5042ed873193b3d49cb0b6
+msgid ""
+"In the first line, we import the class name so we can create an instance "
+"of the client. Then, we define variables to store our API ID and hash "
+"conveniently."
+msgstr ""
+"在第一行，我们导入了类名，这样就能创建一个客户端实例了。"
+"然后，我们定义了一些变量来方便地存储我们的 API ID 和 hash。"
+
+#: ../../source/basic/signing-in.rst:71 1184f1cb59164c02b8229d12d9ff3046
+msgid ""
+"At last, we create a new `Client <grammers.Client>`_ instance and "
+"call it ``client``. We can now use the client variable for anything that "
+"we want, such as sending a message to ourselves."
+msgstr ""
+"最后，我们创建了一个新的 `Client <grammers.Client>`_ 实例，并将其命名为 ``client``。"
+"现在，我们可以将这个 client 变量用于任何我们想要使用的目的，比如向自己发送消息。"
+
+#: ../../source/basic/signing-in.rst:77 9d282d6b7a0f46759a0abcf3f5e6dcd8
+msgid ""
+"Since Grammers is an asynchronous library, you need to ``await`` "
+"coroutine functions to have them run (or otherwise, run the loop until "
+"they are complete). In this tiny example, we don't bother making an "
+"``async def main()``."
+msgstr ""
+"由于 grammers-python 是一个异步库，所以您需要使用 ``await`` 关键字来调用协程函数，"
+"以使它们得以运行。在这个简单的示例中，我们编写了一个 ``async def main()`` 函数。”
+
+#: ../../source/basic/signing-in.rst:82 559e6a87e30c44579f210407d9eb95f7
+msgid "See :ref:`mastering-asyncio` to find out more."
+msgstr "查看 :ref:`mastering-asyncio` 了解更多。"
+
+#: ../../source/basic/signing-in.rst:85 b2be367293b4496dabb45c574fe09470
+msgid ""
+"If the ``.session`` file already existed, it will not login again, so be "
+"aware of this if you move or rename the file!"
+msgstr ""
+"如果 ``.session`` 文件存在且有效，就不需要进行重新登录，"
+"所以如果你要移动或重命名这个文件就需要注意这一点。"
+
+#: ../../source/basic/signing-in.rst:90 c76ab68a33864978ba7a184d926c0157
+msgid "Signing In as a Bot Account"
+msgstr "登录 Bot 账号"
+
+#: ../../source/basic/signing-in.rst:92 d0a0570662104c549364ba7ccadf481a
+msgid ""
+"You can also use Grammers for your bots (normal bot accounts, not users)."
+" You will still need an API ID and hash, but the process is very similar:"
+msgstr ""
+"你也可以使用 grammers 登录你的 bots (普通bot账号，而非用户账号)。"
+"你依然需要 API ID 和 hash，但程序非常相似："
+
+#: ../../source/basic/signing-in.rst:118 e7f842f0a2a04acf8c173c28eaec03b5
+msgid ""
+"To get a bot account, you need to talk with `@BotFather "
+"<https://t.me/BotFather>`_."
+msgstr ""
+"要获取机器人账号，您需要与 `@BotFather <https://t.me/BotFather>`_ 进行交流。"
+
+#: ../../source/basic/signing-in.rst:123 e8d9ffe7f0334cf693c3c40137bf3d7b
+msgid "Signing In behind a Proxy"
+msgstr "使用代理进行登录"
+
+#: ../../source/basic/signing-in.rst:126 ../../source/basic/signing-in.rst:153
+#: 6b606a2d20a140ce9b4a52b190ebac32 97a40a67d9a54226833940612ad73573
+msgid "TODO"
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:128 81dbe0ffd78547ff9e21f6f080ced969
+msgid ""
+"If you need to use a proxy to access Telegram, you will need to pass a "
+"proxy argument to the client:"
+msgstr ""
+"如果你需要使用代理来访问 Telegram，你需要给 Client 传递 ``proxy`` 参数。"
+
+#: ../../source/basic/signing-in.rst:135 5bfefe6b4709482bb4a7d7c11c0c100e
+msgid "The ``proxy=`` argument should be a dict with the following properties:"
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:150 a97297298a114286a810e391c3409377
+msgid "Using MTProto Proxies"
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:155 255636183fab4066931a917cd2038b6c
+msgid ""
+"MTProto Proxies are Telegram's alternative to normal proxies, and work a "
+"bit differently. The following protocols are available:"
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:158 288a2dc6449a47aeb00a2fbd248a3a3a
+msgid "``ConnectionTcpMTProxyAbridged``"
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:159 5cbe41640f7f46afab9904169e296daf
+msgid "``ConnectionTcpMTProxyIntermediate``"
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:160 5a3c721b68c74fbfbd5ed91e94113e26
+msgid "``ConnectionTcpMTProxyRandomizedIntermediate`` (preferred)"
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:162 041838567d3542df8434fef2de55104d
+msgid ""
+"For now, you need to manually specify these special connection modes if "
+"you want to use a MTProto Proxy. Your code would look like this:"
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:187 504023176dab4e7b8b1ec674cb7f7b9a
+msgid ""
+"In future updates, we may make it easier to use MTProto Proxies (such as "
+"avoiding the need to manually pass ``connection=``)."
+msgstr ""
+
+#: ../../source/basic/signing-in.rst:190 fe97d4006dc54db6956a66ab4836311c
+msgid "In short, the same code above but without comments to make it clearer:"
+msgstr ""
+

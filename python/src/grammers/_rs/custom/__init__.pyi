@@ -564,6 +564,8 @@ class Message(TLObject):
         cls, client: Client, message: hints.Message, peers: PeerMap
     ) -> Self: ...
     @property
+    def client(self) -> Client: ...
+    @property
     def id(self) -> int:
         """
         The ID of this message.
@@ -923,6 +925,11 @@ class Message(TLObject):
     @property
     def summary_from_language(self) -> str | None: ...
     def to_dict(self) -> dict: ...
+
+    # ==========
+    #  Methods
+    # ==========
+    async def get_reply_to(self) -> Message: ...
 
 class HistoryMessageIter:
     """

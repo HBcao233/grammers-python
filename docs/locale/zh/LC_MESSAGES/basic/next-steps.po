@@ -1,0 +1,118 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/basic/next-steps.rst:3 24cb45b3521d48549b4f75040264b4e1
+msgid "Next Steps"
+msgstr "下一步"
+
+#: ../../source/basic/next-steps.rst:5 84caa582776849a28214eb21886eaec6
+msgid "These basic first steps should have gotten you started with the library."
+msgstr "这些基本的初始步骤应该已经帮助您初步熟悉这个库。"
+
+#: ../../source/basic/next-steps.rst:7 b84d36fb220e4c658e0500c3bceada51
+msgid ""
+"By now, you should know how to call friendly methods and how to work with"
+" the returned objects, how things work inside event handlers, etc."
+msgstr ""
+"到目前为止，你应该已经掌握了如何调用友好的方法、如何处理返回的对象，"
+"并了解了事件处理器内部如何工作等等相关内容了。"
+
+#: ../../source/basic/next-steps.rst:10 096ab75f288f4c8a8f0dcf454b86f667
+msgid ""
+"Next, we will see a quick reference summary of *all* the methods and "
+"properties that you will need when using the library. If you follow the "
+"links there, you will expand the documentation for the method and "
+"property, with more examples on how to use them."
+msgstr ""
+"接下来，你将看到一份关于该库中*所有*您在使用时会用到的方法和属性的快速参考摘要。"
+"如果你点击其中的链接，您将能够查看该方法和属性的详细文档，"
+"并会获得更多关于如何使用它们的示例。"
+
+#: ../../source/basic/next-steps.rst:15 62be5b44cc3a435e975bf79abbc35569
+msgid ""
+"Therefore, **you can find an example on every method** of the client to "
+"learn how to use it, as well as a description of all the arguments."
+msgstr ""
+"因此，**在客户端的每一个方法中**，您都能找到示例来学习如何使用该方法，"
+"同时还能了解到所有参数的说明。"
+
+#: ../../source/basic/next-steps.rst:18 5da35cfaf77046fc967f53161a7bd2e1
+msgid ""
+"After that, we will go in-depth with some other important concepts that "
+"are worth learning and understanding."
+msgstr ""
+"然后，我们将深入探讨一些其他重要的概念，这些概念值得我们去学习和理解。"
+
+#: ../../source/basic/next-steps.rst:21 88e824009bdd47d1aeb553d6f27691d9
+msgid ""
+"From now on, you can keep pressing the \"Next\" button if you want, or "
+"use the menu on the left, since some pages are quite lengthy."
+msgstr ""
+"如果你愿意的话，可以一直点击 \"下一页\" 按钮，"
+"或者使用左侧的菜单，因为有些页面内容相当长。"
+
+#: ../../source/basic/next-steps.rst:25 54cea8049b12450b812ed0ad2d264c56
+msgid "A note on developing applications"
+msgstr "关于开发应用程序的一些说明"
+
+#: ../../source/basic/next-steps.rst:27 93b571082b96438e81cf231316b7c165
+msgid ""
+"If you're using the library to make an actual application (and not just "
+"automate things), you should make sure to `comply with the ToS <https://core.telegram.org/api/config#terms-of-service>`_:"
+msgstr "如果您是利用这个库来开发实际的应用程序（而非仅仅用于自动化操作），"
+"那么您应当确保 `遵守Telegram的相关服务条款 <https://core.telegram.org/api/config#terms-of-service>`_："
+
+#: ../../source/basic/next-steps.rst:30 481aa42121e64db7b8b3a1d6a9781667
+msgid ""
+"[…] when logging in as an existing user, apps are supposed to call "
+":tl:`GetTermsOfServiceUpdate` to check for any "
+"updates to the Terms of Service; this call should be repeated after "
+"``expires`` seconds have elapsed. If an update to the Terms Of Service is"
+" available, clients are supposed to show a consent popup; if accepted, "
+"clients should call :tl:`AcceptTermsOfService`, providing the "
+"``termsOfService id`` JSON object; in case of denial, clients are to "
+"delete the account using :tl:`DeleteAccount`,"
+"providing Decline ToS update as deletion reason."
+msgstr ""
+"[…] 当以现有用户身份登录时，应用程序应调用 :tl:`GetTermsOfServiceUpdate` "
+"来检查服务条款是否有任何更新；在 ``expires`` 秒数过后，应再次执行此调用。"
+"如果服务条款有更新可用，客户端应显示同意弹窗；如果用户接受，客户端应调用 :tl:`AcceptTermsOfService`"
+"，并提供 ``termsOfService id`` JSON 对象；如果拒绝，客户端应调用 :tl:`DeleteAccount` 删除账户，"
+"并提供“拒绝服务条款更新”作为删除原因。"
+
+#: ../../source/basic/next-steps.rst:41 871d29ca3bd34e12bf9926f25ff1fbbc
+msgid ""
+"However, if you use the library to automate or enhance your Telegram "
+"experience, it's very likely that you are using other applications doing "
+"this check for you (so you wouldn't run the risk of violating the ToS)."
+msgstr ""
+"然而，如果您使用该库来实现对 Telegram 使用体验的自动化或优化，"
+"那么很有可能有其他应用程序在为您执行这项检查"
+"（这样您就不会有违反服务条款的风险了）。"
+
+#: ../../source/basic/next-steps.rst:45 a779673df75b4c60be159756eac4d892
+msgid ""
+"The library itself will not automatically perform this check or accept "
+"the ToS because it should require user action."
+msgstr ""
+"库本身不会自动进行这项检查或接受服务条款，"
+"因为这需要用户主动操作。"

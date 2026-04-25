@@ -1,0 +1,102 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) 2026, HBcao233
+# This file is distributed under the same license as the grammers-python
+# package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, 2026.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: grammers-python \n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-04-25 06:10+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language: zh\n"
+"Language-Team: zh <LL@li.org>\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Generated-By: Babel 2.18.0\n"
+
+#: ../../source/quick-references/events-reference.rst:3
+#: d2441812fdb641da8c01eb1ca10f0ffb
+msgid "Events Reference"
+msgstr "Events 摘要"
+
+#: ../../source/quick-references/events-reference.rst:5
+#: 0e4c7da6d2e74f9197af8308aa351b3c
+msgid ""
+"Here you will find a quick summary of all the methods and properties that"
+" you can access when working with events."
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:8
+#: c0055f912e9947d8b324be303585fc6e
+msgid ""
+"You can access the client that creates this event by doing "
+"``event.client``, and you should view the description of the events to "
+"find out what arguments it allows on creation and its **attributes** (the"
+" properties will be shown here)."
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:14
+#: fb93b52f85c44d18982dc5cf1371c421
+msgid "Contents"
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:17
+#: 7f880d4d209d4a1f83ed890f3dad1aa4
+msgid "NewMessage"
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:19
+#: 26872772d80d4a4e8430d380d07028c3
+msgid "Occurs whenever a new text message or a message with media arrives."
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:23
+#: 732c5a4f750a41d387d2d333c0f68150
+msgid ""
+"The new message event **should be treated as** a normal `Message "
+"<grammers.custom.Message>`, with the following exceptions:"
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:27
+#: 4a5c733589744a69b0725de53e1c164d
+msgid "``pattern_match`` is the match object returned by ``pattern=``."
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:28
+#: a443e5a9918548d5b6622bb35098e0e0
+msgid ""
+"``message`` is **not** the message string. It's the `Message "
+"<grammers.custom.Message>` object."
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:31
+#: 48554f6721ea4dff963243b8a5c8be47
+msgid ""
+"Remember, this event is just a proxy over the message, so while you won't"
+" see its attributes and properties, you can still access them. Please see"
+" the full documentation for examples."
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:35
+#: a61cb244b4744a67b8522235010b7db8
+msgid "Full documentation for the `NewMessage <grammers.events.NewMessage>`."
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:39
+#: f6fef29dec74427f9583c051bc76d8e6
+msgid "Raw"
+msgstr ""
+
+#: ../../source/quick-references/events-reference.rst:41
+#: 2a78d74c9c0b4c57a8722d6cddbf7a22
+msgid ""
+"Raw events are not actual events. Instead, they are the raw :tl:`Update`"
+"object that Telegram sends. You normally shouldn't need these."
+msgstr ""
+

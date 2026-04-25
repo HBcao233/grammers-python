@@ -1,10 +1,14 @@
 target
 .venv
 .pytest_cache
+__pycache__
 
 python/src/grammers/tl/allobjects.py
-python/src/grammers/tl/types/*.pyi
-python/src/grammers/tl/functions/*.pyi
+python/src/grammers/_rs/tl/types/*.pyi
+python/src/grammers/_rs/tl/functions/*.pyi
 
 *.session
 /test.*
+
+docs/build
+*.so
