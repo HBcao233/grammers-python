@@ -11,8 +11,8 @@ import os
 
 sys.path.insert(0, os.path.abspath(os.curdir))
 
-path = os.path.abspath('../../python/src/')
-sys.path.insert(0, path)
+# path = os.path.abspath('../../python/src/')
+# sys.path.insert(0, path)
 
 tl_ref_url = 'https://tl.telethon.dev'
 autodoc_typehints = 'description'
@@ -20,7 +20,7 @@ autodoc_typehints = 'description'
 project = 'grammers-python'
 copyright = '2026, HBcao233'
 author = 'HBcao233'
-release = '0.4.5'
+release = '0.4.6'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

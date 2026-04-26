@@ -39,7 +39,7 @@ msgid ""
 "work with asynchronous code. Before (Python 3.4) we didn't have ``async``"
 " or ``await``, but now we do."
 msgstr ""
-"`asyncio` 是 Python 3 的一个标准库。这意味着当你安装了 Python 3，"
+"`asyncio`_ 是 Python 3 的一个标准库。这意味着当你安装了 Python 3，"
 "它就已经安装好了。自 Python 3.5 以来，使用异步代码变得非常方便。"
 "在以前（Python 3.4 之前），我们没有 ``async``, ``await``，但现在有了。"
 
@@ -49,6 +49,8 @@ msgid ""
 " concept to use whenever you work IO. Interacting with the web or "
 "external APIs such as Telegram's makes a lot of sense this way."
 msgstr ""
+"`asyncio`_ 指的是*异步输入输出*。在处理输入输出操作时，这是一个非常强大的概念。"
+"通过这种方式与网络或外部 API（如 Telegram 的 API）进行交互是非常合理的。"
 
 #: ../../source/concepts/asyncio.rst:23 71b9f4b75cfd46a28e2476d5b7a87308
 msgid "Why asyncio?"

@@ -1,11 +1,16 @@
+$ cd docs
+
+# Install requirements
+$ uv run --no-sync pip install -r requirements.txt
+
 Summon html
-$ make html
+$ uv run --no-sync python -m sphinx-build -b html source build/html
 
 Summon gettext
-$ make gettext
+$ uv run --no-sync sphinx-build -b gettext source build/gettext
 
 Summon .po 
-$ sphinx-intl update -p build/gettext -l zh-cn
+$ uv run --no-sync sphinx-intl update -p build/gettext -l zh-cn
 
 Summon zh version html
-$ sphinx-build -b html source build/html/zh-cn -D language='zh-cn'
+$ uv run --no-sync sphinx-build -b html source build/html/zh_CN -D language='zh_CN'
