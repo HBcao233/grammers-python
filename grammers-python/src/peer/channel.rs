@@ -87,6 +87,7 @@ struct ChannelData {
 #[derive(Clone)]
 #[pyclass(name = "Channel", module = "grammers.client", extends = pytl::TLObject)]
 pub struct PyChannel {
+    #[pyo3(get)]
     pub(crate) client: PyClient,
 
     /// Return the unique identifier for this channel.
@@ -317,6 +318,7 @@ impl PyChannel {
                                 edit_stories: true,
                                 delete_stories: true,
                                 manage_direct_messages: true,
+                                manage_ranks: true,
                             }
                             .into(),
                         ),

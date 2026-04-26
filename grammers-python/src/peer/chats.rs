@@ -13,7 +13,7 @@ use std::pin::Pin;
 use std::task::{Context, Poll};
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
-use grammers_mtsender::{InvocationError, RpcError};
+use grammers_mtsender_pyo3::{InvocationError, RpcError};
 use grammers_session_pyo3::{PyPeerKind, PyPeerRef};
 use grammers_tl_types as tl;
 use pin_project_lite::pin_project;

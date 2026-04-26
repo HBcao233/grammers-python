@@ -28,7 +28,7 @@ use grammers_session_pyo3::PyDcOption;
 use crate::configuration::ConnectionParams;
 use crate::errors::ReadError;
 use crate::{InvocationError, Sender, connect, connect_with_auth};
-use grammers_mtsender::ServerAddr;
+use crate::ServerAddr;
 
 pub(crate) type Transport = transport::Full;
 

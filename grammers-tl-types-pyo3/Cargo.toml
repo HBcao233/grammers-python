@@ -1,13 +1,12 @@
 [package]
 name = "grammers-tl-types-pyo3"
-version = "0.4.4"
+version = "0.4.6"
 description = """
 Rust definitions in pyo3 for Telegram's API types and functions.
 """
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
-license-file = { workspace = true }
 documentation = { workspace = true }
 homepage = { workspace = true }
 repository = { workspace = true }
@@ -17,5 +16,5 @@ pyo3 = { workspace = true }
 grammers-tl-types = { workspace = true }
 
 [build-dependencies]
-grammers-tl-parser = { git = "https://github.com/Lonami/grammers.git" }
-grammers-tl-gen-pyo3 = { path = "../grammers-tl-gen-pyo3" }
+grammers-tl-parser = { workspace = true }
+grammers-tl-gen-pyo3 = { workspace = true }

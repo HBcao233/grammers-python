@@ -9,3 +9,15 @@
 mod tcp;
 
 pub use tcp::NetStream;
+
+/// Represents a socket address which may be proxied.
+#[derive(Debug, Clone)]
+pub enum ServerAddr {
+    /// Socket address whose connection should be proxied.
+    Proxied {
+        address: std::net::SocketAddr,
+        proxy: String,
+    },
+    /// Proxy address for direct connection.
+    Tcp { address: std::net::SocketAddr },
+}

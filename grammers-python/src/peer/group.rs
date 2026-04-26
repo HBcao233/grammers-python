@@ -18,6 +18,69 @@ use super::{PyRestrictionReason, PyRestrictionReasonWrapper};
 use crate::PyClient;
 use crate::utils::PyDateTimeWrapper;
 
+// use to Default::default() eliminate so much None
+#[derive(Default)]
+struct GroupData {
+    pub title: Option<String>,
+    pub date: Option<PyDateTimeWrapper>,
+    pub date_timestamp: Option<i32>,
+    pub access_hash: Option<PyPeerAuth>,
+    pub broadcast: Option<bool>,
+    pub megagroup: Option<bool>,
+    pub until_date: Option<PyDateTimeWrapper>,
+    pub until_date_timestamp: Option<i32>,
+    pub username: Option<String>,
+    pub usernames: Vec<pytl::enums::PyUsername>,
+    pub photo: Option<pytl::enums::PyChatPhoto>,
+
+    pub creator: Option<bool>,
+    pub left: Option<bool>,
+    pub deactivated: Option<bool>,
+    pub call_active: Option<bool>,
+    pub call_not_empty: Option<bool>,
+    pub noforwards: Option<bool>,
+    pub participants_count: Option<i32>,
+    pub version: Option<i32>,
+    pub migrated_to: Option<pytl::enums::PyInputChannel>,
+    pub admin_rights: Option<pytl::enums::PyChatAdminRights>,
+    pub default_banned_rights: Option<pytl::enums::PyChatBannedRights>,
+    pub verified: Option<bool>,
+    pub restricted: Option<bool>,
+    pub signatures: Option<bool>,
+    pub min: Option<bool>,
+    pub scam: Option<bool>,
+    pub has_link: Option<bool>,
+    pub has_geo: Option<bool>,
+    pub slowmode_enabled: Option<bool>,
+    pub fake: Option<bool>,
+    pub gigagroup: Option<bool>,
+    pub join_to_send: Option<bool>,
+    pub join_request: Option<bool>,
+    pub forum: Option<bool>,
+    pub stories_hidden: Option<bool>,
+    pub stories_hidden_min: Option<bool>,
+    pub stories_unavailable: Option<bool>,
+    pub signature_profiles: Option<bool>,
+    pub autotranslation: Option<bool>,
+    pub broadcast_messages_allowed: Option<bool>,
+    pub monoforum: Option<bool>,
+    pub forum_tabs: Option<bool>,
+    pub restriction_reason: Vec<PyRestrictionReasonWrapper>,
+    pub banned_rights: Option<pytl::enums::PyChatBannedRights>,
+    pub stories_max_id: Option<pytl::enums::PyRecentStory>,
+    pub color: Option<pytl::enums::PyPeerColor>,
+    pub profile_color: Option<pytl::enums::PyPeerColor>,
+    pub emoji_status: Option<pytl::enums::PyEmojiStatus>,
+    pub level: Option<i32>,
+
+    pub subscription_until_date: Option<PyDateTimeWrapper>,
+    pub subscription_until_date_timestamp: Option<i32>,
+
+    pub bot_verification_icon: Option<i64>,
+    pub send_paid_messages_stars: Option<i64>,
+    pub linked_monoforum_id: Option<i64>,
+}
+
 #[derive(Clone)]
 #[pyclass]
 pub enum GroupRawType {
@@ -54,6 +117,7 @@ impl GroupRawType {
 pub struct PyGroup {
     #[pyo3(get)]
     pub raw_type: GroupRawType,
+    #[pyo3(get)]
     pub(crate) client: PyClient,
 
     /// Return the unique identifier for this group.
@@ -258,69 +322,6 @@ pub struct PyGroup {
     pub linked_monoforum_id: Option<i64>,
 }
 
-// use to Default::default() eliminate so much None
-#[derive(Default)]
-struct GroupData {
-    pub title: Option<String>,
-    pub date: Option<PyDateTimeWrapper>,
-    pub date_timestamp: Option<i32>,
-    pub access_hash: Option<PyPeerAuth>,
-    pub broadcast: Option<bool>,
-    pub megagroup: Option<bool>,
-    pub until_date: Option<PyDateTimeWrapper>,
-    pub until_date_timestamp: Option<i32>,
-    pub username: Option<String>,
-    pub usernames: Vec<pytl::enums::PyUsername>,
-    pub photo: Option<pytl::enums::PyChatPhoto>,
-
-    pub creator: Option<bool>,
-    pub left: Option<bool>,
-    pub deactivated: Option<bool>,
-    pub call_active: Option<bool>,
-    pub call_not_empty: Option<bool>,
-    pub noforwards: Option<bool>,
-    pub participants_count: Option<i32>,
-    pub version: Option<i32>,
-    pub migrated_to: Option<pytl::enums::PyInputChannel>,
-    pub admin_rights: Option<pytl::enums::PyChatAdminRights>,
-    pub default_banned_rights: Option<pytl::enums::PyChatBannedRights>,
-    pub verified: Option<bool>,
-    pub restricted: Option<bool>,
-    pub signatures: Option<bool>,
-    pub min: Option<bool>,
-    pub scam: Option<bool>,
-    pub has_link: Option<bool>,
-    pub has_geo: Option<bool>,
-    pub slowmode_enabled: Option<bool>,
-    pub fake: Option<bool>,
-    pub gigagroup: Option<bool>,
-    pub join_to_send: Option<bool>,
-    pub join_request: Option<bool>,
-    pub forum: Option<bool>,
-    pub stories_hidden: Option<bool>,
-    pub stories_hidden_min: Option<bool>,
-    pub stories_unavailable: Option<bool>,
-    pub signature_profiles: Option<bool>,
-    pub autotranslation: Option<bool>,
-    pub broadcast_messages_allowed: Option<bool>,
-    pub monoforum: Option<bool>,
-    pub forum_tabs: Option<bool>,
-    pub restriction_reason: Vec<PyRestrictionReasonWrapper>,
-    pub banned_rights: Option<pytl::enums::PyChatBannedRights>,
-    pub stories_max_id: Option<pytl::enums::PyRecentStory>,
-    pub color: Option<pytl::enums::PyPeerColor>,
-    pub profile_color: Option<pytl::enums::PyPeerColor>,
-    pub emoji_status: Option<pytl::enums::PyEmojiStatus>,
-    pub level: Option<i32>,
-
-    pub subscription_until_date: Option<PyDateTimeWrapper>,
-    pub subscription_until_date_timestamp: Option<i32>,
-
-    pub bot_verification_icon: Option<i64>,
-    pub send_paid_messages_stars: Option<i64>,
-    pub linked_monoforum_id: Option<i64>,
-}
-
 // TODO it might be desirable to manually merge all the properties of the chat to avoid endless matching
 
 impl PyGroup {
@@ -458,6 +459,7 @@ impl PyGroup {
                                 edit_stories: true,
                                 delete_stories: true,
                                 manage_direct_messages: true,
+                                manage_ranks: true,
                             }
                             .into(),
                         ),

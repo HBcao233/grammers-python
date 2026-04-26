@@ -9,7 +9,7 @@
 use std::future::Future;
 use std::time::Duration;
 
-use grammers_mtsender::InvocationError;
+use grammers_mtsender_pyo3::InvocationError;
 use grammers_session::types::PeerRef;
 use grammers_tl_types::{self as tl, enums::SendMessageAction};
 use tokio::time::sleep;

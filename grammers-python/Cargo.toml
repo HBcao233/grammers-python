@@ -5,7 +5,6 @@ description = "Python bindings for grammers"
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
-license-file = { workspace = true }
 documentation = { workspace = true }
 homepage = { workspace = true }
 repository = { workspace = true }
@@ -24,9 +23,7 @@ grammers-tl-types = { workspace = true }
 grammers-crypto = { workspace = true }
 grammers-mtproto = { workspace = true }
 grammers-session = { workspace = true }
-grammers-mtsender = { workspace = true }
 
-# chrono = "0.4.42"
 log = { workspace = true }
 sha1 = { workspace = true }
 pyo3 = { workspace = true }

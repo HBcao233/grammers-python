@@ -43,6 +43,8 @@ struct MessageData {
     pub paid_suggested_post_ton: Option<bool>,
     pub from_id: Option<PyPeerId>,
     pub from_boosts_applied: Option<i32>,
+    // from_rank: Message only
+    pub from_rank: Option<String>,
     pub saved_peer_id: Option<PyPeerId>,
     pub fwd_from: Option<pytl::enums::PyMessageFwdHeader>,
     pub via_bot_id: Option<i64>,
@@ -50,7 +52,7 @@ struct MessageData {
     pub reply_to: Option<pytl::enums::PyMessageReplyHeader>,
     pub date: Option<PyDateTimeWrapper>,
     pub date_timestamp: Option<i32>,
-    // MessageService only
+    // action: MessageService only
     pub action: Option<pytl::enums::PyMessageAction>,
     pub message: Option<String>,
     pub media: Option<pytl::enums::PyMessageMedia>,
@@ -200,7 +202,11 @@ pub struct PyMessage {
     /// Supergroups only, contains the number of boosts this user has given the current supergroup.
     #[pyo3(get, set)]
     pub from_boosts_applied: Option<i32>,
-
+    
+    /// the rank of the sender in the group.
+    #[pyo3(get, set)]
+    pub from_rank: Option<String>,
+    
     #[pyo3(get, set)]
     pub saved_peer_id: Option<PyPeerId>,
 
@@ -349,6 +355,7 @@ impl PyMessage {
                     paid_suggested_post_ton,
                     from_id,
                     from_boosts_applied,
+                    from_rank,
                     saved_peer_id,
                     fwd_from,
                     via_bot_id,
@@ -398,6 +405,7 @@ impl PyMessage {
                         paid_suggested_post_ton: Some(paid_suggested_post_ton),
                         from_id: from_id.map(Into::into),
                         from_boosts_applied: from_boosts_applied,
+                        from_rank: from_rank,
                         saved_peer_id: saved_peer_id.map(Into::into),
                         fwd_from: fwd_from.map(Into::into),
                         via_bot_id: via_bot_id,
@@ -506,6 +514,7 @@ impl PyMessage {
             paid_suggested_post_ton,
             from_id,
             from_boosts_applied,
+            from_rank,
             saved_peer_id,
             fwd_from,
             via_bot_id,
@@ -560,6 +569,7 @@ impl PyMessage {
             paid_suggested_post_ton,
             from_id,
             from_boosts_applied,
+            from_rank,
             saved_peer_id,
             fwd_from,
             via_bot_id,
@@ -696,6 +706,7 @@ impl PyMessage {
             paid_suggested_post_ton,
             from_id: _,
             from_boosts_applied,
+            from_rank,
             saved_peer_id,
             fwd_from,
             via_bot_id,
@@ -750,6 +761,7 @@ impl PyMessage {
             dict.set_item("paid_suggested_post_ton", paid_suggested_post_ton)?;
             // dict.set_item("from_id", from_id)?;
             dict.set_item("from_boosts_applied", from_boosts_applied)?;
+            dict.set_item("from_rank", from_rank)?;
             dict.set_item("saved_peer_id", saved_peer_id)?;
             dict.set_item("fwd_from", fwd_from)?;
             dict.set_item("via_bot_id", via_bot_id)?;

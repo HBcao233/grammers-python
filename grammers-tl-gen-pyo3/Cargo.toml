@@ -7,7 +7,6 @@ Rust code generator for pyo3 from Telegram's API definitions.
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
-license-file = { workspace = true }
 documentation = { workspace = true }
 homepage = { workspace = true }
 repository = { workspace = true }

@@ -10,7 +10,7 @@ use log::info;
 use tokio::net::TcpStream;
 pub use tokio::net::tcp::{ReadHalf, WriteHalf};
 
-use grammers_mtsender::ServerAddr;
+use crate::ServerAddr;
 
 pub enum NetStream {
     Tcp(TcpStream),

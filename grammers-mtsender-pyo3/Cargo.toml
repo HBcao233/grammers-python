@@ -7,7 +7,6 @@ A sender implementation fir pyo3 using the Mobile Transport Protocol.
 edition = { workspace = true }
 authors = { workspace = true }
 license = { workspace = true }
-license-file = { workspace = true }
 documentation = { workspace = true }
 homepage = { workspace = true }
 repository = { workspace = true }
@@ -16,7 +15,6 @@ repository = { workspace = true }
 grammers-crypto = { workspace = true }
 grammers-mtproto = { workspace = true }
 grammers-tl-types = { workspace = true }
-grammers-mtsender = { workspace = true }
 grammers-session = { workspace = true }
 
 grammers-tl-types-pyo3 = { workspace = true }
@@ -25,6 +23,6 @@ grammers-session-pyo3 = { workspace = true }
 pyo3 = { workspace = true }
 log = { workspace = true }
 tokio = { workspace = true }
-tokio-socks = { version = "0.5.2" }
-hickory-resolver = { version = "0.25.2" }
-url = { version = "2.5.7" }
+tokio-socks = { workspace = true }
+hickory-resolver = { workspace = true }
+url = { workspace = true }

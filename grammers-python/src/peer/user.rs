@@ -109,6 +109,56 @@ impl From<PyRestrictionReason> for PyRestrictionReasonWrapper {
     }
 }
 
+// use to Default::default() eliminate so much None
+#[derive(Default)]
+struct UserData {
+    pub access_hash: Option<PyPeerAuth>,
+    pub bot: Option<bool>,
+    pub is_self: Option<bool>,
+    pub restriction_reason: Vec<PyRestrictionReasonWrapper>,
+    pub contact: Option<bool>,
+    pub mutual_contact: Option<bool>,
+    pub deleted: Option<bool>,
+    pub bot_chat_history: Option<bool>,
+    pub bot_nochats: Option<bool>,
+    pub verified: Option<bool>,
+    pub restricted: Option<bool>,
+    pub min: Option<bool>,
+    pub bot_inline_geo: Option<bool>,
+    pub support: Option<bool>,
+    pub scam: Option<bool>,
+    pub apply_min_photo: Option<bool>,
+    pub fake: Option<bool>,
+    pub bot_attach_menu: Option<bool>,
+    pub premium: Option<bool>,
+    pub attach_menu_enabled: Option<bool>,
+    pub bot_can_edit: Option<bool>,
+    pub close_friend: Option<bool>,
+    pub stories_hidden: Option<bool>,
+    pub stories_unavailable: Option<bool>,
+    pub contact_require_premium: Option<bool>,
+    pub bot_business: Option<bool>,
+    pub bot_has_main_app: Option<bool>,
+    pub bot_forum_view: Option<bool>,
+    pub first_name: Option<String>,
+    pub last_name: Option<String>,
+    pub username: Option<String>,
+    pub phone: Option<String>,
+    pub photo: Option<pytl::enums::PyUserProfilePhoto>,
+    pub status: Option<pytl::enums::PyUserStatus>,
+    pub bot_info_version: Option<i32>,
+    pub bot_inline_placeholder: Option<String>,
+    pub lang_code: Option<String>,
+    pub emoji_status: Option<pytl::enums::PyEmojiStatus>,
+    pub usernames: Vec<pytl::enums::PyUsername>,
+    pub stories_max_id: Option<pytl::enums::PyRecentStory>,
+    pub color: Option<pytl::enums::PyPeerColor>,
+    pub profile_color: Option<pytl::enums::PyPeerColor>,
+    pub bot_active_users: Option<i32>,
+    pub bot_verification_icon: Option<i64>,
+    pub send_paid_messages_stars: Option<i64>,
+}
+
 /// A user.
 ///
 /// Users include your contacts, members of a group, bot accounts created by [@BotFather], or
@@ -124,6 +174,7 @@ impl From<PyRestrictionReason> for PyRestrictionReasonWrapper {
 #[derive(Clone)]
 #[pyclass(name = "User", module = "grammers.client", extends = pytl::TLObject)]
 pub struct PyUser {
+    #[pyo3(get)]
     pub(crate) client: PyClient,
 
     #[pyo3(get)]
@@ -138,53 +189,54 @@ pub struct PyUser {
     pub restriction_reason: Vec<PyRestrictionReasonWrapper>,
 
     #[pyo3(get, set)]
-    pub contact: bool,
+    pub contact: Option<bool>,
     #[pyo3(get, set)]
-    pub mutual_contact: bool,
+    pub mutual_contact: Option<bool>,
     #[pyo3(get, set)]
-    pub deleted: bool,
+    pub deleted: Option<bool>,
     #[pyo3(get, set)]
-    pub bot_chat_history: bool,
+    pub bot_chat_history: Option<bool>,
     #[pyo3(get, set)]
-    pub bot_nochats: bool,
+    pub bot_nochats: Option<bool>,
     #[pyo3(get, set)]
-    pub verified: bool,
+    pub verified: Option<bool>,
     #[pyo3(get, set)]
-    pub restricted: bool,
+    pub restricted: Option<bool>,
     #[pyo3(get, set)]
-    pub min: bool,
+    pub min: Option<bool>,
     #[pyo3(get, set)]
-    pub bot_inline_geo: bool,
+    pub bot_inline_geo: Option<bool>,
     #[pyo3(get, set)]
-    pub support: bool,
+    pub support: Option<bool>,
     #[pyo3(get, set)]
-    pub scam: bool,
+    pub scam: Option<bool>,
     #[pyo3(get, set)]
-    pub apply_min_photo: bool,
+    pub apply_min_photo: Option<bool>,
     #[pyo3(get, set)]
-    pub fake: bool,
+    pub fake: Option<bool>,
     #[pyo3(get, set)]
-    pub bot_attach_menu: bool,
+    pub bot_attach_menu: Option<bool>,
     #[pyo3(get, set)]
-    pub premium: bool,
+    pub premium: Option<bool>,
     #[pyo3(get, set)]
-    pub attach_menu_enabled: bool,
+    pub attach_menu_enabled: Option<bool>,
     #[pyo3(get, set)]
-    pub bot_can_edit: bool,
+    pub bot_can_edit: Option<bool>,
     #[pyo3(get, set)]
-    pub close_friend: bool,
+    pub close_friend: Option<bool>,
     #[pyo3(get, set)]
-    pub stories_hidden: bool,
+    pub stories_hidden: Option<bool>,
     #[pyo3(get, set)]
-    pub stories_unavailable: bool,
+    pub stories_unavailable: Option<bool>,
     #[pyo3(get, set)]
-    pub contact_require_premium: bool,
+    pub contact_require_premium: Option<bool>,
     #[pyo3(get, set)]
-    pub bot_business: bool,
+    pub bot_business: Option<bool>,
     #[pyo3(get, set)]
-    pub bot_has_main_app: bool,
+    pub bot_has_main_app: Option<bool>,
     #[pyo3(get, set)]
-    pub bot_forum_view: bool,
+    pub bot_forum_view: Option<bool>,
+    
     #[pyo3(get, set)]
     pub first_name: Option<String>,
     #[pyo3(get, set)]
@@ -223,8 +275,71 @@ pub struct PyUser {
 
 impl PyUser {
     pub fn from_raw(client: &PyClient, user: tl::enums::User) -> PyClassInitializer<Self> {
-        let (
-            id,
+        let (id, data) = match user {
+            tl::enums::User::Empty(x) => (
+                PyPeerId::user(x.id).unwrap(),
+                UserData::default(),
+            ),
+            tl::enums::User::User(x) => (
+                PyPeerId::user(x.id).unwrap(),
+                UserData {
+                    access_hash: x.access_hash.map(PyPeerAuth::new),
+                    bot: Some(x.bot),
+                    is_self: Some(x.is_self),
+                    restriction_reason: x.restriction_reason.map_or(Vec::new(), |x| {
+                        x.into_iter()
+                            .map(|x| PyRestrictionReason::from_raw(&x).into())
+                            .collect()
+                    }),
+                    contact: Some(x.contact),
+                    mutual_contact: Some(x.mutual_contact),
+                    deleted: Some(x.deleted),
+                    bot_chat_history: Some(x.bot_chat_history),
+                    bot_nochats: Some(x.bot_nochats),
+                    verified: Some(x.verified),
+                    restricted: Some(x.restricted),
+                    min: Some(x.min),
+                    bot_inline_geo: Some(x.bot_inline_geo),
+                    support: Some(x.support),
+                    scam: Some(x.scam),
+                    apply_min_photo: Some(x.apply_min_photo),
+                    fake: Some(x.fake),
+                    bot_attach_menu: Some(x.bot_attach_menu),
+                    premium: Some(x.premium),
+                    attach_menu_enabled: Some(x.attach_menu_enabled),
+                    bot_can_edit: Some(x.bot_can_edit),
+                    close_friend: Some(x.close_friend),
+                    stories_hidden: Some(x.stories_hidden),
+                    stories_unavailable: Some(x.stories_unavailable),
+                    contact_require_premium: Some(x.contact_require_premium),
+                    bot_business: Some(x.bot_business),
+                    bot_has_main_app: Some(x.bot_has_main_app),
+                    bot_forum_view: Some(x.bot_forum_view),
+                    first_name: x.first_name,
+                    last_name: x.last_name,
+                    username: x.username,
+                    phone: x.phone,
+                    photo: x.photo.map(Into::into),
+                    status: x.status.map(Into::into),
+                    bot_info_version: x.bot_info_version,
+                    bot_inline_placeholder: x.bot_inline_placeholder,
+                    lang_code: x.lang_code,
+                    emoji_status: x.emoji_status.map(Into::into),
+                    usernames: x.usernames
+                        .unwrap_or(Vec::new())
+                        .into_iter()
+                        .map(Into::into)
+                        .collect(),
+                    stories_max_id: x.stories_max_id.map(Into::into),
+                    color: x.color.map(Into::into),
+                    profile_color: x.profile_color.map(Into::into),
+                    bot_active_users: x.bot_active_users,
+                    bot_verification_icon: x.bot_verification_icon,
+                    send_paid_messages_stars: x.send_paid_messages_stars,
+                }
+            ),
+        };
+        let UserData {
             access_hash,
             bot,
             is_self,
@@ -270,112 +385,7 @@ impl PyUser {
             bot_active_users,
             bot_verification_icon,
             send_paid_messages_stars,
-        ) = match user {
-            tl::enums::User::Empty(x) => (
-                PyPeerId::user(x.id).unwrap(), // id
-                Some(PyPeerAuth::default()),   // access_hash
-                None,                          // bot
-                None,                          // is_self
-                Vec::new(),                    // restriction_reason
-                false,                         // contact
-                false,                         //mutual_contact
-                false,                         // deleted
-                false,                         // bot_chat_history
-                false,                         // bot_nochats
-                false,                         // verified
-                false,                         // restricted
-                false,                         // min
-                false,                         // bot_inline_geo
-                false,                         // support
-                false,                         // scam
-                false,                         // apply_min_photo
-                false,                         // fake
-                false,                         // bot_attach_menu
-                false,                         // premium
-                false,                         // attach_menu_enabled
-                false,                         // bot_can_edit
-                false,                         // close_friend
-                false,                         // stories_hidden
-                false,                         // stories_unavailable
-                false,                         // contact_require_premium
-                false,                         // bot_business
-                false,                         // bot_has_main_app
-                false,                         // bot_forum_view
-                None,                          // first_name
-                None,                          // last_name
-                None,                          // username
-                None,                          // phone
-                None,                          // photo
-                None,                          // status
-                None,                          // bot_info_version
-                None,                          // bot_inline_placeholder
-                None,                          // lang_code
-                None,                          // emoji_status
-                Vec::new(),                    // usernames
-                None,                          // stories_max_id
-                None,                          // color
-                None,                          // profile_color
-                None,                          // bot_active_users
-                None,                          // bot_verification_icon
-                None,                          // send_paid_messages_stars
-            ),
-            tl::enums::User::User(x) => (
-                PyPeerId::user(x.id).unwrap(),
-                x.access_hash.map(PyPeerAuth::new),
-                Some(x.bot),
-                Some(x.is_self),
-                x.restriction_reason.map_or(Vec::new(), |x| {
-                    x.into_iter()
-                        .map(|x| PyRestrictionReason::from_raw(&x).into())
-                        .collect()
-                }),
-                x.contact,
-                x.mutual_contact,
-                x.deleted,
-                x.bot_chat_history,
-                x.bot_nochats,
-                x.verified,
-                x.restricted,
-                x.min,
-                x.bot_inline_geo,
-                x.support,
-                x.scam,
-                x.apply_min_photo,
-                x.fake,
-                x.bot_attach_menu,
-                x.premium,
-                x.attach_menu_enabled,
-                x.bot_can_edit,
-                x.close_friend,
-                x.stories_hidden,
-                x.stories_unavailable,
-                x.contact_require_premium,
-                x.bot_business,
-                x.bot_has_main_app,
-                x.bot_forum_view,
-                x.first_name,
-                x.last_name,
-                x.username,
-                x.phone,
-                x.photo.map(Into::into),
-                x.status.map(Into::into),
-                x.bot_info_version,
-                x.bot_inline_placeholder,
-                x.lang_code,
-                x.emoji_status.map(Into::into),
-                x.usernames
-                    .unwrap_or(Vec::new())
-                    .into_iter()
-                    .map(Into::into)
-                    .collect(),
-                x.stories_max_id.map(Into::into),
-                x.color.map(Into::into),
-                x.profile_color.map(Into::into),
-                x.bot_active_users,
-                x.bot_verification_icon,
-                x.send_paid_messages_stars,
-            ),
-        };
+        } = data;
         PyClassInitializer::from(pytl::TLObject {}).add_subclass(Self {
             client: client.clone(),
             id,

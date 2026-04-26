@@ -84,7 +84,7 @@ pub struct RpcError {
     ///
     /// Digit words are removed from the name and put in the [`RpcError::value`] instead.
     /// ```
-    /// use grammers_mtsender::RpcError;
+    /// use grammers_mtsender_pyo3::RpcError;
     /// let rpc_error = RpcError::from(grammers_tl_types::types::RpcError {
     ///         error_code: 500, error_message: "INTERDC_2_CALL_ERROR".into() });
     /// assert_eq!(rpc_error.name, "INTERDC_CALL_ERROR");
@@ -94,7 +94,7 @@ pub struct RpcError {
 
     /// If the error contained an additional integer value, it will be present here and removed from the [`RpcError::name`].
     /// ```
-    /// use grammers_mtsender::RpcError;
+    /// use grammers_mtsender_pyo3::RpcError;
     /// let rpc_error = RpcError::from(grammers_tl_types::types::RpcError {
     ///         error_code: 420, error_message: "FLOOD_WAIT_31".into() });
     /// assert_eq!(rpc_error.name, "FLOOD_WAIT");
@@ -164,7 +164,7 @@ impl RpcError {
     /// # Examples
     ///
     /// ```
-    /// # let request_result = Result::<(), _>::Err(grammers_mtsender::RpcError {
+    /// # let request_result = Result::<(), _>::Err(grammers_mtsender_pyo3::RpcError {
     /// #     code: 400, name: "PHONE_CODE_INVALID".to_string(), value: None, caused_by: None });
     /// #
     /// match request_result {
@@ -310,8 +310,8 @@ impl InvocationError {
     /// # Examples
     ///
     /// ```
-    /// # let request_result = Result::<(), _>::Err(grammers_mtsender::InvocationError::Rpc(
-    /// #     grammers_mtsender::RpcError { code: 400, name: "PHONE_CODE_INVALID".to_string(), value: None, caused_by: None }));
+    /// # let request_result = Result::<(), _>::Err(grammers_mtsender_pyo3::InvocationError::Rpc(
+    /// #     grammers_mtsender_pyo3::RpcError { code: 400, name: "PHONE_CODE_INVALID".to_string(), value: None, caused_by: None }));
     /// #
     /// match request_result {
     ///     Err(err) if err.is("SESSION_PASSWORD_NEEDED") => panic!(),

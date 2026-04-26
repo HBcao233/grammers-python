@@ -12,28 +12,29 @@ resolver = "2"
 edition = "2024"
 authors = ["HBcao233 <hbcaoqaq@outlook.com>"]
 license = "MIT"
-license-file = "LICENSE"
 documentation = "https://grammers-python.readthedocs.io/"
 homepage = "https://github.com/HBcao233/grammers-python"
 repository = "https://github.com/HBcao233/grammers-python"
 
 [workspace.dependencies]
-grammers-tl-gen-pyo3 = { path = "../grammers-tl-gen-pyo3" }
+grammers-tl-gen-pyo3 = { path = "./grammers-tl-gen-pyo3" }
 grammers-tl-types-pyo3 = { path = "./grammers-tl-types-pyo3" }
 grammers-mtsender-pyo3 = { path = "./grammers-mtsender-pyo3" }
 grammers-session-pyo3 = { path = "./grammers-session-pyo3" }
 
-grammers-tl-types = { git = "https://codeberg.org/Lonami/grammers.git" }
-grammers-tl-parser = { git = "https://codeberg.org/Lonami/grammers.git" }
-grammers-crypto = { git = "https://codeberg.org/Lonami/grammers.git" }
-grammers-session = { git = "https://codeberg.org/Lonami/grammers.git", default-features = false }
-grammers-mtproto = { git = "https://codeberg.org/Lonami/grammers.git" }
-grammers-mtsender = { git = "https://codeberg.org/Lonami/grammers.git", features = ["proxy"] }
+grammers-tl-types = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2" }
+grammers-tl-parser = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2" }
+grammers-crypto = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2" }
+grammers-session = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2", default-features = false }
+grammers-mtproto = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2" }
 
-sha1 = { version = "0.10.6" }
+sha1 = "0.10.6"
 tokio = { version = "1.49.0", default-features = false, features = ["io-util", "sync", "time", "net", "macros", "rt", "signal"] }
 log = "0.4.28"
 url = "2.5.8"
+tokio-socks = "0.5.2"
+hickory-resolver = "0.25.2"
+
 
 pyo3 = { version = "0.27.2", features = [
   "multiple-pymethods", 

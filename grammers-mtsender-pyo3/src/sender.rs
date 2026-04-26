@@ -27,7 +27,7 @@ use tokio::time::{Instant, sleep_until};
 
 use crate::errors::{InvocationError, ReadError, RpcError};
 use crate::net::NetStream;
-use grammers_mtsender::ServerAddr;
+use crate::ServerAddr;
 
 /// The maximum data that we're willing to send or receive at once.
 ///
