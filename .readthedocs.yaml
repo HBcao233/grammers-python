@@ -23,6 +23,8 @@ sphinx:
 # See https://docs.readthedocs.io/en/stable/guides/reproducible-builds.html
 python:
   install:
+    - method: pip
+      path: .
     - requirements: docs/requirements.txt
 
 # Set the OS, Python version and other tools you might need
@@ -35,9 +37,5 @@ build:
     rust: "1.91"
     # golang: "1.20"
   jobs:
-    post_install:
-      - pip install --upgrade pip
-      - pip install maturin
     pre_build:
       - sphinx-intl build -d docs/locale/
-      - maturin develop
