@@ -1,7 +1,16 @@
 [package]
 name = "grammers-tl-gen-pyo3"
 version = "0.4.5"
+description = """
+Rust code generator for pyo3 from Telegram's API definitions.
+"""
 edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+license-file = { workspace = true }
+documentation = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [dependencies]
 grammers-tl-parser = { workspace = true }

@@ -20,7 +20,7 @@ autodoc_typehints = 'description'
 project = 'grammers-python'
 copyright = '2026, HBcao233'
 author = 'HBcao233'
-release = 'dev'
+release = '0.4.5'
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

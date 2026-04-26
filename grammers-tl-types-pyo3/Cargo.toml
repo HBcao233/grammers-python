@@ -1,7 +1,16 @@
 [package]
 name = "grammers-tl-types-pyo3"
 version = "0.4.4"
+description = """
+Rust definitions in pyo3 for Telegram's API types and functions.
+"""
 edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+license-file = { workspace = true }
+documentation = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [dependencies]
 pyo3 = { workspace = true }

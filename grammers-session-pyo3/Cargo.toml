@@ -1,7 +1,16 @@
 [package]
 name = "grammers-session-pyo3"
 version = "0.4.3"
+description = """
+Session storages interface of Telegram data for pyo3 Python bindings.
+"""
 edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+license-file = { workspace = true }
+documentation = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [dependencies]
 grammers-tl-types-pyo3 = { workspace = true }

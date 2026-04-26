@@ -1,7 +1,16 @@
 [package]
 name = "grammers-mtsender-pyo3"
 version = "0.4.0"
+description = """
+A sender implementation fir pyo3 using the Mobile Transport Protocol.
+"""
 edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+license-file = { workspace = true }
+documentation = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [dependencies]
 grammers-crypto = { workspace = true }

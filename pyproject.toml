@@ -1,4 +1,31 @@
-# maturin build --release --target aarch64-unknown-linux-gnu
+[project]
+name = "grammers"
+version = "0.4.6"
+authors = [
+  { name = "HBcao233", email = "hbcaoqaq@outlook.com" }
+]
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+keywords = ["telegram", "rust", "grammers"]
+requires-python = ">=3.12"
+classifiers = [
+  "Programming Language :: Rust",
+  "Programming Language :: Python :: Implementation :: CPython",
+  "Programming Language :: Python :: 3.12",
+  "Programming Language :: Python :: 3.13",
+  "Programming Language :: Python :: 3.14",
+]
+dependencies = []
+optional-dependencies = {}
+
+[project.urls]
+Documentation = "https://grammers-python.readthedocs.io/"
+Homepage = "https://github.com/HBcao233/grammers-python"
+Repository = "https://github.com/HBcao233/grammers-python"
+Issues = "https://github.com/HBcao233/grammers-python/issues"
+
+
 [build-system]
 requires = ["maturin>=1.4,<2.0"]
 build-backend = "maturin"
@@ -9,40 +36,16 @@ module-name = "grammers._rs"
 manifest-path = "grammers-python/Cargo.toml"
 python-source = "python/src/"
 
-
-[project]
-name = "grammers"
-version = "0.4.5"
-authors = [
-  { name = "HBcao233", email = "hbcaoqaq@outlook.com" }
-]
-readme = "README.md"
-license = "MIT"
-keywords = ["telegram", "rust", "grammers"]
-requires-python = ">=3.12"
-classifiers = [
-  "Programming Language :: Rust",
-  "Programming Language :: Python :: Implementation :: CPython",
-  "Programming Language :: Python :: 3.12",
-]
-dependencies = []
-optional-dependencies = {}
-
-[project.urls]
-Homepage = "https://github.com/HBcao233/grammers_python"
-
-
 [tool.pytest.ini_options]
-# 只在这些目录中寻找测试
+# Only look for tests in these directories.
 testpaths = ["python/tests"]
 
-# 排除目录
+# Exclude path
 norecursedirs = [
   ".git",
   "target",
   ".venv",
 ]
-
 
 [tool.ruff]
 line-length = 88

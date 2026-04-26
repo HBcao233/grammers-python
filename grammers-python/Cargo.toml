@@ -1,8 +1,14 @@
 [package]
 name = "grammers-python"
-version = "0.4.5"
-edition = { workspace = true }
+version = "0.4.6"
 description = "Python bindings for grammers"
+edition = { workspace = true }
+authors = { workspace = true }
+license = { workspace = true }
+license-file = { workspace = true }
+documentation = { workspace = true }
+homepage = { workspace = true }
+repository = { workspace = true }
 
 [lib]
 name = "_rs"

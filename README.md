@@ -24,8 +24,8 @@ client = Client(
 async def main():
     print(client.me)
     
-    message = await client.get_history_messages(777000, limit=1)
-    print(message[0])
+    messages = await client.get_history_messages(777000, limit=1)
+    print(messages[0])
 
 client.run(main())
 ```
