@@ -24,7 +24,7 @@ sphinx:
 python:
   install:
     - method: pip
-      path: .
+      path: grammers
     - requirements: docs/requirements.txt
 
 # Set the OS, Python version and other tools you might need
@@ -34,7 +34,7 @@ build:
     python: "3.12"
     # You can also specify other tool versions:
     # nodejs: "20"
-    rust: "1.91"
+    # rust: "1.91"
     # golang: "1.20"
   jobs:
     pre_build:
