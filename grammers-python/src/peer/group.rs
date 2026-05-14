@@ -82,7 +82,7 @@ struct GroupData {
 }
 
 #[derive(Clone)]
-#[pyclass]
+#[pyclass(module = "grammers.custom")]
 pub enum GroupRawType {
     ChatEmpty,
     Chat,
@@ -113,7 +113,7 @@ impl GroupRawType {
 /// join more of them. Certain actions in official clients, like setting a chat's username,
 /// silently upgrade the chat to a megagroup.
 #[derive(Clone)]
-#[pyclass(name = "Group", module = "grammers.client", extends = pytl::TLObject, dict)]
+#[pyclass(name = "Group", module = "grammers.custom", extends = pytl::TLObject, dict)]
 pub struct PyGroup {
     #[pyo3(get)]
     pub raw_type: GroupRawType,

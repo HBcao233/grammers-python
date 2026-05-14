@@ -1,3 +1,4 @@
+```
 $ cd docs
 
 # Install requirements
@@ -10,7 +11,8 @@ Summon gettext
 $ uv run --no-sync sphinx-build -b gettext source build/gettext
 
 Summon .po 
-$ uv run --no-sync sphinx-intl update -p build/gettext -l zh-cn
+$ uv run --no-sync sphinx-intl update -p build/gettext -l zh_CN
 
 Summon zh version html
 $ uv run --no-sync sphinx-build -b html source build/html/zh_CN -D language='zh_CN'
+```

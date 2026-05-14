@@ -6,13 +6,12 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-/*
 use std::sync::atomic::{AtomicI64, Ordering};
 use std::thread;
 use std::time::SystemTime;
 
-use chrono::{DateTime, Utc};
-*/
+// use chrono::{DateTime, Utc};
+
 use pyo3::call::PyCallArgs;
 use pyo3::types::{PyAnyMethods, PyDateTime};
 use pyo3::{FromPyObject, IntoPyObject, Py, PyAny, PyErr, PyResult, Python};
@@ -112,7 +111,6 @@ pub async fn into_await(coro: Py<PyAny>) -> PyResult<Py<PyAny>> {
     into_future(&event_loop, coro).await
 }
 
-/*
 // This atomic isn't for anything critical, just to generate unique IDs without locks.
 // The worst that can happen if the load and store orderings are wrong is that the IDs
 // are not actually unique which could confuse some of the API results.
@@ -141,6 +139,7 @@ pub(crate) fn generate_random_ids(n: usize) -> Vec<i64> {
     (0..n).map(|_| generate_random_id()).collect()
 }
 
+/*
 pub(crate) fn date(date: i32) -> DateTime<Utc> {
     DateTime::<Utc>::from_timestamp(date as i64, 0).expect("date out of range")
 }

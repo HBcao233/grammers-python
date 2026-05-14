@@ -19,7 +19,7 @@ use crate::PyClient;
 /// Platform Identifier referenced only by [`RestrictionReason`].
 #[non_exhaustive]
 #[derive(Clone)]
-#[pyclass(name = "Platform", module = "grammers.client")]
+#[pyclass(name = "Platform", module = "grammers.custom")]
 pub enum PyPlatform {
     All(),
     Android(),
@@ -43,7 +43,7 @@ impl PyPlatform {
 
 /// Reason why a user is globally restricted.
 #[derive(Clone)]
-#[pyclass(name = "RestrictionReason", module = "grammers.client")]
+#[pyclass(name = "RestrictionReason", module = "grammers.custom")]
 pub struct PyRestrictionReason {
     pub platforms: Vec<PyPlatform>,
     pub reason: String,
@@ -172,7 +172,7 @@ struct UserData {
 ///
 /// [@BotFather]: https://t.me/BotFather
 #[derive(Clone)]
-#[pyclass(name = "User", module = "grammers.client", extends = pytl::TLObject)]
+#[pyclass(name = "User", module = "grammers.custom", extends = pytl::TLObject)]
 pub struct PyUser {
     #[pyo3(get)]
     pub(crate) client: PyClient,
@@ -587,5 +587,15 @@ impl PyUser {
             Some(auth) => Some(PyPeerRef { id, auth }),
             None => session.peer_ref(id).await?,
         })
+    }
+    
+    #[getter]
+    pub fn full_name(&self) -> String {
+        match (self.first_name.clone(), self.last_name.clone()) {
+            (Some(f), Some(l)) => format!("{} {}", f, l),
+            (Some(f), None) => f,
+            (None, Some(l)) => l,
+            (None, None) => String::new(),
+        }
     }
 }

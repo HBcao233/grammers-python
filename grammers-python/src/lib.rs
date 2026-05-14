@@ -9,6 +9,7 @@ mod message;
 mod peer;
 mod runtime;
 mod utils;
+mod media;
 
 use client::PyClient;
 // use hints::PeerIdLikeExtend;

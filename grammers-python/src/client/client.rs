@@ -252,17 +252,19 @@ impl PyClient {
     }
 
     #[getter(me)]
-    fn _me(&self) -> Option<Py<PyUser>> {
+    pub fn _me(&self) -> Option<Py<PyUser>> {
         match &self.inner.lock().unwrap().me {
             None => None,
-            Some(me) => Some(Python::attach(|py| me.bind(py).clone().unbind())),
+            Some(me) => Some(Python::attach(|py| me.clone_ref(py))),
         }
     }
 
+    /* not allow set to avoid send message from_id not me.
     #[setter(me)]
     pub fn set_me(&self, user: Py<PyUser>) {
         self.inner.lock().unwrap().me = Some(user);
     }
+    */
 }
 
 impl PyClient {

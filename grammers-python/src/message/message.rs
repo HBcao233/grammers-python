@@ -20,27 +20,28 @@ use crate::utils::PyDateTimeWrapper;
 // #[cfg(any(feature = "markdown", feature = "html"))]
 // use crate::parsers;
 use crate::peer::{PyPeer, PyPeerMap};
+use super::InputMessage;
 
 // use to Default::default() eliminate so much None
 #[derive(Default)]
 struct MessageData {
-    pub out: Option<bool>,
-    pub mentioned: Option<bool>,
-    pub media_unread: Option<bool>,
+    pub out: bool,
+    pub mentioned: bool,
+    pub media_unread: bool,
     // MessageService only
-    pub reactions_are_possible: Option<bool>,
-    pub silent: Option<bool>,
-    pub post: Option<bool>,
-    pub from_scheduled: Option<bool>,
-    pub legacy: Option<bool>,
-    pub edit_hide: Option<bool>,
-    pub pinned: Option<bool>,
-    pub noforwards: Option<bool>,
-    pub invert_media: Option<bool>,
-    pub offline: Option<bool>,
-    pub video_processing_pending: Option<bool>,
-    pub paid_suggested_post_stars: Option<bool>,
-    pub paid_suggested_post_ton: Option<bool>,
+    pub reactions_are_possible: bool,
+    pub silent: bool,
+    pub post: bool,
+    pub from_scheduled: bool,
+    pub legacy: bool,
+    pub edit_hide: bool,
+    pub pinned: bool,
+    pub noforwards: bool,
+    pub invert_media: bool,
+    pub offline: bool,
+    pub video_processing_pending: bool,
+    pub paid_suggested_post_stars: bool,
+    pub paid_suggested_post_ton: bool,
     pub from_id: Option<PyPeerId>,
     pub from_boosts_applied: Option<i32>,
     // from_rank: Message only
@@ -83,7 +84,7 @@ struct MessageData {
 /// This message should be treated as a snapshot in time, that is, if the message is edited while
 /// using this object, those changes won't alter this structure.
 #[derive(Clone)]
-#[pyclass(name = "Message", module = "grammers.client", extends = pytl::TLObject)]
+#[pyclass(name = "Message", module = "grammers.custom", extends = pytl::TLObject)]
 pub struct PyMessage {
     #[pyo3(get)]
     pub(crate) client: PyClient,
@@ -121,79 +122,79 @@ pub struct PyMessage {
     /// Whether the message is outgoing (i.e. you sent this message to some other peer) or
     /// incoming (i.e. someone else sent it to you or the peer).
     #[pyo3(get, set)]
-    pub out: Option<bool>,
+    pub out: bool,
 
     /// Whether you were mentioned in this message or not.
     ///
     /// This includes @username mentions, text mentions, and messages replying to one of your
     /// previous messages (even if it contains no mention in the message text).
     #[pyo3(get, set)]
-    pub mentioned: Option<bool>,
+    pub mentioned: bool,
 
     /// Whether you have read the media in this message or not.
     ///
     /// Most commonly, these are voice notes that you have not played yet.
     #[pyo3(get, set)]
-    pub media_unread: Option<bool>,
+    pub media_unread: bool,
 
     /// Whether you can react to this message.
     ///
     /// MessageService only.
     #[pyo3(get, set)]
-    pub reactions_are_possible: Option<bool>,
+    pub reactions_are_possible: bool,
 
     /// Whether the message should notify people with sound or not.
     #[pyo3(get, set)]
-    pub silent: Option<bool>,
+    pub silent: bool,
 
     /// Whether this message is a post in a broadcast channel or not.
     #[pyo3(get, set)]
-    pub post: Option<bool>,
+    pub post: bool,
 
     /// Whether this message was originated from a previously-scheduled message or not.
     #[pyo3(get, set)]
-    pub from_scheduled: Option<bool>,
+    pub from_scheduled: bool,
 
     /// Whether this is a legacy message: it has to be refetched with the new layer.
     #[pyo3(get, set)]
-    pub legacy: Option<bool>,
+    pub legacy: bool,
 
     /// Whether the edited mark of this message is edited should be hidden (e.g. in GUI clients)
     /// or shown.
     #[pyo3(get, set)]
-    pub edit_hide: Option<bool>,
+    pub edit_hide: bool,
 
     /// Whether this message is currently pinned or not.
     #[pyo3(get, set)]
-    pub pinned: Option<bool>,
+    pub pinned: bool,
 
     /// Whether this message is protected and thus cannot be forwarded; clients should also
     /// prevent users from saving attached media (i.e. videos should only be streamed,
     /// photos should be kept in RAM, et cetera).
     #[pyo3(get, set)]
-    pub noforwards: Option<bool>,
+    pub noforwards: bool,
 
     /// If set, any eventual webpage preview will be shown on top of the message instead of at the bottom.
     #[pyo3(get, set)]
-    pub invert_media: Option<bool>,
+    pub invert_media: bool,
 
     /// If set, the message was sent because of a scheduled action by the message sender,
     /// for example, as away, or a greeting service message.
     #[pyo3(get, set)]
-    pub offline: Option<bool>,
+    pub offline: bool,
 
     /// The video contained in the message is currently being processed by the server
     /// (i.e. to generate alternative qualities, that will be contained in the final messageMediaDocument.alt_document)
     #[pyo3(get, set)]
-    pub video_processing_pending: Option<bool>,
+    pub video_processing_pending: bool,
 
     /// Set if this is a suggested channel post that was paid using Telegram Stars.
     #[pyo3(get, set)]
-    pub paid_suggested_post_stars: Option<bool>,
+    pub paid_suggested_post_stars: bool,
 
     /// Set if this is a suggested channel post that was paid using Toncoins.
     #[pyo3(get, set)]
-    pub paid_suggested_post_ton: Option<bool>,
+    pub paid_suggested_post_ton: bool,
 
     /// Raw from_id, generally use `sender_id` instead.
     #[pyo3(get, set)]
@@ -388,21 +389,21 @@ impl PyMessage {
                     id,
                     Some(PyPeerId::from(peer_id)),
                     MessageData {
-                        out: Some(out),
-                        mentioned: Some(mentioned),
-                        media_unread: Some(media_unread),
-                        silent: Some(silent),
-                        post: Some(post),
-                        from_scheduled: Some(from_scheduled),
-                        legacy: Some(legacy),
-                        edit_hide: Some(edit_hide),
-                        pinned: Some(pinned),
-                        noforwards: Some(noforwards),
-                        invert_media: Some(invert_media),
-                        offline: Some(offline),
-                        video_processing_pending: Some(video_processing_pending),
-                        paid_suggested_post_stars: Some(paid_suggested_post_stars),
-                        paid_suggested_post_ton: Some(paid_suggested_post_ton),
+                        out,
+                        mentioned,
+                        media_unread,
+                        silent,
+                        post,
+                        from_scheduled,
+                        legacy,
+                        edit_hide,
+                        pinned,
+                        noforwards,
+                        invert_media,
+                        offline,
+                        video_processing_pending,
+                        paid_suggested_post_stars,
+                        paid_suggested_post_ton,
                         from_id: from_id.map(Into::into),
                         from_boosts_applied: from_boosts_applied,
                         from_rank: from_rank,
@@ -472,13 +473,13 @@ impl PyMessage {
                     id,
                     Some(PyPeerId::from(peer_id)),
                     MessageData {
-                        out: Some(out),
-                        mentioned: Some(mentioned),
-                        media_unread: Some(media_unread),
-                        reactions_are_possible: Some(reactions_are_possible),
-                        silent: Some(silent),
-                        post: Some(post),
-                        legacy: Some(legacy),
+                        out: out,
+                        mentioned: mentioned,
+                        media_unread: media_unread,
+                        reactions_are_possible: reactions_are_possible,
+                        silent: silent,
+                        post: post,
+                        legacy: legacy,
                         from_id: from_id.map(Into::into),
                         saved_peer_id: saved_peer_id.map(Into::into),
                         reply_to: reply_to.map(Into::into),
@@ -603,82 +604,105 @@ impl PyMessage {
         Ok(base.add_subclass(sub))
     }
 
-    /*pub fn from_raw_short_updates(
+    pub async fn from_raw_short_updates(
         client: &PyClient,
         updates: tl::types::UpdateShortSentMessage,
+        peer: PyPeer,
         input: InputMessage,
-        peer: PeerRef,
-    ) -> Self {
-        Self {
-            raw: tl::enums::Message::Message(tl::types::Message {
-                out: updates.out,
-                mentioned: false,
-                media_unread: false,
-                silent: input.silent,
-                post: false, // TODO true if sent to broadcast channel
-                from_scheduled: false,
-                legacy: false,
-                edit_hide: false,
-                pinned: false,
-                noforwards: false, // TODO true if channel has noforwads?
-                video_processing_pending: false,
-                paid_suggested_post_stars: false,
-                invert_media: input.invert_media,
-                id: updates.id,
-                from_id: None, // TODO self
-                from_boosts_applied: None,
-                peer_id: peer.id.into(),
-                saved_peer_id: None,
-                fwd_from: None,
-                via_bot_id: None,
-                reply_to: input.reply_to.map(|reply_to_msg_id| {
-                    tl::types::MessageReplyHeader {
-                        reply_to_scheduled: false,
-                        forum_topic: false,
-                        quote: false,
-                        reply_to_msg_id: Some(reply_to_msg_id),
-                        reply_to_peer_id: None,
-                        reply_from: None,
-                        reply_media: None,
-                        reply_to_top_id: None,
-                        quote_text: None,
-                        quote_entities: None,
-                        quote_offset: None,
-                        todo_item_id: None,
-                    }
-                    .into()
-                }),
-                date: updates.date,
-                message: input.text,
-                media: updates.media,
-                reply_markup: input.reply_markup,
-                entities: updates.entities,
-                views: None,
-                forwards: None,
-                replies: None,
-                edit_date: None,
-                post_author: None,
-                grouped_id: None,
-                restriction_reason: None,
-                ttl_period: updates.ttl_period,
-                reactions: None,
-                quick_reply_shortcut_id: None,
-                via_business_bot_id: None,
-                offline: false,
-                effect: None,
-                factcheck: None,
-                report_delivery_until_date: None,
-                paid_message_stars: None,
-                paid_suggested_post_ton: false,
-                suggested_post: None,
-                schedule_repeat_period: None,
-                summary_from_language: None,
+        peers: PyPeerMap,
+        send_as: Option<PyPeer>,
+    ) -> PyResult<PyClassInitializer<Self>> {
+        let is_post = match peer {
+            PyPeer::Channel(_) => true,
+            _ => false,
+        };
+        let noforwards = input.noforwards || match peer {
+            PyPeer::Channel(x) => Python::attach(|py| x.borrow(py).noforwards.unwrap_or_default()),
+            _ => false,
+        };
+        let me = client._me().expect("me cache should be set");
+        let from_id = Python::attach(|py| match send_as {
+            None => me.borrow(py).id(),
+            Some(send_as) => send_as.borrow(py).id(),
+        });
+        let from_rank = match send_as {
+            None => {
+                // TODO: client.get_participant me.rank
+                None
+            },
+            Some(_) => None,  // channel don't has rank.
+        };
+        let post_author = match peer {
+            PyPeer::Channel(x) => Python::attach(|py| {
+                let signatures = x.borrow(py).signatures;
+                if signatures {
+                    me.borrow(py).full_name()
+                } else {
+                    None
+                }
             }),
-            fetched_in: Some(peer),
+            _ => None,
+        };
+        
+        let base = PyClassInitializer::from(pytl::TLObject {});
+        Ok(base.add_subclass(Self {
+            out: updates.out,
+            mentioned: false,
+            media_unread: false,
+            reactions_are_possible: true,
+            silent: input.silent,
+            post: is_post,
+            from_scheduled: false,
+            legacy: false,
+            edit_hide: false,
+            pinned: false,
+            noforwards: noforwards,
+            offline: false,
+            video_processing_pending: false,
+            paid_suggested_post_stars: false,
+            paid_suggested_post_ton: false,
+            invert_media: input.invert_media,
+            id: updates.id,
+            from_id: from_id,
+            from_boosts_applied: None,
+            from_rank: from_rank,
+            peer_id: peer.id().into(),
+            saved_peer_id: None,
+            fwd_from: None,
+            via_bot_id: None,
+            reply_to: input.reply_to.map(Into::into),
+            date: Some(Python::attach(|py| {
+                PyDateTime::from_timestamp(py, updates.date as f64, None)
+                    .map(|x| x.unbind().into())
+            })?),
+            date_timestamp: Some(updates.date),
+            action: None,
+            message: Some(input.message),
+            media: updates.media.map(Into::into),
+            reply_markup: input.reply_markup.map(Into::into),
+            entities: updates.entities.unwrap_or_default().into_iter().map(Into::into).collect(),
+            views: None,
+            forwards: None,
+            replies: None,
+            edit_date: None,
+            post_author: post_author,
+            grouped_id: None,
+            restriction_reason: vec![],
+            ttl_period: updates.ttl_period,
+            reactions: None,
+            quick_reply_shortcut_id: None,
+            via_business_bot_id: None,
+            effect: None,
+            factcheck: None,
+            report_delivery_until_date: None,
+            paid_message_stars: None,
+            suggested_post: None,
+            schedule_repeat_period: None,
+            summary_from_language: None,
             client: client.clone(),
-            peers: client.empty_peer_map(),
-        }
-    }*/
+            peers: peers,
+        }))
+    }
 
     pub fn into_dict(self) -> PyResult<Py<PyDict>> {
         let peer = self.peer();
@@ -833,7 +857,7 @@ impl PyMessage {
             // layer 119, but the sender can only be the peer we're in.
             let peer_id = self.peer_id?;
             if matches!(peer_id.kind(), PyPeerKind::User | PyPeerKind::UserSelf) {
-                if self.out.unwrap_or(false) {
+                if self.out {
                     Some(PyPeerId::self_user().expect("self_user"))
                 } else {
                     Some(peer_id)

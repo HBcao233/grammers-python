@@ -2,10 +2,12 @@ use pyo3::exceptions::PyRuntimeError;
 use pyo3::{Py, PyErr, PyResult, Python};
 
 use grammers_tl_types as tl;
+use grammers_tl_types_pyo3 as pytl;
 
-use crate::client::IterBuffer;
+use crate::client::{PyClient, IterBuffer};
 use crate::errors::PyInvocationError;
 use crate::message::PyMessage;
+use crate::hints::InputPeerLike;
 
 pub const MAX_LIMIT: usize = 100;
 
@@ -92,4 +94,47 @@ impl<R: tl::RemoteCall<Return = tl::enums::messages::Messages>> IterBuffer<R, Py
 
         Ok(rate)
     }
+}
+
+/// Add access_hash to MessageEntity::MentionName
+pub(crate) async fn parse_mention_entities(
+    client: &PyClient,
+    mut entities: Vec<tl::enums::MessageEntity>,
+) -> Option<Vec<tl::enums::MessageEntity>> {
+    if entities.is_empty() {
+        return None;
+    }
+
+    if entities
+        .iter()
+        .any(|e| matches!(e, tl::enums::MessageEntity::MentionName(_)))
+    {
+        for entity in entities.iter_mut() {
+            if let tl::enums::MessageEntity::MentionName(mention_name) = entity {
+                *entity = tl::types::InputMessageEntityMentionName {
+                    offset: mention_name.offset,
+                    length: mention_name.length,
+                    user_id: tl::enums::InputUser::User(tl::types::InputUser {
+                        user_id: mention_name.user_id,
+                        access_hash: client
+                            .resolve_peer_ref(InputPeerLike::InputPeer(
+                                pytl::types::PyInputPeerUser {
+                                    user_id: mention_name.user_id,
+                                    access_hash: 0,
+                                }.into()
+                            ))
+                            .await
+                            .ok()
+                            .and_then(|peer| peer)
+                            .map(|peer| peer.auth())
+                            .unwrap_or_default()
+                            .0,
+                    }),
+                }
+                .into()
+            }
+        }
+    }
+
+    Some(entities)
 }

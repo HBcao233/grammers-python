@@ -73,7 +73,7 @@ impl HistoryMessageIter {
 }
 
 #[derive(Clone)]
-#[pyclass(name = "HistoryMessageIter", module = "grammers.client")]
+#[pyclass(name = "HistoryMessageIter", module = "grammers.custom")]
 pub struct PyHistoryMessageIter {
     pub(crate) peer: Option<InputPeerLike>,
     pub(crate) iter: Arc<Mutex<HistoryMessageIter>>,

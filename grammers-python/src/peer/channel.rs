@@ -85,7 +85,7 @@ struct ChannelData {
 /// this variant will always represent a broadcast channel. The only difference between a
 /// broadcast channel and a megagroup are the permissions (default, and available).
 #[derive(Clone)]
-#[pyclass(name = "Channel", module = "grammers.client", extends = pytl::TLObject)]
+#[pyclass(name = "Channel", module = "grammers.custom", extends = pytl::TLObject)]
 pub struct PyChannel {
     #[pyo3(get)]
     pub(crate) client: PyClient,
