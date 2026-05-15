@@ -22,11 +22,11 @@ grammers-tl-types-pyo3 = { path = "./grammers-tl-types-pyo3" }
 grammers-mtsender-pyo3 = { path = "./grammers-mtsender-pyo3" }
 grammers-session-pyo3 = { path = "./grammers-session-pyo3" }
 
-grammers-tl-types = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2" }
-grammers-tl-parser = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2" }
-grammers-crypto = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2" }
-grammers-session = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2", default-features = false }
-grammers-mtproto = { git = "https://codeberg.org/Lonami/grammers.git", rev = "be66b6e2" }
+grammers-tl-types = { git = "https://codeberg.org/Lonami/grammers.git", rev = "f4d6771b82aa39d7303de43e92abe7090b9be02b" }
+grammers-tl-parser = { git = "https://codeberg.org/Lonami/grammers.git", rev = "f4d6771b82aa39d7303de43e92abe7090b9be02b" }
+grammers-crypto = { git = "https://codeberg.org/Lonami/grammers.git", rev = "f4d6771b82aa39d7303de43e92abe7090b9be02b" }
+grammers-session = { git = "https://codeberg.org/Lonami/grammers.git", rev = "f4d6771b82aa39d7303de43e92abe7090b9be02b", default-features = false }
+grammers-mtproto = { git = "https://codeberg.org/Lonami/grammers.git", rev = "f4d6771b82aa39d7303de43e92abe7090b9be02b" }
 
 sha1 = "0.10.6"
 tokio = { version = "1.49.0", default-features = false, features = ["io-util", "sync", "time", "net", "macros", "rt", "signal"] }

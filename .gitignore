@@ -12,3 +12,4 @@ python/src/grammers/_rs/tl/functions/*.pyi
 
 docs/build
 *.so
+/*.sh

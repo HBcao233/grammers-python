@@ -49,6 +49,7 @@ struct MessageData {
     pub fwd_from: Option<pytl::enums::PyMessageFwdHeader>,
     pub via_bot_id: Option<i64>,
     pub via_business_bot_id: Option<i64>,
+    pub guestchat_via_from_id: Option<PyPeerId>,
     pub reply_to: Option<pytl::enums::PyMessageReplyHeader>,
     pub date: Option<PyDateTimeWrapper>,
     pub date_timestamp: Option<i32>,
@@ -220,6 +221,9 @@ pub struct PyMessage {
 
     #[pyo3(get, set)]
     pub via_business_bot_id: Option<i64>,
+    
+    #[pyo3(get, set)]
+    pub guestchat_via_from_id: Option<PyPeerId>,
 
     /// If this message is replying to a previous message, return the header with information
     /// about that reply.
@@ -360,6 +364,7 @@ impl PyMessage {
                     fwd_from,
                     via_bot_id,
                     via_business_bot_id,
+                    guestchat_via_from,
                     reply_to,
                     date,
                     message,
@@ -410,6 +415,7 @@ impl PyMessage {
                         fwd_from: fwd_from.map(Into::into),
                         via_bot_id: via_bot_id,
                         via_business_bot_id: via_business_bot_id,
+                        guestchat_via_from_id: guestchat_via_from.map(Into::into),
                         reply_to: reply_to.map(Into::into),
                         date: Some(Python::attach(|py| {
                             PyDateTime::from_timestamp(py, date as f64, None)
@@ -519,6 +525,7 @@ impl PyMessage {
             fwd_from,
             via_bot_id,
             via_business_bot_id,
+            guestchat_via_from_id,
             reply_to,
             date,
             date_timestamp,
@@ -574,6 +581,7 @@ impl PyMessage {
             fwd_from,
             via_bot_id,
             via_business_bot_id,
+            guestchat_via_from_id,
             reply_to,
             date,
             date_timestamp,
@@ -683,6 +691,9 @@ impl PyMessage {
     pub fn into_dict(self) -> PyResult<Py<PyDict>> {
         let peer = self.peer();
         let sender = self.sender();
+        let via_bot = self.via_bot();
+        let via_business_bot = self.via_business_bot();
+        let guestchat_via_from = self.guestchat_via_from();
         let PyMessage {
             client: _,
             peers: _,
@@ -709,8 +720,9 @@ impl PyMessage {
             from_rank,
             saved_peer_id,
             fwd_from,
-            via_bot_id,
-            via_business_bot_id,
+            via_bot_id: _,
+            via_business_bot_id: _,
+            guestchat_via_from_id: _,
             reply_to,
             date,
             date_timestamp: _,
@@ -764,8 +776,9 @@ impl PyMessage {
             dict.set_item("from_rank", from_rank)?;
             dict.set_item("saved_peer_id", saved_peer_id)?;
             dict.set_item("fwd_from", fwd_from)?;
-            dict.set_item("via_bot_id", via_bot_id)?;
-            dict.set_item("via_business_bot_id", via_business_bot_id)?;
+            dict.set_item("via_bot", via_bot)?;
+            dict.set_item("via_business_bot", via_business_bot)?;
+            dict.set_item("guestchat_via_from", guestchat_via_from)?;
             dict.set_item("reply_to", reply_to)?;
             dict.set_item("date", date)?;
             dict.set_item("action", action)?;
@@ -848,6 +861,21 @@ impl PyMessage {
     #[getter]
     pub fn sender(&self) -> Option<PyPeer> {
         self.peers.get(self.sender_id()?).cloned()
+    }
+    
+    #[getter]
+    pub fn via_bot(&self) -> Option<PyPeer> {
+        self.peers.get(PyPeerId::user(self.via_bot_id?).expect("via_bot_id should be user")).cloned()
+    }
+    
+    #[getter]
+    pub fn via_business_bot(&self) -> Option<PyPeer> {
+        self.peers.get(PyPeerId::user(self.via_business_bot_id?).expect("via_business_bot_id should be user")).cloned()
+    }
+    
+    #[getter]
+    pub fn guestchat_via_from(&self) -> Option<PyPeer> {
+        self.peers.get(self.guestchat_via_from_id?).cloned()
     }
 
     // ====================
