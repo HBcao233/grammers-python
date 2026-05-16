@@ -82,7 +82,7 @@ fn write_pyi(
     metadata: &Metadata,
 ) -> io::Result<()> {
     fs::create_dir_all(&tl_dir)?;
-    
+
     let base = match definitions[0].category {
         Category::Types => "TLObject",
         Category::Functions => "TLRequest",
