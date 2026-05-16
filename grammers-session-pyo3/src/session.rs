@@ -6,12 +6,7 @@ use pyo3::exceptions::{PyNotImplementedError, PyTypeError};
 use pyo3::prelude::*;
 use pyo3::types::PyType;
 
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use tokio::sync::OnceCell;
-use tokio::sync::oneshot;
-
-use crate::utils::into_future;
+use crate::into_future;
 
 #[derive(Clone)]
 #[pyclass(name = "Session", module = "grammers.sessions", subclass, dict)]
@@ -134,68 +129,39 @@ impl PySession {
 }
 
 // For use on the Rust side
-pub struct Session {
-    inner: Py<PyAny>,
-    event_loop: Arc<OnceCell<Py<PyAny>>>,
-    loop_rx: Arc<Mutex<Option<oneshot::Receiver<Py<PyAny>>>>>,
-}
+pub struct Session(Py<PyAny>);
 impl Clone for Session {
     fn clone(&self) -> Self {
-        Python::attach(|py| Self {
-            inner: self.inner.bind(py).clone().unbind(),
-            event_loop: self.event_loop.clone(),
-            loop_rx: self.loop_rx.clone(),
-        })
+        Python::attach(|py| Self(self.get_inner(py)))
     }
 }
 impl Session {
-    pub fn new(session: Py<PyAny>, loop_rx: oneshot::Receiver<Py<PyAny>>) -> Self {
-        Self {
-            inner: session,
-            event_loop: Arc::new(OnceCell::new()),
-            loop_rx: Arc::new(Mutex::new(Some(loop_rx))),
-        }
+    pub fn new(session: Py<PyAny>) -> Self {
+        Self(session)
     }
 
     pub fn get_inner<'py>(&self, py: Python<'py>) -> Py<PyAny> {
-        Py::clone_ref(&self.inner, py)
+        self.0.clone_ref(py)
     }
 
     pub fn cls_name<'py>(&self, py: Python<'py>) -> PyResult<String> {
-        self.inner
-            .bind(py)
-            .get_type()
-            .qualname()?
-            .extract::<String>()
-    }
-
-    pub async fn event_loop(&self) -> &Py<PyAny> {
-        self.event_loop
-            .get_or_init(|| async { self.loop_rx.lock().await.take().unwrap().await.unwrap() })
-            .await
+        self.0.bind(py).get_type().qualname()?.extract::<String>()
     }
 
     pub async fn close(&self) -> PyResult<()> {
-        let event_loop = self.event_loop().await;
-        let coro = Python::attach(|py| {
-            self.inner
-                .bind(py)
-                .call_method0("close")
-                .map(|x| x.unbind())
-        })?;
-        into_future(event_loop, coro).await?;
+        let coro = Python::attach(|py| self.0.bind(py).call_method0("close").map(|x| x.unbind()))?;
+        into_future(coro).await?;
         Ok(())
     }
 
     pub async fn home_dc_id(&self) -> PyResult<i32> {
-        let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner
+            self.0
                 .bind(py)
                 .call_method0("home_dc_id")
                 .map(|x| x.unbind())
         })?;
-        let res = into_future(event_loop, coro).await?;
+        let res = into_future(coro).await?;
         Python::attach(|py| res.extract(py)).map_err(|e| {
             let cls_name = match Python::attach(|py| self.cls_name(py)) {
                 Ok(name) => name,
@@ -206,26 +172,24 @@ impl Session {
     }
 
     pub async fn set_home_dc_id(&self, dc_id: i32) -> PyResult<()> {
-        let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner
+            self.0
                 .bind(py)
                 .call_method1("set_home_dc_id", (dc_id,))
                 .map(|x| x.unbind())
         })?;
-        into_future(event_loop, coro).await?;
+        into_future(coro).await?;
         Ok(())
     }
 
     pub async fn dc_option(&self, dc_id: i32) -> PyResult<Option<PyDcOption>> {
-        let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner
+            self.0
                 .bind(py)
                 .call_method1("dc_option", (dc_id,))
                 .map(|x| x.unbind())
         })?;
-        let res = into_future(event_loop, coro).await?;
+        let res = into_future(coro).await?;
         Python::attach(|py| Ok::<_, PyErr>(res.extract(py)?)).map_err(|e| {
             let cls_name = match Python::attach(|py| self.cls_name(py)) {
                 Ok(name) => name,
@@ -236,28 +200,26 @@ impl Session {
     }
 
     pub async fn set_dc_option(&self, dc_option: PyDcOption) -> PyResult<()> {
-        let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let dc_option = Py::new(py, dc_option)?;
-            self.inner
+            self.0
                 .bind(py)
                 .call_method1("set_dc_option", (dc_option,))
                 .map(|x| x.unbind())
         })?;
-        into_future(event_loop, coro).await?;
+        into_future(coro).await?;
         Ok(())
     }
 
     pub async fn peer(&self, peer: PyPeerId) -> PyResult<Option<PeerInfo>> {
-        let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let peer = Py::new(py, peer)?;
-            self.inner
+            self.0
                 .bind(py)
                 .call_method1("peer", (peer,))
                 .map(|x| x.unbind())
         })?;
-        let res = into_future(event_loop, coro).await?;
+        let res = into_future(coro).await?;
         Python::attach(|py| res.extract(py)).map_err(|e| {
             let cls_name = match Python::attach(|py| self.cls_name(py)) {
                 Ok(name) => name,
@@ -272,26 +234,24 @@ impl Session {
     }
 
     pub async fn cache_peer(&self, peer_info: PeerInfo) -> PyResult<()> {
-        let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner
+            self.0
                 .bind(py)
                 .call_method1("cache_peer", (peer_info,))
                 .map(|x| x.unbind())
         })?;
-        into_future(event_loop, coro).await?;
+        into_future(coro).await?;
         Ok(())
     }
 
     pub async fn updates_state(&self) -> PyResult<PyUpdatesState> {
-        let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
-            self.inner
+            self.0
                 .bind(py)
                 .call_method0("updates_state")
                 .map(|x| x.unbind())
         })?;
-        let res = into_future(event_loop, coro).await?;
+        let res = into_future(coro).await?;
         Python::attach(|py| Ok::<_, PyErr>(res.extract(py)?)).map_err(|e| {
             let cls_name = match Python::attach(|py| self.cls_name(py)) {
                 Ok(name) => name,
@@ -302,15 +262,14 @@ impl Session {
     }
 
     pub async fn set_update_state(&self, update: UpdateStateLike) -> PyResult<()> {
-        let event_loop = self.event_loop().await;
         let coro = Python::attach(|py| {
             let update = update.into_pyobject(py)?;
-            self.inner
+            self.0
                 .bind(py)
                 .call_method1("set_update_state", (update,))
                 .map(|x| x.unbind())
         })?;
-        into_future(event_loop, coro).await?;
+        into_future(coro).await?;
         Ok(())
     }
 }

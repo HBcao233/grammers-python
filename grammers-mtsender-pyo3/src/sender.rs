@@ -25,9 +25,9 @@ use tokio::sync::oneshot;
 use tokio::sync::oneshot::error::TryRecvError;
 use tokio::time::{Instant, sleep_until};
 
+use crate::ServerAddr;
 use crate::errors::{InvocationError, ReadError, RpcError};
 use crate::net::NetStream;
-use crate::ServerAddr;
 
 /// The maximum data that we're willing to send or receive at once.
 ///

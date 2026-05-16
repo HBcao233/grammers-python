@@ -236,7 +236,7 @@ pub struct PyUser {
     pub bot_has_main_app: Option<bool>,
     #[pyo3(get, set)]
     pub bot_forum_view: Option<bool>,
-    
+
     #[pyo3(get, set)]
     pub first_name: Option<String>,
     #[pyo3(get, set)]
@@ -276,10 +276,7 @@ pub struct PyUser {
 impl PyUser {
     pub fn from_raw(client: &PyClient, user: tl::enums::User) -> PyClassInitializer<Self> {
         let (id, data) = match user {
-            tl::enums::User::Empty(x) => (
-                PyPeerId::user(x.id).unwrap(),
-                UserData::default(),
-            ),
+            tl::enums::User::Empty(x) => (PyPeerId::user(x.id).unwrap(), UserData::default()),
             tl::enums::User::User(x) => (
                 PyPeerId::user(x.id).unwrap(),
                 UserData {
@@ -325,7 +322,8 @@ impl PyUser {
                     bot_inline_placeholder: x.bot_inline_placeholder,
                     lang_code: x.lang_code,
                     emoji_status: x.emoji_status.map(Into::into),
-                    usernames: x.usernames
+                    usernames: x
+                        .usernames
                         .unwrap_or(Vec::new())
                         .into_iter()
                         .map(Into::into)
@@ -336,7 +334,7 @@ impl PyUser {
                     bot_active_users: x.bot_active_users,
                     bot_verification_icon: x.bot_verification_icon,
                     send_paid_messages_stars: x.send_paid_messages_stars,
-                }
+                },
             ),
         };
         let UserData {

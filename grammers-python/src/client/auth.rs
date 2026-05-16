@@ -15,7 +15,7 @@ use crate::utils::extract_password_parameters;
 
 /// Login token needed to continue the login process after sending the code.
 #[derive(Clone)]
-#[pyclass(name = "LoginToken", module = "grammers")]
+#[pyclass(name = "LoginToken", module = "grammers.custom")]
 pub struct PyLoginToken {
     #[pyo3(get, set)]
     pub phone: String,
@@ -42,37 +42,37 @@ impl PyLoginToken {
 }
 
 create_exception!(
-    grammers.errors,
+    grammers.custom,
     SignInError,
     PyException,
     "Login-related errors."
 );
 create_exception!(
-    grammers.errors,
+    grammers.custom,
     PaymentRequiredError,
     SignInError,
     "Indicating that due to the high cost of SMS verification codes for the user's country/provider, the user must purchase a Telegram Premium subscription in order to proceed with the login/signup."
 );
 create_exception!(
-    grammers.errors,
+    grammers.custom,
     SignUpRequiredError,
     SignInError,
     "Sign-up with an official client is required. (Third-party applications cannot be used to register new accounts.)"
 );
 create_exception!(
-    grammers.errors,
+    grammers.custom,
     PasswordRequiredError,
     SignInError,
     "The account has 2FA enabled, and the password is required."
 );
 create_exception!(
-    grammers.errors,
+    grammers.custom,
     InvalidCodeError,
     SignInError,
     "The code used to complete login was not valid."
 );
 create_exception!(
-    grammers.errors,
+    grammers.custom,
     InvalidPasswordError,
     SignInError,
     "The 2FA password used to complete login was not valid."

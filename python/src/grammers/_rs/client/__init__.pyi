@@ -3,6 +3,7 @@ from typing import Awaitable, Callable, Optional, Protocol, Self, Sequence
 from grammers.tl import TLRequest, TLObject, types
 from grammers.sessions import Session, PeerRef
 from grammers.custom import (
+    BytesChunk,
     LoginToken,
     User,
     Group,
@@ -79,6 +80,8 @@ class Client:
                 E.g.: '0123456789abcdef0123456789abcdef'.
         """
 
+    # ========== Net Methods ==========
+    
     async def disconnect(self) -> None:
         """
         Signals all clients sharing the same sender pool to disconnect.
@@ -119,7 +122,7 @@ class Client:
         Calling clent's methods after stopping will raise ClientStoppedError.
         """
 
-    # ========== auth methods ==========
+    # ========== Auth Methods ==========
 
     async def is_authorized(self) -> bool:
         """
@@ -400,7 +403,7 @@ class Client:
         """
         ...
 
-    # ========== chats methods ==========
+    # ========== Chats Methods ==========
 
     async def get_me(self) -> types.User:
         """
@@ -478,7 +481,8 @@ class Client:
         """
         ...
 
-    # ========== messages methods ==========
+    # ========== Messages Methods ==========
+    
     async def get_messages_by_id(
         peer: hints.InputPeerLike,
         message_ids: Sequence[int],
@@ -530,3 +534,94 @@ class Client:
                 print(await iterator.next())  # or await anext(iterator)
         """
         ...
+
+    # ========== Uploads Methods ==========
+
+    async def iter_download(
+        self,
+        media: TLObject,  # TODO
+        *,
+        chunk_size: int = 512,
+        offset: int = 0,
+        limit: Optional[int] = None,
+    ) -> AsyncIterator[BytesChunk]:
+        """
+        Stream-download Telegram media as an async iterator.
+
+        Parameters
+        ----------
+        media:
+            Telegram media object, file location, message, or input document.
+
+        chunk_size:
+            Size of each streamed chunk in bytes (unit: KB).
+
+            For best performance, a chunk size >= 256 KB is strongly recommended.
+
+            Very small chunk sizes may significantly increase:
+            - Python async scheduling overhead
+            - cross-language boundary overhead
+            - memory allocation pressure
+
+            Recommended values:
+            - 256 KB
+            - 512 KB
+            - 1 MB (1024 KB)
+
+        offset:
+            Starting download offset in bytes.
+
+        limit:
+            Optional maximum number of bytes to download.
+
+        Yields
+        ------
+        BytesChunk
+            A zero-copy bytes-like chunk object.
+
+        Performance Notes
+        -----------------
+        This API is optimized for lightweight streaming workloads such as:
+        - proxying traffic
+        - forwarding files
+        - websocket streaming
+        - HTTP relay
+        - incremental network transfer
+
+        Avoid long-running CPU-intensive work or synchronous blocking operations
+        inside the iteration loop.
+        
+        Asynchronous IO operations such as:
+        - file writes
+        - socket writes
+        - HTTP streaming
+        
+        are expected and work well with the downloader pipeline.
+
+        Bad:
+            async for chunk in client.iter_download(...):
+                heavy_hash(chunk)
+                compress(chunk)
+
+        Better:
+            async for chunk in client.iter_download(...):
+                await output.write(chunk)
+
+        For heavy processing workloads, parallel pipelines or worker tasks
+        are recommended to avoid slowing down the downloader.
+
+        Example
+        -------
+        Basic file streaming:
+
+            async with aiofiles.open("video.mp4", "wb") as f:
+                async for chunk in client.iter_download(media):
+                    await f.write(chunk)
+
+        HTTP forwarding:
+
+            async for chunk in client.iter_download(media):
+                await response.write(chunk)
+        """
+        ...
+    

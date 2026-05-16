@@ -6,8 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use pyo3::types::PyAnyMethods;
-use pyo3::{Py, PyAny, PyResult, Python};
+use pyo3::PyResult;
 
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 use std::ops::{ControlFlow, Deref};
@@ -25,10 +24,10 @@ use tokio::{
 
 use grammers_session_pyo3::PyDcOption;
 
+use crate::ServerAddr;
 use crate::configuration::ConnectionParams;
 use crate::errors::ReadError;
 use crate::{InvocationError, Sender, connect, connect_with_auth};
-use crate::ServerAddr;
 
 pub(crate) type Transport = transport::Full;
 
@@ -182,19 +181,7 @@ impl SenderPoolRunner {
     /// Run the sender pool until [`SenderPoolHandle::quit`] is called or the returned future is dropped.
     ///
     /// Connections will be initiated on-demand whenever the first request to a datacenter is made.
-    pub async fn run(mut self, loop_tx: oneshot::Sender<Py<PyAny>>) {
-        std::thread::spawn(move || {
-            Python::attach(|py| {
-                let asyncio = py.import("asyncio").unwrap();
-                let new_loop = asyncio.call_method0("new_event_loop").unwrap();
-                asyncio
-                    .call_method1("set_event_loop", (&new_loop,))
-                    .unwrap();
-                loop_tx.send(new_loop.clone().unbind()).unwrap();
-                let _ = new_loop.call_method0("run_forever");
-            });
-        });
-
+    pub async fn run(mut self) {
         loop {
             tokio::select! {
                 biased;

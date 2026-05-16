@@ -5,6 +5,23 @@ from ..tl import TLObject
 from typing import Self, final
 from datetime import datetime
 
+class BytesChunk:
+    """
+    Zero-copy downloadable chunk buffer.
+
+    This object implements the Python buffer protocol and is intended
+    to be consumed as a bytes-like object (e.g. memoryview, bytes, aiofiles).
+
+    Notes
+    -----
+    - The underlying memory may be backed by Rust-managed buffers.
+    - Avoid storing chunks for long periods unless necessary.
+    - Convert to `bytes(chunk)` if persistent ownership is required.
+    """
+
+    def __bytes__(self) -> bytes: ...
+    def __len__(self) -> int: ...
+
 class LoginToken:
     def __new__(cls, phone: str, phone_code_hash: str) -> Self: ...
     @property

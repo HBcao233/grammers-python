@@ -29,7 +29,7 @@ grammers-session = { git = "https://codeberg.org/Lonami/grammers.git", rev = "f4
 grammers-mtproto = { git = "https://codeberg.org/Lonami/grammers.git", rev = "f4d6771b82aa39d7303de43e92abe7090b9be02b" }
 
 sha1 = "0.10.6"
-tokio = { version = "1.49.0", default-features = false, features = ["io-util", "sync", "time", "net", "macros", "rt", "signal"] }
+tokio = { version = "1.49.0", default-features = false, features = ["io-util", "sync", "time", "net", "macros", "rt", "rt-multi-thread", "signal"] }
 log = "0.4.28"
 url = "2.5.8"
 tokio-socks = "0.5.2"

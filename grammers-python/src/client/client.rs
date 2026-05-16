@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
-use tokio::sync::{mpsc, oneshot};
+use tokio::sync::mpsc;
 use tokio::task::JoinHandle;
 
 use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
@@ -97,9 +97,8 @@ impl PyClient {
         system_lang_code: Option<&str>,
         use_ipv6: bool,
     ) -> PyResult<Self> {
-        let (loop_tx, loop_rx) = oneshot::channel::<Py<PyAny>>();
         let session = if session.is_instance_of::<PySession>() {
-            Session::new(session.unbind(), loop_rx)
+            Session::new(session.unbind())
         } else {
             let cls_name = session.get_type().qualname()?;
             return Err(PyTypeError::new_err(format!(
@@ -169,7 +168,7 @@ impl PyClient {
             updates,
             handle,
         } = pool;
-        let pool_task = RUNTIME.spawn(runner.run(loop_tx));
+        let pool_task = RUNTIME.spawn(runner.run());
 
         let inner = ClientInner {
             pool_task: Some(pool_task),
@@ -258,16 +257,15 @@ impl PyClient {
             Some(me) => Some(Python::attach(|py| me.bind(py).clone().unbind())),
         }
     }
-
-    #[setter(me)]
-    pub fn set_me(&self, user: Py<PyUser>) {
-        self.inner.lock().unwrap().me = Some(user);
-    }
 }
 
 impl PyClient {
     pub fn session(&self) -> Session {
         self.inner.lock().unwrap().session.clone()
+    }
+
+    pub fn set_me(&self, user: Py<PyUser>) {
+        self.inner.lock().unwrap().me = Some(user);
     }
 
     pub fn handle(&self) -> SenderPoolFatHandle {

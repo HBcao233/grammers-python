@@ -15,48 +15,26 @@ use chrono::{DateTime, Utc};
 */
 use pyo3::call::PyCallArgs;
 use pyo3::types::{PyAnyMethods, PyDateTime};
-use pyo3::{FromPyObject, IntoPyObject, Py, PyAny, PyErr, PyResult, Python};
+use pyo3::{FromPyObject, IntoPyObject, Py, PyAny, PyResult, Python};
 
 use std::sync::OnceLock;
 
 use crate::hints::InputPeerLike;
-use grammers_session_pyo3::utils::into_future;
+use grammers_session_pyo3::into_future;
 use grammers_tl_types as tl;
 
 static PY_INSPECT: OnceLock<Py<PyAny>> = OnceLock::new();
-static PY_ASYNCIO: OnceLock<Py<PyAny>> = OnceLock::new();
 
-pub fn inspect() -> PyResult<Py<PyAny>> {
+pub fn inspect(py: Python<'_>) -> PyResult<Py<PyAny>> {
     match PY_INSPECT.get() {
-        Some(x) => Ok(Python::attach(|py| x.bind(py).clone().unbind())),
+        Some(x) => Ok(x.clone_ref(py)),
         None => {
-            let (v1, v2) = Python::attach(|py| {
-                let x = py.import("inspect")?.into_any();
-                Ok::<_, PyErr>((x.clone().unbind(), x.unbind()))
-            })?;
-            PY_INSPECT.set(v1).unwrap();
-            Ok(v2)
+            let inspect = py.import("inspect")?.into_any().unbind();
+            let copy = inspect.clone_ref(py);
+            PY_INSPECT.set(inspect).unwrap();
+            Ok(copy)
         }
     }
-}
-
-pub fn asyncio() -> PyResult<Py<PyAny>> {
-    match PY_ASYNCIO.get() {
-        Some(x) => Ok(Python::attach(|py| x.bind(py).clone().unbind())),
-        None => {
-            let (v1, v2) = Python::attach(|py| {
-                let x = py.import("asyncio")?.into_any();
-                Ok::<_, PyErr>((x.clone().unbind(), x.unbind()))
-            })?;
-            PY_ASYNCIO.set(v1).unwrap();
-            Ok(v2)
-        }
-    }
-}
-
-pub fn event_loop() -> PyResult<Py<PyAny>> {
-    let asyncio = asyncio()?;
-    Python::attach(|py| asyncio.call_method0(py, "get_running_loop"))
 }
 
 #[derive(FromPyObject, IntoPyObject)]
@@ -94,22 +72,20 @@ where
 }
 
 pub async fn maybe_await(obj: Py<PyAny>) -> PyResult<Py<PyAny>> {
-    let inspect = inspect()?;
     let is_awaitable = Python::attach(|py| {
+        let inspect = inspect(py)?;
         let x = inspect.bind(py).call_method1("isawaitable", (&obj,))?;
         x.extract()
     })?;
-    let event_loop = event_loop()?;
     if is_awaitable {
-        into_future(&event_loop, obj).await
+        into_future(obj).await
     } else {
         Ok(obj)
     }
 }
 
 pub async fn into_await(coro: Py<PyAny>) -> PyResult<Py<PyAny>> {
-    let event_loop = event_loop()?;
-    into_future(&event_loop, coro).await
+    into_future(coro).await
 }
 
 /*
@@ -179,17 +155,17 @@ pub fn parse_username(username: &str) -> Option<String> {
     if username.is_empty() {
         return None;
     }
-    
+
     // Remove the begining optional '@'
     let username = username.strip_prefix('@').unwrap_or(&username);
-    
+
     // Length at least 5
     if username.len() < 5 {
         return None;
     }
 
     let mut chars = username.chars();
-    
+
     // the first one must be alphabet
     let first = chars.next()?;
     if !first.is_ascii_alphabetic() {
@@ -201,7 +177,7 @@ pub fn parse_username(username: &str) -> Option<String> {
     if !last.is_ascii_alphanumeric() {
         return None;
     }
-    
+
     // the middle ones can be alphabet or numbers or '_'
     for c in chars {
         if !(c.is_ascii_alphanumeric() || c == '_') {
@@ -216,9 +192,9 @@ pub fn parse_phone(phone: &str) -> Option<String> {
     if phone.is_empty() {
         return None;
     }
-    
+
     let phone = phone.strip_prefix('+').unwrap_or(&phone);
-    
+
     let mut result = String::with_capacity(phone.len());
 
     for c in phone.chars() {

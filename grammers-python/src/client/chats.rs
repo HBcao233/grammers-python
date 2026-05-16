@@ -409,7 +409,9 @@ impl PyClient {
     pub fn parse_invite_link(invite_link: String) -> Option<String> {
         let s = invite_link.strip_prefix('+').unwrap_or(&invite_link);
         if !s.is_empty()
-            && s.chars().all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-') {
+            && s.chars()
+                .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+        {
             return Some(s.to_string());
         }
 

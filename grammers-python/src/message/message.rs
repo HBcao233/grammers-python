@@ -203,11 +203,11 @@ pub struct PyMessage {
     /// Supergroups only, contains the number of boosts this user has given the current supergroup.
     #[pyo3(get, set)]
     pub from_boosts_applied: Option<i32>,
-    
+
     /// the rank of the sender in the group.
     #[pyo3(get, set)]
     pub from_rank: Option<String>,
-    
+
     #[pyo3(get, set)]
     pub saved_peer_id: Option<PyPeerId>,
 
@@ -221,7 +221,7 @@ pub struct PyMessage {
 
     #[pyo3(get, set)]
     pub via_business_bot_id: Option<i64>,
-    
+
     #[pyo3(get, set)]
     pub guestchat_via_from_id: Option<PyPeerId>,
 
@@ -862,17 +862,24 @@ impl PyMessage {
     pub fn sender(&self) -> Option<PyPeer> {
         self.peers.get(self.sender_id()?).cloned()
     }
-    
+
     #[getter]
     pub fn via_bot(&self) -> Option<PyPeer> {
-        self.peers.get(PyPeerId::user(self.via_bot_id?).expect("via_bot_id should be user")).cloned()
+        self.peers
+            .get(PyPeerId::user(self.via_bot_id?).expect("via_bot_id should be user"))
+            .cloned()
     }
-    
+
     #[getter]
     pub fn via_business_bot(&self) -> Option<PyPeer> {
-        self.peers.get(PyPeerId::user(self.via_business_bot_id?).expect("via_business_bot_id should be user")).cloned()
+        self.peers
+            .get(
+                PyPeerId::user(self.via_business_bot_id?)
+                    .expect("via_business_bot_id should be user"),
+            )
+            .cloned()
     }
-    
+
     #[getter]
     pub fn guestchat_via_from(&self) -> Option<PyPeer> {
         self.peers.get(self.guestchat_via_from_id?).cloned()
