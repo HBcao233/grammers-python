@@ -222,7 +222,7 @@ impl SenderPoolRunner {
                         return ControlFlow::Continue(());
                     }
                 };
-                let Some(mut dc_option) = dc_option else {
+                let Some(dc_option) = dc_option else {
                     let _ = tx.send(Err(InvocationError::InvalidDc(dc_id)));
                     return ControlFlow::Continue(());
                 };
@@ -233,47 +233,13 @@ impl SenderPoolRunner {
                     .find(|connection| connection.dc_id == dc_id)
                 {
                     Some(connection) => connection,
-                    None => {
-                        let sender = match self.connect_sender(&dc_option).await {
-                            Ok(t) => t,
-                            Err(e) => {
-                                let _ = tx.send(Err(e));
-                                return ControlFlow::Continue(());
-                            }
-                        };
-
-                        dc_option.auth_key = Some(sender.auth_key());
-                        let dc_id = dc_option.id;
-                        let res = self.session.set_dc_option(dc_option).await;
-                        match res {
-                            Ok(_) => {}
-                            Err(e) => {
-                                let _ = tx.send(Err(InvocationError::PyErr(e)));
-                                return ControlFlow::Break(());
-                            }
-                        };
-
-                        let (rpc_tx, rpc_rx) = mpsc::unbounded_channel();
-                        let home_dc_id = match self.session.home_dc_id().await {
-                            Ok(x) => x,
-                            Err(e) => {
-                                let _ = tx.send(Err(InvocationError::PyErr(e)));
-                                return ControlFlow::Break(());
-                            }
-                        };
-                        let abort_handle = self.connection_pool.spawn(run_sender(
-                            sender,
-                            rpc_rx,
-                            self.updates_tx.clone(),
-                            dc_id == home_dc_id,
-                        ));
-                        self.connections.push(ConnectionInfo {
-                            dc_id,
-                            rpc_tx,
-                            abort_handle,
-                        });
-                        self.connections.last().unwrap()
-                    }
+                    None => match self.connect_to_dc(&dc_option).await {
+                        Ok(t) => t,
+                        Err(e) => {
+                            let _ = tx.send(Err(e));
+                            return ControlFlow::Continue(());
+                        }
+                    },
                 };
                 let _ = connection.rpc_tx.send(Rpc { body, tx });
                 ControlFlow::Continue(())
@@ -291,6 +257,42 @@ impl SenderPoolRunner {
             }
             Request::Quit => ControlFlow::Break(()),
         }
+    }
+
+    async fn connect_to_dc(
+        &mut self,
+        dc_option: &PyDcOption,
+    ) -> Result<&ConnectionInfo, InvocationError> {
+        let sender = self.connect_sender(&dc_option).await?;
+
+        let mut dc_option = dc_option.clone();
+
+        dc_option.auth_key = Some(sender.auth_key());
+        let dc_id = dc_option.id;
+        self.session
+            .set_dc_option(dc_option)
+            .await
+            .map_err(InvocationError::PyErr)?;
+
+        let (rpc_tx, rpc_rx) = mpsc::unbounded_channel();
+        let home_dc_id = self
+            .session
+            .home_dc_id()
+            .await
+            .map_err(InvocationError::PyErr)?;
+
+        let abort_handle = self.connection_pool.spawn(run_sender(
+            sender,
+            rpc_rx,
+            self.updates_tx.clone(),
+            dc_id == home_dc_id,
+        ));
+        self.connections.push(ConnectionInfo {
+            dc_id,
+            rpc_tx,
+            abort_handle,
+        });
+        Ok(self.connections.last().unwrap())
     }
 
     async fn connect_sender(

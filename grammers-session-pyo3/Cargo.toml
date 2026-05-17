@@ -1,6 +1,6 @@
 [package]
 name = "grammers-session-pyo3"
-version = "0.4.3"
+version = "0.4.7"
 description = """
 Session storages interface of Telegram data for pyo3 Python bindings.
 """
