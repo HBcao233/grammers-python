@@ -135,6 +135,7 @@ impl Clone for Session {
         Python::attach(|py| Self(self.get_inner(py)))
     }
 }
+
 impl Session {
     pub fn new(session: Py<PyAny>) -> Self {
         Self(session)
