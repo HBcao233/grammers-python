@@ -7,7 +7,7 @@ use super::{PyClient, UpdatesConfiguration};
 impl PyClient {
     /// Start login in to telegram
     #[pyo3(signature = ())]
-    async fn start(&mut self) -> PyResult<()> {
+    async fn start(&mut self) -> PyResult<Py<PyUser>> {
         let authorized = self.is_authorized().await?;
         let user = if !authorized {
             self.authorize().await?
@@ -16,14 +16,15 @@ impl PyClient {
         };
         self.set_me(user);
 
-        self._start().await
+        self._me().expect("me setup")
     }
 
     /// Stop client
     /// Calling clent's methods after stopping will raise ClientStoppedError.
     #[pyo3(signature = ())]
     async fn stop(&mut self) -> PyResult<()> {
-        let stream_updates = self.inner.lock().unwrap().stream_updates.take();
+        let inner = self.inner.clone();
+        let stream_updates = inner.stream_updates.lock().unwrap().take();
         if let Some(s) = stream_updates {
             s.sync_update_state().await?;
         }
@@ -33,33 +34,10 @@ impl PyClient {
         let session = self.session();
         session.close().await?;
 
-        let task = self.inner.lock().unwrap().pool_task.take();
+        let task = inner.pool_task.lock().unwrap().take();
         if let Some(task) = task {
             let _ = task.await;
         }
-        Ok(())
-    }
-}
-
-impl PyClient {
-    async fn _start(&self) -> PyResult<()> {
-        let updates = self
-            .inner
-            .lock()
-            .unwrap()
-            .updates
-            .take()
-            .ok_or(PyRuntimeError::new_err("Client fail to initialize."))?;
-        let stream_updates = self
-            .stream_updates(
-                updates,
-                UpdatesConfiguration {
-                    catch_up: true,
-                    update_queue_limit: Some(100),
-                },
-            )
-            .await?;
-        self.inner.lock().unwrap().stream_updates = Some(stream_updates);
         Ok(())
     }
 }

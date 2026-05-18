@@ -107,7 +107,7 @@ async fn prepare_channel_difference(
 }
 
 /// Iterator returned by [`Client::stream_updates`].
-pub struct UpdateStream {
+pub(crate) struct UpdateStream {
     client: PyClient,
     message_box: MessageBoxes,
     // When did we last warn the user that the update queue filled up?

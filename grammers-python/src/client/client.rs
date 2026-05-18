@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex};
+use std::sync::{Arc, Mutex, RwLock};
 
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
@@ -11,6 +11,7 @@ use grammers_session::updates::UpdatesLike;
 use grammers_session_pyo3::{PySession, Session};
 
 use super::UpdateStream;
+use crate::events::EventHandlersManager;
 use crate::peer::PyUser;
 use crate::runtime::RUNTIME;
 
@@ -34,30 +35,37 @@ impl<'a, 'py> FromPyObject<'a, 'py> for ApiId {
 }
 
 pub struct ClientInner {
-    pub(crate) pool_task: Option<JoinHandle<()>>,
-    pub(crate) updates: Option<mpsc::UnboundedReceiver<UpdatesLike>>,
-    pub(crate) stream_updates: Option<UpdateStream>,
+    pub(crate) pool_task: Mutex<Option<JoinHandle<()>>>,
+    pub(crate) updates: Mutex<Option<mpsc::UnboundedReceiver<UpdatesLike>>>,
+    
     pub(crate) handle: SenderPoolFatHandle,
 
+    pub(crate) event_handlers: EventHandlersManager,
+    pub(crate) event_runner: Mutex<Option<EventsRunner>>,
+    
     pub(crate) session: Session,
+    pub(crate) me: Mutex<Option<Py<PyUser>>>,
+
+    // Readonly properties.
     pub(crate) api_id: i32,
     pub(crate) api_hash: String,
     pub(crate) bot_token: Option<String>,
     pub(crate) use_ipv6: bool,
+    pub(crate) device_model: String,
+    pub(crate) system_version: String,
+    pub(crate) app_version: String,
     pub(crate) system_lang_code: String,
     pub(crate) lang_code: String,
 
     pub(crate) phone: Py<PyAny>,
     pub(crate) code: Py<PyAny>,
     pub(crate) password: Py<PyAny>,
-
-    pub(crate) me: Option<Py<PyUser>>,
 }
 
 #[derive(Clone)]
 #[pyclass(name = "Client", module = "grammers", subclass, dict)]
 pub struct PyClient {
-    pub inner: Arc<Mutex<ClientInner>>,
+    pub inner: Arc<ClientInner>,
 }
 
 #[pymethods]
@@ -73,9 +81,9 @@ impl PyClient {
         code,
         password,
         bot_token=None,
-        app_version=None,
         device_model=None,
         system_version=None,
+        app_version=None,
         lang_code=None,
         system_lang_code=None,
         use_ipv6=false,
@@ -90,9 +98,9 @@ impl PyClient {
         code: Py<PyAny>,
         password: Py<PyAny>,
         bot_token: Option<&str>,
-        app_version: Option<&str>,
         device_model: Option<&str>,
         system_version: Option<&str>,
+        app_version: Option<&str>,
         lang_code: Option<&str>,
         system_lang_code: Option<&str>,
         use_ipv6: bool,
@@ -153,16 +161,16 @@ impl PyClient {
         .to_ascii_lowercase();
 
         let config = ConnectionParams {
-            device_model,
-            system_version,
-            app_version,
+            device_model: device_model.clone(),
+            system_version: system_version.clone(),
+            app_version: app_version.clone(),
             system_lang_code: system_lang_code.clone(),
             lang_code: lang_code.clone(),
             proxy_url: None,
             __non_exhaustive: (),
         };
 
-        let pool = SenderPool::new(session.clone(), api_id.0, config);
+        let pool = SenderPool::new(self.session(), self.api_id, config);
         let SenderPool {
             runner,
             updates,
@@ -171,10 +179,11 @@ impl PyClient {
         let pool_task = RUNTIME.spawn(runner.run());
 
         let inner = ClientInner {
-            pool_task: Some(pool_task),
-            updates: Some(updates),
-            stream_updates: None,
+            pool_task: Mutex::new(Some(pool_task)),
+            updates: Mutex::new(Some(updates)),
+            stream_updates: Mutex::new(None),
             handle,
+            event_handers: None,
             session: session,
             api_id: api_id.0,
             api_hash: api_hash.to_string(),
@@ -185,7 +194,7 @@ impl PyClient {
             use_ipv6,
             system_lang_code: system_lang_code.to_string(),
             lang_code: lang_code.to_string(),
-            me: None,
+            me: Mutex::new(None),
         };
         Ok(Self {
             inner: Arc::new(Mutex::new(inner)),
@@ -194,81 +203,89 @@ impl PyClient {
 
     #[getter]
     pub fn api_id(&self) -> i32 {
-        self.inner.lock().unwrap().api_id
+        self.inner.api_id
     }
 
     #[getter]
     pub fn api_hash(&self) -> String {
-        self.inner.lock().unwrap().api_hash.clone()
+        self.inner.api_hash.clone()
     }
 
     #[getter]
     pub fn bot_token(&self) -> Option<String> {
-        self.inner.lock().unwrap().bot_token.clone()
+        self.inner.bot_token.clone()
     }
 
     #[getter]
     pub fn use_ipv6(&self) -> bool {
-        self.inner.lock().unwrap().use_ipv6
+        self.inner.use_ipv6
+    }
+
+    #[getter]
+    pub fn device_model(&self) -> String {
+        self.inner.device_model.clone()
+    }
+
+    #[getter]
+    pub fn system_version(&self) -> String {
+        self.inner.system_version.clone()
+    }
+
+    #[getter]
+    pub fn app_version(&self) -> String {
+        self.inner.app_version.clone()
     }
 
     #[getter]
     pub fn system_lang_code(&self) -> String {
-        self.inner.lock().unwrap().system_lang_code.clone()
+        self.inner.system_lang_code.clone()
     }
 
     #[getter]
     pub fn lang_code(&self) -> String {
-        self.inner.lock().unwrap().lang_code.clone()
+        self.inner.lang_code.clone()
     }
 
     #[getter(session)]
     fn get_session(&self) -> Py<PyAny> {
-        Python::attach(|py| self.inner.lock().unwrap().session.get_inner(py))
+        let session = self.session();
+        Python::attach(|py| session.read().unwrap().get_inner(py))
     }
 
     #[getter]
     pub fn phone(&self) -> Py<PyAny> {
-        Python::attach(|py| self.inner.lock().unwrap().phone.bind(py).clone().unbind())
+        Python::attach(|py| self.inner.phone.clone_ref(py))
     }
 
     #[getter]
     pub fn code(&self) -> Py<PyAny> {
-        Python::attach(|py| self.inner.lock().unwrap().code.bind(py).clone().unbind())
+        Python::attach(|py| self.inner.code.clone_ref(py))
     }
 
     #[getter]
     pub fn password(&self) -> Py<PyAny> {
-        Python::attach(|py| {
-            self.inner
-                .lock()
-                .unwrap()
-                .password
-                .bind(py)
-                .clone()
-                .unbind()
-        })
+        Python::attach(|py| self.inner.password.clone_ref(py))
     }
 
     #[getter(me)]
     fn _me(&self) -> Option<Py<PyUser>> {
-        match &self.inner.lock().unwrap().me {
+        match &self.inner.me {
             None => None,
-            Some(me) => Some(Python::attach(|py| me.bind(py).clone().unbind())),
+            Some(me) => Some(Python::attach(|py| me.clone_ref(py))),
         }
     }
 }
 
 impl PyClient {
     pub fn session(&self) -> Session {
-        self.inner.lock().unwrap().session.clone()
+        self.inner.session.clone()
     }
 
     pub fn set_me(&self, user: Py<PyUser>) {
-        self.inner.lock().unwrap().me = Some(user);
+        self.inner.me.lock().unwrap() = Some(user);
     }
 
     pub fn handle(&self) -> SenderPoolFatHandle {
-        self.inner.lock().unwrap().handle.clone()
+        self.inner.handle.clone()
     }
 }

@@ -158,7 +158,7 @@ impl PyClient {
     ///             dc_option = await session.dc_option(dc_id)
     ///             if dc_option and dc_option.auth_key:
     ///                 if x := await self.get_password_information():
-    ///                     return await self._check_password(x)
+    ///                     return await self.auto_check_password(x)
     ///
     ///             phone = utils.maybe_call(self.phone)
     ///             phone = await utils.maybe_await(phone)
@@ -172,7 +172,7 @@ impl PyClient {
     ///             try:
     ///                 return await self.sign_in(login_token, code)
     ///             except PasswordRequiredError:
-    ///                 return await self._check_password()
+    ///                 return await self.auto_check_password()
     pub async fn authorize(&self) -> PyResult<Py<PyUser>> {
         let bot_token = self.bot_token();
         if bot_token.is_some() {
@@ -185,7 +185,7 @@ impl PyClient {
         let dc_option = session.dc_option(dc_id).await?;
         if dc_option.is_some() && dc_option.unwrap().auth_key.is_some() {
             if let Ok(x) = self.get_password_information().await {
-                return self._check_password(Some(x.into())).await;
+                return self.auto_check_password(Some(x)).await;
             }
         }
 
@@ -204,7 +204,7 @@ impl PyClient {
         let user = match self.sign_in(login_token, code).await {
             Ok(user) => Ok(user),
             Err(e) if Python::attach(|py| e.is_instance_of::<PasswordRequiredError>(py)) => {
-                self._check_password(None).await
+                self.auto_check_password(None).await
             }
             Err(e) => Err(e),
         }?;
@@ -268,9 +268,7 @@ impl PyClient {
         };
 
         match result {
-            tl::enums::auth::Authorization::Authorization(x) => {
-                self._complete_login(x.into()).await
-            }
+            tl::enums::auth::Authorization::Authorization(x) => self.complete_login(x).await,
             tl::enums::auth::Authorization::SignUpRequired(_) => Err(PyRuntimeError::new_err(
                 "API returned SignUpRequired even though we're logging in as a bot",
             )),
@@ -410,9 +408,7 @@ impl PyClient {
             })
             .await
         {
-            Ok(tl::enums::auth::Authorization::Authorization(x)) => {
-                self._complete_login(x.into()).await
-            }
+            Ok(tl::enums::auth::Authorization::Authorization(x)) => self.complete_login(x).await,
             Ok(tl::enums::auth::Authorization::SignUpRequired(_)) => {
                 Err(PySignUpRequiredError::new())
             }
@@ -424,11 +420,10 @@ impl PyClient {
 
     /// Extract information needed for the two-factor authentication
     /// It's called automatically when we get SESSION_PASSWORD_NEEDED error during sign in.
-    pub async fn get_password_information(&self) -> PyResult<pytl::enums::account::PyPassword> {
-        let request = tl::functions::account::GetPassword {};
-
+    #[pyo3(name = "get_password_information")]
+    pub async fn py_get_password_information(&self) -> PyResult<pytl::enums::account::PyPassword> {
         let password = self
-            .invoke(&request)
+            .get_password_information()
             .await
             .map_err(PyInvocationError::new)?;
 
@@ -465,54 +460,15 @@ impl PyClient {
     ///                 print('Sign in required')
     ///         except errors.RpcError as e:
     ///             print('Failed to sign in as a user:', traceback.format_exc(e))
-    pub async fn check_password(
+    #[pyo3(name = "check_password")]
+    pub async fn py_check_password(
         &self,
         password_info: pytl::types::account::PyPassword,
         password: String,
     ) -> PyResult<Py<PyUser>> {
-        let mut password_info: tl::types::account::Password = password_info.into();
-        let current_algo = password_info.current_algo.as_ref().unwrap();
-        let mut params = extract_password_parameters(&current_algo);
+        let user = self.check_password(password_info.into(), password)?;
 
-        // Telegram sent us incorrect parameters, trying to get them again
-        if !check_p_and_g(params.2, params.3) {
-            password_info = match self.get_password_information().await? {
-                pytl::enums::account::PyPassword::Password(x) => x.into(),
-            };
-            let current_algo = password_info.current_algo.as_ref().unwrap();
-            params = extract_password_parameters(&current_algo);
-            if !check_p_and_g(params.2, params.3) {
-                return Err(PyValueError::new_err(
-                    "Failed to get correct password information from Telegram",
-                ));
-            }
-        }
-
-        let (salt1, salt2, p, g) = params;
-
-        let g_b = password_info.srp_b.clone().unwrap();
-        let a = password_info.secure_random.clone();
-
-        let (m1, g_a) = calculate_2fa(salt1, salt2, p, g, g_b, a, password);
-
-        let check_password = tl::functions::auth::CheckPassword {
-            password: tl::enums::InputCheckPasswordSrp::Srp(tl::types::InputCheckPasswordSrp {
-                srp_id: password_info.srp_id.clone().unwrap(),
-                a: g_a.to_vec(),
-                m1: m1.to_vec(),
-            }),
-        };
-
-        match self.invoke(&check_password).await {
-            Ok(tl::enums::auth::Authorization::Authorization(x)) => {
-                self._complete_login(x.into()).await
-            }
-            Ok(tl::enums::auth::Authorization::SignUpRequired(_x)) => {
-                Err(PySignUpRequiredError::new())
-            }
-            Err(err) if err.is("PASSWORD_HASH_INVALID") => Err(PyInvalidPasswordError::new()),
-            Err(error) => Err(PyInvocationError::new(error)),
-        }
+        Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
     }
 
     /// Signs out of the account authorized by this client's session.
@@ -545,7 +501,7 @@ impl PyClient {
     /// Pseudo-code
     ///     .. code-block:: python
     ///
-    ///         async def _check_password(self, password_info: types.account.Password | None = None) -> types.User:
+    ///         async def auto_check_password(self, password_info: types.account.Password | None = None) -> types.User:
     ///             if password_info is None:
     ///                 password_info = await self.get_password_information()
     ///
@@ -557,28 +513,16 @@ impl PyClient {
     ///                 raise ValueError(f"password excepted str, got '{type(password).__qualname__}'")
     ///
     ///             return await sekf.check_password(password_info, password)
-    #[pyo3(signature = (password_info=None))]
-    async fn _check_password(
+    #[pyo3(name = "auto_check_password", signature = (password_info=None))]
+    async fn py_auto_check_password(
         &self,
         password_info: Option<pytl::enums::account::PyPassword>,
     ) -> PyResult<Py<PyUser>> {
-        let password_info = match password_info {
-            Some(x) => x,
-            None => self.get_password_information().await?,
-        };
-        let password_info: pytl::types::account::PyPassword = match password_info {
-            pytl::enums::account::PyPassword::Password(x) => {
-                Python::attach(|py| x.0.borrow(py).clone())
-            }
-        };
-        let hint = password_info.hint.clone();
+        let user = self
+            .auto_check_password(password_info.into())
+            .await?;
 
-        let password = self.password();
-        let password = Python::attach(|py| crate::utils::maybe_call1(py, password, (hint,)))?;
-        let password = crate::utils::maybe_await(password).await?;
-        let password: String = Python::attach(|py| password.bind(py).extract())?;
-
-        self.check_password(password_info, password).await
+        Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
     }
 
     /// Complete login, will cache peer and save update state.
@@ -586,7 +530,7 @@ impl PyClient {
     /// Pseudo-code
     ///     .. code-block:: python
     ///
-    ///         async def _complete_login(self, auth: types.auth.Authorization) -> types.User:
+    ///         async def complete_login(self, auth: types.auth.Authorization) -> types.User:
     ///             user = auth.user
     ///             user_id = user.id
     ///             bot = getattr(user, 'bot', None)
@@ -620,11 +564,101 @@ impl PyClient {
     ///                 ))
     ///
     ///             return user
-    async fn _complete_login(
+    #[pyo3(name = "complete_login")]
+    async fn py_complete_login(
         &self,
         auth: pytl::types::auth::PyAuthorization,
     ) -> PyResult<Py<PyUser>> {
-        let auth: tl::types::auth::Authorization = auth.into();
+        let user = self
+            .complete_login(auth.into())?;
+
+        Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
+    }
+}
+
+impl PyClient {
+    pub async fn get_password_information(
+        &self,
+    ) -> Result<tl::types::account::Password, InvocationError> {
+        let request = tl::functions::account::GetPassword {};
+
+        self.invoke(&request).await
+    }
+
+    pub async fn check_password(
+        &self,
+        password_info: tl::types::account::Password,
+        password: String,
+    ) -> PyResult<tl::enums::User> {
+        let current_algo = password_info.current_algo.as_ref().unwrap();
+        let mut params = extract_password_parameters(&current_algo);
+
+        // Telegram sent us incorrect parameters, trying to get them again
+        if !check_p_and_g(params.2, params.3) {
+            password_info = match self.get_password_information().await? {
+                pytl::enums::account::PyPassword::Password(x) => x.into(),
+            };
+            let current_algo = password_info.current_algo.as_ref().unwrap();
+            params = extract_password_parameters(&current_algo);
+            if !check_p_and_g(params.2, params.3) {
+                return Err(PyValueError::new_err(
+                    "Failed to get correct password information from Telegram",
+                ));
+            }
+        }
+
+        let (salt1, salt2, p, g) = params;
+
+        let g_b = password_info.srp_b.clone().unwrap();
+        let a = password_info.secure_random.clone();
+
+        let (m1, g_a) = calculate_2fa(salt1, salt2, p, g, g_b, a, password);
+
+        let check_password = tl::functions::auth::CheckPassword {
+            password: tl::enums::InputCheckPasswordSrp::Srp(tl::types::InputCheckPasswordSrp {
+                srp_id: password_info.srp_id.clone().unwrap(),
+                a: g_a.to_vec(),
+                m1: m1.to_vec(),
+            }),
+        };
+
+        match self.invoke(&check_password).await {
+            Ok(tl::enums::auth::Authorization::Authorization(x)) => self.complete_login(x).await,
+            Ok(tl::enums::auth::Authorization::SignUpRequired(_x)) => {
+                Err(PySignUpRequiredError::new())
+            }
+            Err(err) if err.is("PASSWORD_HASH_INVALID") => Err(PyInvalidPasswordError::new()),
+            Err(error) => Err(PyInvocationError::new(error)),
+        }
+    }
+
+    async fn auto_check_password(
+        &self,
+        password_info: Option<tl::enums::account::Password>,
+    ) -> PyResult<tl::enums::User> {
+        let password_info = match password_info {
+            Some(x) => x,
+            None => self.get_password_information().await?,
+        };
+        let password_info: pytl::types::account::PyPassword = match password_info {
+            pytl::enums::account::PyPassword::Password(x) => {
+                Python::attach(|py| x.0.borrow(py).clone())
+            }
+        };
+        let hint = password_info.hint.clone();
+
+        let password = self.password();
+        let password = Python::attach(|py| crate::utils::maybe_call1(py, password, (hint,)))?;
+        let password = crate::utils::maybe_await(password).await?;
+        let password: String = Python::attach(|py| password.bind(py).extract())?;
+
+        self.check_password(password_info, password).await
+    }
+
+    async fn complete_login(
+        &self,
+        auth: tl::types::auth::Authorization,
+    ) -> PyResult<tl::enums::User> {
         let user = auth.user;
         let user_id = user.id();
         let bot = match user {
@@ -667,6 +701,36 @@ impl PyClient {
                 .await?;
         }
 
-        Python::attach(|py| Py::new(py, PyUser::new(self, user.into())))
+        self._setup_stream_updates().await;
+
+        user
+    }
+
+    async fn _setup_stream_updates(&self) -> PyResult<()> {
+        let updates = self
+            .inner
+            .clone()
+            .updates
+            .lock()
+            .unwrap()
+            .take()
+            .ok_or(PyRuntimeError::new_err("Client fail to initialize."))?;
+        let stream_updates = self
+            .stream_updates(
+                updates,
+                UpdatesConfiguration {
+                    catch_up: true,
+                    update_queue_limit: Some(100),
+                },
+            )
+            .await?;
+            
+        let EventPool {
+            runner,
+            handle,
+        } = EventPool::new(self, stream_updates);
+        let event_pool_task = RUNTIME::spawn(runner.run);
+        self.inner.clone().event_runner.lock().unwrap() = Some(event_runner);
+        Ok(())
     }
 }

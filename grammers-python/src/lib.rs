@@ -4,6 +4,7 @@ mod client;
 mod crypto;
 mod custom;
 mod errors;
+pub mod events;
 mod hints;
 mod message;
 mod peer;
@@ -33,6 +34,9 @@ mod _rs {
 
     #[pymodule_export]
     use super::errors::errors_;
+
+    #[pymodule_export]
+    use super::events::events_;
 
     #[pymodule_export]
     use grammers_tl_types_pyo3::tl;

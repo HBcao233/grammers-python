@@ -150,24 +150,21 @@ impl PyClient {
         &self,
         peer: pytl::enums::PyInputPeer,
     ) -> PyResult<Option<PyPeer>> {
+        let peer: tl::enums::InputPeer = peer.into();
         Ok(match peer {
-            pytl::enums::PyInputPeer::Empty(_) => {
+            tl::enums::InputPeer::Empty => {
                 return Err(PyTypeError::new_err(
                     "InputPeerEmpty can't resolve to any peer.",
                 ));
             }
-            pytl::enums::PyInputPeer::PeerSelf(_) => Some(PyPeer::User(self.get_me().await?)),
-            pytl::enums::PyInputPeer::User(x) => {
-                let (user_id, access_hash) = Python::attach(|py| {
-                    let x = x.0.borrow(py);
-                    (x.user_id, x.access_hash)
-                });
+            tl::enums::InputPeer::PeerSelf(_) => Some(PyPeer::User(self.get_me().await?)),
+            tl::enums::InputPeer::User(x) => {
                 let mut res = self
                     .invoke(&tl::functions::users::GetUsers {
                         id: vec![
                             tl::types::InputUser {
-                                user_id: user_id,
-                                access_hash: access_hash,
+                                user_id: x.user_id,
+                                access_hash: x.access_hash,
                             }
                             .into(),
                         ],
@@ -179,10 +176,11 @@ impl PyClient {
                     None => None,
                 }
             }
-            pytl::enums::PyInputPeer::Chat(x) => {
-                let chat_id = Python::attach(|py| x.0.borrow(py).chat_id);
+            tl::enums::InputPeer::Chat(x) => {
                 let mut res = match self
-                    .invoke(&tl::functions::messages::GetChats { id: vec![chat_id] })
+                    .invoke(&tl::functions::messages::GetChats {
+                        id: vec![x.chat_id],
+                    })
                     .await
                     .map_err(PyInvocationError::new)?
                 {
@@ -194,17 +192,13 @@ impl PyClient {
                     None => None,
                 }
             }
-            pytl::enums::PyInputPeer::Channel(x) => {
-                let (channel_id, access_hash) = Python::attach(|py| {
-                    let x = x.0.borrow(py);
-                    (x.channel_id, x.access_hash)
-                });
+            tl::enums::InputPeer::Channel(x) => {
                 let mut res = match self
                     .invoke(&tl::functions::channels::GetChannels {
                         id: vec![
                             tl::types::InputChannel {
-                                channel_id: channel_id,
-                                access_hash: access_hash,
+                                channel_id: x.channel_id,
+                                access_hash: x.access_hash,
                             }
                             .into(),
                         ],
@@ -220,18 +214,14 @@ impl PyClient {
                     None => None,
                 }
             }
-            pytl::enums::PyInputPeer::UserFromMessage(x) => {
-                let (peer, msg_id, user_id) = Python::attach(|py| {
-                    let x = x.0.borrow(py);
-                    (x.peer.clone(), x.msg_id, x.user_id)
-                });
+            tl::enums::InputPeer::UserFromMessage(x) => {
                 let mut res = self
                     .invoke(&tl::functions::users::GetUsers {
                         id: vec![
                             tl::types::InputUserFromMessage {
-                                peer: peer.into(),
-                                msg_id: msg_id,
-                                user_id: user_id,
+                                peer: x.peer,
+                                msg_id: x.msg_id,
+                                user_id: x.user_id,
                             }
                             .into(),
                         ],
@@ -243,18 +233,14 @@ impl PyClient {
                     None => None,
                 }
             }
-            pytl::enums::PyInputPeer::ChannelFromMessage(x) => {
-                let (peer, msg_id, channel_id) = Python::attach(|py| {
-                    let x = x.0.borrow(py);
-                    (x.peer.clone(), x.msg_id, x.channel_id)
-                });
+            tl::enums::InputPeer::ChannelFromMessage(x) => {
                 let mut res = match self
                     .invoke(&tl::functions::channels::GetChannels {
                         id: vec![
                             tl::types::InputChannelFromMessage {
-                                peer: peer.into(),
-                                msg_id: msg_id,
-                                channel_id: channel_id,
+                                peer: x.peer,
+                                msg_id: x.msg_id,
+                                channel_id: x.channel_id,
                             }
                             .into(),
                         ],
