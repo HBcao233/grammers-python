@@ -10,7 +10,7 @@ impl PyClient {
         self.event_handlers.add_handler(event, handler);
         Ok(())
     }
-    
+
     pub fn on(slf: Bound<'_, Self>, event: EventBuilder) -> PyCFunction {
         let kind_name = event.kind.name();
         let add_handler = slf.getattr("add_handler")?;
@@ -26,7 +26,7 @@ impl PyClient {
             },
         )
     }
-    
+
     pub fn trigger_event(event: Event) -> PyResult<()> {
         self.event_handlers.trigger_event(event)
     }

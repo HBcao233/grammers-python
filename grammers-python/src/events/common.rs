@@ -38,9 +38,9 @@ impl<'a, 'py> FromPyObject<'a, 'py> for EventBuilder {
     fn extract(ob: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
         let ob = match ob.extract::<PyType>() {
             Err(_) => ob,
-            Ok(ty) => ty.call0()?.borrow();
+            Ok(ty) => ty.call0()?.borrow(),
         };
-        
+
         if let Ok(kind) = ob.extract::<PyEventKind>() {
             return Ok(Self { kind, filter: None });
         }
@@ -68,7 +68,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for EventBuilder {
 }
 
 #[pyclass(name = "EventBuilder", module = "grammers.event", subclass)]
-pub struct PyEventBuilder {};
+pub struct PyEventBuilder {}
 
 #[pymethods]
 impl PyEventBuilder {
@@ -76,12 +76,12 @@ impl PyEventBuilder {
     fn Logined() -> Py<PyType> {
         PyLogined.type_object().unbind()
     }
-    
+
     #[classattr]
     fn Error() -> Py<PyType> {
         PyError.type_object().unbind()
     }
-    
+
     #[classattr]
     fn RawUpdate() -> Py<PyType> {
         PyRawUpdate.type_object().unbind()
@@ -98,13 +98,11 @@ impl PyLogined {
     #[new]
     #[pyo3(signature = (filter=None))]
     fn new(filter: Option<Py<PyAny>>) -> Self {
-        Self {
-            filter,
-        }
+        Self { filter }
     }
-    
+
     fn __str__(&self) -> PyResult<String> {
-        let filter = match {
+        let filter = match self.filter {
             Some(x) => x.repr()?,
             None => "None".to_string(),
         };
@@ -122,13 +120,11 @@ impl PyError {
     #[new]
     #[pyo3(signature = (filter=None))]
     fn new(filter: Option<Py<PyAny>>) -> Self {
-        Self {
-            filter,
-        }
+        Self { filter }
     }
-    
+
     fn __str__(&self) -> PyResult<String> {
-        let filter = match {
+        let filter = match self.filter {
             Some(x) => x.repr()?,
             None => "None".to_string(),
         };
@@ -146,11 +142,9 @@ impl PyRawUpdate {
     #[new]
     #[pyo3(signature = (filter=None))]
     fn new(filter: Option<Py<PyAny>>) -> Self {
-        Self {
-            filter,
-        }
+        Self { filter }
     }
-    
+
     fn __str__(&self) -> PyResult<String> {
         let filter = match self.filter {
             Some(x) => x.repr()?.extract(),

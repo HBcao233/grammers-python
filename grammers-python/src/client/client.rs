@@ -37,12 +37,12 @@ impl<'a, 'py> FromPyObject<'a, 'py> for ApiId {
 pub struct ClientInner {
     pub(crate) pool_task: Mutex<Option<JoinHandle<()>>>,
     pub(crate) updates: Mutex<Option<mpsc::UnboundedReceiver<UpdatesLike>>>,
-    
+
     pub(crate) handle: SenderPoolFatHandle,
 
     pub(crate) event_handlers: EventHandlersManager,
     pub(crate) event_runner: Mutex<Option<EventsRunner>>,
-    
+
     pub(crate) session: Session,
     pub(crate) me: Mutex<Option<Py<PyUser>>>,
 

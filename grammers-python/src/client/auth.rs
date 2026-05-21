@@ -518,9 +518,7 @@ impl PyClient {
         &self,
         password_info: Option<pytl::enums::account::PyPassword>,
     ) -> PyResult<Py<PyUser>> {
-        let user = self
-            .auto_check_password(password_info.into())
-            .await?;
+        let user = self.auto_check_password(password_info.into()).await?;
 
         Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
     }
@@ -569,8 +567,7 @@ impl PyClient {
         &self,
         auth: pytl::types::auth::PyAuthorization,
     ) -> PyResult<Py<PyUser>> {
-        let user = self
-            .complete_login(auth.into())?;
+        let user = self.complete_login(auth.into())?;
 
         Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
     }
@@ -724,11 +721,8 @@ impl PyClient {
                 },
             )
             .await?;
-            
-        let EventPool {
-            runner,
-            handle,
-        } = EventPool::new(self, stream_updates);
+
+        let EventPool { runner, handle } = EventPool::new(self, stream_updates);
         let event_pool_task = RUNTIME::spawn(runner.run);
         self.inner.clone().event_runner.lock().unwrap() = Some(event_runner);
         Ok(())

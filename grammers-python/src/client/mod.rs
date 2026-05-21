@@ -15,8 +15,8 @@ pub(crate) use auth::{
 pub use client::PyClient;
 use iter_buffer::IterBuffer;
 pub(crate) use messages::PyHistoryMessageIter;
-use updates::UpdatesConfiguration;
 pub(crate) use updates::UpdateStream;
+use updates::UpdatesConfiguration;
 
 #[pyo3::pymodule(name = "client")]
 pub(crate) mod client_ {

@@ -44,7 +44,7 @@ impl EventsPoolRunner {
         loop {
             // Empty finished handlers
             while let Some(_) = self.client.event_handlers.tasks.try_join_next() {}
-    
+
             // This code uses `select` on Ctrl+C to gracefully stop the client and have a chance to
             // save the session. You could have fancier logic to save the session if you wanted to
             // (or even save it on every update). Or you could also ignore Ctrl+C and just use
@@ -68,7 +68,7 @@ impl EventsPoolRunner {
             }
         }
     }
-    
+
     async fn process_request(request: &Request) -> ControlFlow<()> {
         match request {
             Request::Quit => ControlFlow::Break(()),

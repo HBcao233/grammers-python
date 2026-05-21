@@ -1,12 +1,12 @@
-use pyo3::prelude::*;
 use pyo3::exceptions::PyNotImplementedError;
+use pyo3::prelude::*;
 
 use grammers_tl_types_pyo3 as pytl;
 use grammers_tl_types_pyo3::TLObject;
 
+use super::PyEventKind;
 use crate::PyClient;
 use crate::peer::PyUser;
-use super::PyEventKind;
 
 pub(crate) enum Event {
     Logined(Py<PyLoginedEvent>),
@@ -18,11 +18,11 @@ impl Event {
     pub fn logined(client: &PyClient, user: Py<PyUser>) -> PyResult<Self> {
         Self::Logined(Py::new(py, PyLoginedEvent::new(client.clone(), user)))
     }
-    
+
     pub fn error(client: &PyClient, error: PyErr) -> PyResult<Self> {
         Self::Error(Py::new(py, PyErrorEvent::new(client.clone(), error)))
     }
-    
+
     pub fn raw_update(client: &PyClient, update: pytl::enums::PyUpdate) -> PyResult<Self> {
         Self::RawUpdate(Py::new(py, PyRawUpdateEvent::new(client.clone(), update)))
     }
@@ -34,7 +34,7 @@ impl Event {
             Event::RawUpdate(_) => PyEventKind::RawUpdate,
         }
     }
-    
+
     pub fn client(&self, py: Python<'_>) -> PyClient {
         match self {
             Event::Logined(x) => x.borrow(py).clone(),
@@ -42,7 +42,7 @@ impl Event {
             Event::RawUpdate(x) => x.borrow(py).clone(),
         }
     }
-    
+
     pub fn clone_ref(&self, py: Python<'_>) -> Event {
         match self {
             Event::Logined(x) => Event::Logined(x.clone_ref(py)),
@@ -60,32 +60,30 @@ pub struct PyEventCommon {
 impl PyEventCommon {
     #[new]
     pub fn new(client: PyClient) -> Self {
-        Self {
-            client
-        }
+        Self { client }
     }
-    
+
     #[classattr]
     fn kind() -> PyResult<PyEventKind> {
         Err(PyNotImplementedError::new_err(()))
     }
-    
+
     #[getter]
     fn client(self, py: Python<'_>) -> Py<PyClient> {
         self.client.clone_ref(py)
     }
-    
+
     fn to_dict(slf: Bound<'_, Self>) -> PyResult<Py<PyDict>> {
         let event_name = format!("{}Event", slf.borrow(py).kind().name());
         let dict = slf.into_any().dict()?;
         dict.set_item("_", event_name)?;
         Ok(dict.unbind())
     }
-    
+
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
         TLObject::pretty_format(slf, None)
     }
-    
+
     fn __str__(slf: &Bound<'_, Self>) -> PyResult<String> {
         TLObject::pretty_format(slf, Some(0))
     }
@@ -103,13 +101,10 @@ impl PyLoginedEvent {
     fn kind() -> PyEventKind {
         PyEventKind::Logined
     }
-    
+
     #[new]
     fn new(client: PyClient, user: Py<PyUser>) -> PyClassInitializer<Self> {
-        PyClassInitializer::from(PyEventCommon::new(client))
-            .add_subclass(Self {
-                user,
-            })
+        PyClassInitializer::from(PyEventCommon::new(client)).add_subclass(Self { user })
     }
 }
 
@@ -125,13 +120,10 @@ impl PyErrorEvent {
     fn kind() -> PyEventKind {
         PyEventKind::Error
     }
-    
+
     #[new]
     fn new(client: PyClient, error: PyErr) -> PyClassInitializer<Self> {
-        PyClassInitializer::from(PyEventCommon::new(client))
-            .add_subclass(Self {
-                error,
-            })
+        PyClassInitializer::from(PyEventCommon::new(client)).add_subclass(Self { error })
     }
 }
 
@@ -147,12 +139,9 @@ impl PyRawUpdateEvent {
     fn kind() -> PyEventKind {
         PyEventKind::RawUpdate
     }
-    
+
     #[new]
     pub fn new(client: PyClient, update: pytl::enums::PyUpdate) -> PyClassInitializer<Self> {
-        PyClassInitializer::from(PyEventCommon::new(client))
-            .add_subclass(Self {
-                update,
-            })
+        PyClassInitializer::from(PyEventCommon::new(client)).add_subclass(Self { update })
     }
 }
