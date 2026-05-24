@@ -1,8 +1,6 @@
 from __future__ import annotations
 
 import inspect
-import re
-from re import Pattern
 from typing import TYPE_CHECKING, Any, Callable
 
 if TYPE_CHECKING:
@@ -22,7 +20,7 @@ class Filter:
 
     def __or__(self, other: Filter) -> OrFilter:
         return OrFilter(self, other)
-    
+
     def __xor__(self, other: Filter) -> XorFilter:
         return XorFilter(self, other)
 
@@ -48,14 +46,14 @@ class AndFilter(Filter):
         x = self.base(event)
         if inspect.isawaitable(x):
             x = await x
-            
+
         if not x:
             return False
 
         y = self.other(event)
         if inspect.isawaitable(y):
             y = await y
-        
+
         return bool(x) and bool(y)
 
 
@@ -68,15 +66,16 @@ class OrFilter(Filter):
         x = self.base(event)
         if inspect.isawaitable(x):
             x = await x
-            
+
         if x:
             return True
 
         y = self.other(event)
         if inspect.isawaitable(y):
             y = await y
-            
+
         return bool(x) or bool(y)
+
 
 class XorFilter(Filter):
     def __init__(self, base: Filter, other: Filter) -> None:
@@ -87,11 +86,11 @@ class XorFilter(Filter):
         x = self.base(event)
         if inspect.isawaitable(x):
             x = await x
-        
+
         y = self.other(event)
         if inspect.isawaitable(y):
             y = await y
-            
+
         return bool(x) ^ bool(y)
 
 
@@ -107,34 +106,26 @@ def create(
 
     Parameters:
         func (``Callable``):
-            A function that accepts three positional arguments *(filter, client, update)* and
+            A function that accepts three positional arguments *(filter, event)* and
             returns a boolean: True if the update should be handled, False otherwise.
             The *filter* argument refers to the filter itself and can be used to access
-            keyword arguments (read below). The *client* argument refers to the
-            :obj:`~hydrogram.Client` that received the update. The *update* argument type
-            will vary depending on which `Handler <handlers>`_ is coming from. For example, in
-            a :obj:`~hydrogram.handlers.MessageHandler` the *update* argument will be a
-            :obj:`~hydrogram.types.Message`; in a :obj:`~hydrogram.handlers.CallbackQueryHandler`
-            the *update* will be a :obj:`~hydrogram.types.CallbackQuery`. Your function body
-            can then access the incoming update attributes and decide whether to allow it or not.
+            keyword arguments (read below).
 
         name (``str``, *optional*):
             Your filter's name. Can be anything you like.
             Defaults to "CustomFilter".
 
         **kwargs (``any``, *optional*):
-            Any keyword argument you would like to pass. Useful when creating parameterized
-            custom filters, such as :meth:`~hydrogram.filters.command` or
-            :meth:`~hydrogram.filters.regex`.
+            Any keyword argument you would like to pass.
     """
     return type(
-        name or func.__name__ or "CustomFilter",
+        name or func.__name__ or 'CustomFilter',
         (Filter,),
-        {"__call__": func, **kwargs},
+        {'__call__': func, **kwargs},
     )()
 
 
-def all_filter(_: Filter, __: hydrogram.Client, ___: Update) -> bool:
+def all_filter(_: Filter, event: Any) -> bool:
     return True
 
 

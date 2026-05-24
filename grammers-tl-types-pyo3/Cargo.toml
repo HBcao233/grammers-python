@@ -1,6 +1,6 @@
 [package]
 name = "grammers-tl-types-pyo3"
-version = "0.4.6"
+version = "0.4.7"
 description = """
 Rust definitions in pyo3 for Telegram's API types and functions.
 """

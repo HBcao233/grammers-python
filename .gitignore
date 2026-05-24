@@ -3,10 +3,6 @@ target
 .pytest_cache
 __pycache__
 
-python/src/grammers/tl/allobjects.py
-python/src/grammers/_rs/tl/types/*.pyi
-python/src/grammers/_rs/tl/functions/*.pyi
-
 *.session
 /test.*
 

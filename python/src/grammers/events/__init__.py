@@ -4,9 +4,9 @@ from grammers._rs.events import (
     Logined,
     Error,
     RawUpdate,
-    EventCommon, 
+    EventCommon,
     LoginedEvent,
-    ErrorEvent, 
+    ErrorEvent,
     RawUpdateEvent,
 )
 
@@ -16,8 +16,8 @@ __all__ = [
     'Logined',
     'Error',
     'RawUpdate',
-    'EventCommon', 
+    'EventCommon',
     'LoginedEvent',
-    'ErrorEvent, 
+    'ErrorEvent',
     'RawUpdateEvent',
 ]

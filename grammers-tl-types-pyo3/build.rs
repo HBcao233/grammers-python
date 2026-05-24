@@ -1,12 +1,12 @@
 use std::env;
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::{self, BufRead, BufReader, BufWriter, Read};
 use std::path::PathBuf;
 
 use grammers_tl_parser::parse_tl_file;
 use grammers_tl_parser::tl::Definition;
 
-use grammers_tl_gen_pyo3::{Outputs, generate_python_code, generate_rust_code};
+use grammers_tl_gen_pyo3::{Outputs, generate_rust_code};
 
 fn load_tl(file: &str) -> io::Result<Vec<Definition>> {
     let mut file = File::open(file)?;
@@ -21,26 +21,6 @@ fn load_tl(file: &str) -> io::Result<Vec<Definition>> {
             }
         })
         .collect())
-}
-
-fn find_workspace_root() -> Option<PathBuf> {
-    let manifest_dir = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-
-    let mut current = manifest_dir.as_path();
-
-    loop {
-        let cargo_toml = current.join("Cargo.toml");
-        if cargo_toml.exists() {
-            let content = fs::read_to_string(&cargo_toml).ok()?;
-            // 检查是否包含 [workspace] 定义
-            if content.contains("[workspace]") {
-                return Some(current.to_path_buf());
-            }
-        }
-
-        // 向上一级目录
-        current = current.parent()?;
-    }
 }
 
 /// Find the `// LAYER #` comment, and return its value if it's valid.
@@ -61,7 +41,7 @@ fn find_layer(file: &str) -> io::Result<Option<i32>> {
     }))
 }
 
-fn main() -> std::io::Result<()> {
+fn main() -> io::Result<()> {
     println!("cargo:rerun-if-changed=tl/");
     println!("cargo:rerun-if-changed=build.rs");
 
@@ -91,10 +71,6 @@ fn main() -> std::io::Result<()> {
     generate_rust_code(&mut outputs, &definitions, layer)?;
 
     outputs.flush()?;
-
-    let root = find_workspace_root().unwrap();
-    let module_dir = root.join("python").join("src").join("grammers");
-    generate_python_code(module_dir, &definitions, layer)?;
 
     Ok(())
 }

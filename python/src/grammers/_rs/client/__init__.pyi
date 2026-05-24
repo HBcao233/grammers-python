@@ -1,4 +1,5 @@
 from typing import Awaitable, Callable, Optional, Protocol, Self, Sequence
+from collections.abc import AsyncIterator
 
 from grammers.tl import TLRequest, TLObject, types
 from grammers.sessions import Session, PeerRef
@@ -81,7 +82,7 @@ class Client:
         """
 
     # ========== Net Methods ==========
-    
+
     async def disconnect(self) -> None:
         """
         Signals all clients sharing the same sender pool to disconnect.
@@ -482,7 +483,7 @@ class Client:
         ...
 
     # ========== Messages Methods ==========
-    
+
     async def get_messages_by_id(
         peer: hints.InputPeerLike,
         message_ids: Sequence[int],
@@ -590,12 +591,12 @@ class Client:
 
         Avoid long-running CPU-intensive work or synchronous blocking operations
         inside the iteration loop.
-        
+
         Asynchronous IO operations such as:
         - file writes
         - socket writes
         - HTTP streaming
-        
+
         are expected and work well with the downloader pipeline.
 
         Bad:
@@ -624,4 +625,3 @@ class Client:
                 await response.write(chunk)
         """
         ...
-    

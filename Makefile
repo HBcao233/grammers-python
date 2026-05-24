@@ -1,4 +1,7 @@
-dev: 
+codegen:
+	cargo run -p grammers-codegen
+
+dev:
 	maturin develop
 
 build: 

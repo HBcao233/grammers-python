@@ -1,5 +1,6 @@
 [workspace]
 members = [
+  "grammers-codegen",
   "grammers-tl-gen-pyo3",
   "grammers-tl-types-pyo3",
   "grammers-mtsender-pyo3",

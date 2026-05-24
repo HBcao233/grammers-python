@@ -1,6 +1,6 @@
 [package]
 name = "grammers-tl-gen-pyo3"
-version = "0.4.5"
+version = "0.4.7"
 description = """
 Rust code generator for pyo3 from Telegram's API definitions.
 """
