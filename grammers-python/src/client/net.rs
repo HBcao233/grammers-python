@@ -12,7 +12,7 @@ use crate::errors::PyInvocationError;
 impl PyClient {
     /// Signals all clients sharing the same sender pool to disconnect.
     pub fn disconnect(&self) {
-        self.inner.lock().unwrap().handle.quit();
+        self.inner.handle.quit();
     }
 
     /// Invoke a raw API call. This directly sends the request to Telegram's servers.
@@ -31,7 +31,7 @@ impl PyClient {
     ///         await client.invoke(functions.Ping(ping_id=0))
     #[pyo3(name = "invoke")]
     async fn py_invoke(&self, request: TLRequestLike) -> PyResult<TLObjectLike> {
-        let dc_id = self.session().home_dc_id().await?;
+        let dc_id = self.inner.clone().session.home_dc_id().await?;
         self.py_invoke_in_dc(dc_id, request).await
     }
 
@@ -49,7 +49,7 @@ impl PyClient {
     /// low-level api, send data to telegram directly.
     #[pyo3(name = "invoke_raw")]
     async fn py_invoke_raw(&self, request_body: Vec<u8>) -> PyResult<Vec<u8>> {
-        let dc_id = self.session().home_dc_id().await?;
+        let dc_id = self.inner.clone().session.home_dc_id().await?;
         self.py_invoke_raw_in_dc(dc_id, request_body).await
     }
 
@@ -73,7 +73,9 @@ impl PyClient {
 
     pub async fn invoke<R: RemoteCall>(&self, request: &R) -> Result<R::Return, InvocationError> {
         let dc_id = self
-            .session()
+            .inner
+            .clone()
+            .session
             .home_dc_id()
             .await
             .map_err(|e| InvocationError::PyErr(e))?;
@@ -85,7 +87,9 @@ impl PyClient {
         dc_id: i32,
         request_body: Vec<u8>,
     ) -> Result<Vec<u8>, InvocationError> {
-        self.handle()
+        self.inner
+            .clone()
+            .handle
             .invoke_in_dc(dc_id, request_body.clone())
             .await
     }

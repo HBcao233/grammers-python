@@ -33,7 +33,7 @@ pub const SELF_USER_ID: i64 = 1 << 40;
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "PeerId", module = "grammers.sessions")]
+#[pyclass(from_py_object, name = "PeerId", module = "grammers.sessions")]
 pub struct PyPeerId(pub i64);
 
 #[pymethods]
@@ -192,6 +192,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerIdLike {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[pyclass(
+    from_py_object,
     name = "PeerKind",
     module = "grammers.sessions",
     eq,
@@ -237,7 +238,14 @@ impl PyPeerKind {
 
 #[repr(transparent)]
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "PeerAuth", module = "grammers.sessions", eq, frozen, hash)]
+#[pyclass(
+    from_py_object,
+    name = "PeerAuth",
+    module = "grammers.sessions",
+    eq,
+    frozen,
+    hash
+)]
 pub struct PyPeerAuth(pub i64);
 
 #[pymethods]
@@ -309,6 +317,7 @@ impl<'a, 'py> FromPyObject<'a, 'py> for PeerAuthLike {
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 #[pyclass(
+    from_py_object,
     name = "ChannelKind",
     module = "grammers.sessions",
     eq,
@@ -351,7 +360,12 @@ impl PyChannelKind {
 
 /// An exploded peer reference along with any known useful information about the peer.
 #[derive(Clone, Debug)]
-#[pyclass(name = "PeerInfo", module = "grammers.sessions", subclass)]
+#[pyclass(
+    skip_from_py_object,
+    name = "PeerInfo",
+    module = "grammers.sessions",
+    subclass
+)]
 pub struct PyPeerInfo {}
 
 #[pymethods]
@@ -386,7 +400,7 @@ impl PyPeerInfo {
 }
 
 #[derive(Clone, PartialEq, Eq)]
-#[pyclass(name = "PeerInfoUser", module = "grammers.sessions", extends = PyPeerInfo, eq)]
+#[pyclass(from_py_object, name = "PeerInfoUser", module = "grammers.sessions", extends = PyPeerInfo, eq)]
 pub struct PyPeerInfoUser {
     /// Bare user identifier.
     ///
@@ -461,7 +475,7 @@ impl PyPeerInfoUser {
 }
 
 #[derive(Clone, PartialEq, Eq)]
-#[pyclass(name = "PeerInfoChat", module = "grammers.sessions", extends = PyPeerInfo, eq)]
+#[pyclass(from_py_object, name = "PeerInfoChat", module = "grammers.sessions", extends = PyPeerInfo, eq)]
 pub struct PyPeerInfoChat {
     id: i64,
 }
@@ -510,7 +524,7 @@ impl PyPeerInfoChat {
 }
 
 #[derive(Clone, PartialEq, Eq)]
-#[pyclass(name = "PeerInfoChannel", module = "grammers.sessions", extends = PyPeerInfo, eq)]
+#[pyclass(from_py_object, name = "PeerInfoChannel", module = "grammers.sessions", extends = PyPeerInfo, eq)]
 pub struct PyPeerInfoChannel {
     /// Bare channel identifier.
     ///
@@ -705,7 +719,7 @@ impl PeerInfo {
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "PeerRef", module = "grammers.sessions")]
+#[pyclass(from_py_object, name = "PeerRef", module = "grammers.sessions")]
 pub struct PyPeerRef {
     /// The peer identity.
     #[pyo3(get, set)]

@@ -1,7 +1,8 @@
+use pyo3::{Py, PyResult, Python};
 use std::ops::ControlFlow;
-
 use tokio::sync::mpsc;
 
+use super::Event;
 use crate::client::{PyClient, UpdateStream};
 
 enum Request {
@@ -9,67 +10,90 @@ enum Request {
 }
 
 pub struct EventPool {
-    handle: EventsPoolHandle,
-    runner: EventsPoolRunner,
+    pub handle: EventPoolHandle,
+    pub runner: EventPoolRunner,
 }
 
 impl EventPool {
-    pub fn new(client: &PyClient, updates: UpdateStream) -> Self {
+    pub fn new(client: Py<PyClient>, updates: UpdateStream) -> Self {
         let (request_tx, request_rx) = mpsc::unbounded_channel();
+
         Self {
-            handle: EventsPoolHandle(request_tx),
-            runner: EventsPoolRunner {
+            handle: EventPoolHandle(request_tx),
+            runner: EventPoolRunner {
                 updates,
-                client: client.clone(),
+                request_rx,
+                client,
             },
         }
     }
 }
 
-pub struct EventsPoolHandle(mpsc::UnboundedSender<Request>);
+pub struct EventPoolHandle(mpsc::UnboundedSender<Request>);
 
-impl EventsPoolHandle {
+impl EventPoolHandle {
     pub fn quit(&self) -> bool {
         self.0.send(Request::Quit).is_ok()
     }
 }
 
-pub struct EventsPoolRunner {
+pub struct EventPoolRunner {
     updates: UpdateStream,
-    client: PyClient,
+    request_rx: mpsc::UnboundedReceiver<Request>,
+    client: Py<PyClient>,
 }
 
-impl EventsPoolRunner {
-    pub async fn run(mut self) {
-        loop {
+impl EventPoolRunner {
+    pub async fn run(mut self) -> PyResult<()> {
+        let client = Python::attach(|py| self.client.borrow(py).clone());
+        let res = loop {
             // Empty finished handlers
-            while let Some(_) = self.client.event_handlers.tasks.try_join_next() {}
-
-            // This code uses `select` on Ctrl+C to gracefully stop the client and have a chance to
-            // save the session. You could have fancier logic to save the session if you wanted to
-            // (or even save it on every update). Or you could also ignore Ctrl+C and just use
-            // `let update = client.next_update().await?`.
+            while let Some(_) = client
+                .inner
+                .event_handlers
+                .inner
+                .clone()
+                .tasks
+                .lock()
+                .unwrap()
+                .try_join_next()
+            {}
+            
             tokio::select! {
                 biased;
-                (update, state, peers) = self.updates.next_raw()? => {
-                    self.client.trigger_event(Event::raw_update(self.client.clone(), update));
+                Ok((update, _state, _peers)) = self.updates.next_raw() => {
+                    println!("raw_update got");
+                    let event = match Python::attach(|py| Event::raw_update(py, self.client.clone_ref(py), update.into())) {
+                        Ok(event) => event,
+                        Err(e) => break Err(e),
+                    };
+                    
+                    println!("raw_update event created");
+
+                    if let Err(e) = client.trigger_event(event) {
+                        break Err(e);
+                    }
+                    println!("raw_update event trigger");
                 },
                 request = self.request_rx.recv() => {
                     let flow = if let Some(request) = request {
-                        self.process_request(request).await
+                        self.process_request(&request).await
                     } else {
                         ControlFlow::Break(())
                     };
                     match flow {
                         ControlFlow::Continue(_) => continue,
-                        ControlFlow::Break(_) => break,
+                        ControlFlow::Break(_) => break Ok(()),
                     }
                 }
             }
-        }
+        };
+
+        self.updates.sync_update_state().await?;
+        res
     }
 
-    async fn process_request(request: &Request) -> ControlFlow<()> {
+    async fn process_request(&self, request: &Request) -> ControlFlow<()> {
         match request {
             Request::Quit => ControlFlow::Break(()),
         }

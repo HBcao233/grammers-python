@@ -10,7 +10,7 @@ static FORMAT_INDENT: &'static str = "\t";
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-#[pyclass]
+#[pyclass(from_py_object)]
 pub struct PyRawVec_enums_IpPort(pub Vec<crate::enums::PyIpPort>);
 
 impl tl::Serializable for PyRawVec_enums_IpPort {
@@ -43,7 +43,7 @@ impl<T: From<crate::enums::PyIpPort>> From<PyRawVec_enums_IpPort> for tl::RawVec
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-#[pyclass]
+#[pyclass(from_py_object)]
 pub struct PyRawVec_types_FutureSalt(pub Vec<crate::types::PyFutureSalt>);
 
 impl tl::Serializable for PyRawVec_types_FutureSalt {
@@ -76,7 +76,7 @@ impl<T: From<crate::types::PyFutureSalt>> From<PyRawVec_types_FutureSalt> for tl
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-#[pyclass]
+#[pyclass(from_py_object)]
 pub struct PyRawVec_enums_TlsBlock(pub Vec<crate::enums::PyTlsBlock>);
 
 impl tl::Serializable for PyRawVec_enums_TlsBlock {
@@ -109,7 +109,7 @@ impl<T: From<crate::enums::PyTlsBlock>> From<PyRawVec_enums_TlsBlock> for tl::Ra
 #[allow(non_camel_case_types)]
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-#[pyclass]
+#[pyclass(from_py_object)]
 pub struct PyRawVec_enums_AccessPointRule(pub Vec<crate::enums::PyAccessPointRule>);
 
 impl tl::Serializable for PyRawVec_enums_AccessPointRule {
@@ -144,7 +144,7 @@ impl<T: From<crate::enums::PyAccessPointRule>> From<PyRawVec_enums_AccessPointRu
 }
 
 #[derive(Debug, Clone, PartialEq)]
-#[pyclass(module = "grammers.tl", subclass)]
+#[pyclass(skip_from_py_object, module = "grammers.tl", subclass)]
 pub struct TLObject {}
 
 #[pymethods]
@@ -332,8 +332,8 @@ impl TLObject {
     }
 }
 
-#[pyclass(module = "grammers.tl", subclass)]
 #[derive(Debug, Clone, PartialEq)]
+#[pyclass(skip_from_py_object, module = "grammers.tl", subclass)]
 pub struct TLRequest {}
 
 #[pymethods]

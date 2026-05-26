@@ -16,7 +16,7 @@ enum BytesOrStr {
 ///
 /// This library does not provide the means to generate a valid key,
 /// because doing so relies on (de-)serializing Telegram types.
-#[pyclass(name = "AuthKey", module = "grammers.crypto")]
+#[pyclass(from_py_object, name = "AuthKey", module = "grammers.crypto")]
 #[derive(Clone)]
 pub struct PyAuthKey {
     inner: AuthKey,

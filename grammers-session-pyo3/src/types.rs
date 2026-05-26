@@ -23,7 +23,7 @@ use grammers_session::types::{ChannelState, UpdatesState};
 /// This is very similar to Telegram's own `dcOption` type, except it also
 /// contains the permanent authentication key and serves as a stable interface.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "DcOption", module = "grammers.sessions", eq)]
+#[pyclass(from_py_object, name = "DcOption", module = "grammers.sessions", eq)]
 pub struct PyDcOption {
     /// Datacenter identifier.
     ///
@@ -124,7 +124,12 @@ enum Ipv4Like {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "SocketAddrV4", module = "grammers.sessions", eq)]
+#[pyclass(
+    from_py_object,
+    name = "SocketAddrV4",
+    module = "grammers.sessions",
+    eq
+)]
 pub struct PySocketAddrV4 {
     #[pyo3(get, set)]
     pub a: u8,
@@ -224,7 +229,12 @@ enum Ipv6Like {
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "SocketAddrV6", module = "grammers.sessions", eq)]
+#[pyclass(
+    from_py_object,
+    name = "SocketAddrV6",
+    module = "grammers.sessions",
+    eq
+)]
 pub struct PySocketAddrV6 {
     a: u16,
     b: u16,
@@ -338,6 +348,7 @@ impl From<PySocketAddrV6> for SocketAddr {
 /// Full update state needed to process updates in order without gaps.
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[pyclass(
+    from_py_object,
     name = "UpdatesState",
     module = "grammers.sessions",
     extends = PyUpdateState,
@@ -443,7 +454,12 @@ impl From<PyUpdatesState> for UpdatesState {
 
 /// Update state for a single channel.
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "ChannelState", module = "grammers.sessions", eq)]
+#[pyclass(
+    from_py_object,
+    name = "ChannelState",
+    module = "grammers.sessions",
+    eq
+)]
 pub struct PyChannelState {
     /// The [`PeerId::bare_id`] of the channel.
     #[pyo3(get, set)]
@@ -482,7 +498,13 @@ impl From<PyChannelState> for ChannelState {
 
 /// Used in [`crate::Session::set_update_state`] to update parts of the overall [`UpdatesState`].
 #[derive(Clone, Debug, PartialEq, Eq)]
-#[pyclass(name = "UpdateState", module = "grammers.sessions", subclass, eq)]
+#[pyclass(
+    skip_from_py_object,
+    name = "UpdateState",
+    module = "grammers.sessions",
+    subclass,
+    eq
+)]
 pub struct PyUpdateState {}
 
 #[pymethods]
@@ -566,6 +588,7 @@ impl<'py> IntoPyObject<'py> for UpdateStateLike {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[pyclass(
+    skip_from_py_object,
     name = "Primary",
     module = "grammers.sessions.UpdateState",
     extends = PyUpdateState,
@@ -598,6 +621,7 @@ impl PyUpdateStatePrimary {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[pyclass(
+    skip_from_py_object,
     name = "Secondary",
     module = "grammers.sessions.UpdateState",
     extends = PyUpdateState,
@@ -623,6 +647,7 @@ impl PyUpdateStateSecondary {
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 #[pyclass(
+    skip_from_py_object,
     name = "Channel",
     module = "grammers.sessions.UpdateState",
     extends = PyUpdateState,

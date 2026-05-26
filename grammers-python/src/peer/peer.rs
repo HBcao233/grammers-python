@@ -88,33 +88,45 @@ impl PyPeer {
     pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
         Ok(match self {
             Self::User(x) => {
-                let (id, auth, session) = Python::attach(|py| {
+                let (id, auth, inner) = Python::attach(|py| {
                     let borrowed = x.borrow(py);
-                    (borrowed.id(), borrowed.auth(), borrowed.client.session())
+                    (
+                        borrowed.id(),
+                        borrowed.auth(),
+                        borrowed.client.inner.clone(),
+                    )
                 });
                 match auth {
                     Some(auth) => Some(PyPeerRef { id, auth }),
-                    None => session.peer_ref(id).await?,
+                    None => inner.session.peer_ref(id).await?,
                 }
             }
             Self::Group(x) => {
-                let (id, auth, session) = Python::attach(|py| {
+                let (id, auth, inner) = Python::attach(|py| {
                     let borrowed = x.borrow(py);
-                    (borrowed.id(), borrowed.auth(), borrowed.client.session())
+                    (
+                        borrowed.id(),
+                        borrowed.auth(),
+                        borrowed.client.inner.clone(),
+                    )
                 });
                 match auth {
                     Some(auth) => Some(PyPeerRef { id, auth }),
-                    None => session.peer_ref(id).await?,
+                    None => inner.session.peer_ref(id).await?,
                 }
             }
             Self::Channel(x) => {
-                let (id, auth, session) = Python::attach(|py| {
+                let (id, auth, inner) = Python::attach(|py| {
                     let borrowed = x.borrow(py);
-                    (borrowed.id(), borrowed.auth(), borrowed.client.session())
+                    (
+                        borrowed.id(),
+                        borrowed.auth(),
+                        borrowed.client.inner.clone(),
+                    )
                 });
                 match auth {
                     Some(auth) => Some(PyPeerRef { id, auth }),
-                    None => session.peer_ref(id).await?,
+                    None => inner.session.peer_ref(id).await?,
                 }
             }
         })

@@ -157,7 +157,7 @@ impl PyClient {
                     "InputPeerEmpty can't resolve to any peer.",
                 ));
             }
-            tl::enums::InputPeer::PeerSelf(_) => Some(PyPeer::User(self.get_me().await?)),
+            tl::enums::InputPeer::PeerSelf => Some(PyPeer::User(self.get_me().await?)),
             tl::enums::InputPeer::User(x) => {
                 let mut res = self
                     .invoke(&tl::functions::users::GetUsers {
@@ -314,8 +314,8 @@ impl PyClient {
                         let peer_id = PyPeerId::user(x.user_id)?;
                         let mut access_hash = x.access_hash;
                         if access_hash == 0 {
-                            let session = self.session();
-                            let peer_ref = session.peer_ref(peer_id).await?;
+                            let inner = self.inner.clone();
+                            let peer_ref = inner.session.peer_ref(peer_id).await?;
                             if let Some(p) = peer_ref {
                                 access_hash = p.auth().0
                             }
@@ -337,8 +337,8 @@ impl PyClient {
                         let peer_id = PyPeerId::channel(x.channel_id)?;
                         let mut access_hash = x.access_hash;
                         if access_hash == 0 {
-                            let session = self.session();
-                            let peer_ref = session.peer_ref(peer_id).await?;
+                            let inner = self.inner.clone();
+                            let peer_ref = inner.session.peer_ref(peer_id).await?;
                             if let Some(p) = peer_ref {
                                 access_hash = p.auth().0
                             }
@@ -357,9 +357,9 @@ impl PyClient {
                         }
                     }
                     P::UserFromMessage(x) => {
-                        let session = self.session();
+                        let inner = self.inner.clone();
                         let peer_id = PyPeerId::user(x.user_id)?;
-                        let peer_ref = session.peer_ref(peer_id).await?;
+                        let peer_ref = inner.session.peer_ref(peer_id).await?;
                         if let Some(p) = peer_ref {
                             Some(p)
                         } else {
@@ -371,9 +371,9 @@ impl PyClient {
                         }
                     }
                     P::ChannelFromMessage(x) => {
-                        let session = self.session();
+                        let inner = self.inner.clone();
                         let peer_id = PyPeerId::user(x.channel_id)?;
-                        let peer_ref = session.peer_ref(peer_id).await?;
+                        let peer_ref = inner.session.peer_ref(peer_id).await?;
                         if let Some(p) = peer_ref {
                             Some(p)
                         } else {
@@ -494,7 +494,8 @@ impl PyClient {
         users: Vec<tl::enums::User>,
         chats: Vec<tl::enums::Chat>,
     ) -> PyResult<PyPeerMap> {
-        let session = self.inner.lock().unwrap().session.clone();
+        let inner = self.inner.clone();
+        let session = &inner.session;
         let users = users
             .into_iter()
             .map(|user| PyPeer::from_user(self, user))

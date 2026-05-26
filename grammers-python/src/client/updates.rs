@@ -107,7 +107,7 @@ async fn prepare_channel_difference(
 }
 
 /// Iterator returned by [`Client::stream_updates`].
-pub(crate) struct UpdateStream {
+pub struct UpdateStream {
     client: PyClient,
     message_box: MessageBoxes,
     // When did we last warn the user that the update queue filled up?
@@ -142,8 +142,7 @@ impl UpdateStream {
                 Ok(tl::enums::updates::State::State(state)) => {
                     self.client
                         .inner
-                        .lock()
-                        .unwrap()
+                        .clone()
                         .session
                         .set_update_state(UpdateStateLike::All(PyUpdatesState {
                             pts: state.pts,
@@ -167,7 +166,8 @@ impl UpdateStream {
                 if let Some(update) = self.buffer.pop_front() {
                     return Ok(update);
                 }
-                let session = self.client.inner.lock().unwrap().session.clone();
+                let inner = self.client.inner.clone();
+                let session = Python::attach(|py| inner.session.clone_ref(py));
                 (
                     self.message_box.check_deadlines(), // first, as it might trigger differences
                     self.message_box.get_difference(),
@@ -318,9 +318,9 @@ impl UpdateStream {
     ///
     /// This is **not** automatically done on drop.
     pub async fn sync_update_state(&self) -> PyResult<()> {
-        let session = self.client.inner.lock().unwrap().session.clone();
+        let inner = self.client.inner.clone();
         let update = UpdateStateLike::All(self.message_box.session_state().into());
-        session.set_update_state(update).await
+        inner.session.set_update_state(update).await
     }
 }
 
@@ -339,9 +339,9 @@ impl PyClient {
         updates: mpsc::UnboundedReceiver<UpdatesLike>,
         configuration: UpdatesConfiguration,
     ) -> PyResult<UpdateStream> {
-        let session = self.session();
+        let inner = self.inner.clone();
         let message_box = if configuration.catch_up {
-            MessageBoxes::load(session.updates_state().await?.into())
+            MessageBoxes::load(inner.session.updates_state().await?.into())
         } else {
             // If the user doesn't want to bother with catching up on previous update, start with
             // pristine state instead.
@@ -350,7 +350,7 @@ impl PyClient {
 
         // Don't bother getting pristine update state if we're not logged in.
         let should_get_state =
-            message_box.is_empty() && session.peer(PyPeerId::self_user()?).await?.is_some();
+            message_box.is_empty() && inner.session.peer(PyPeerId::self_user()?).await?.is_some();
 
         Ok(UpdateStream {
             client: self.clone(),

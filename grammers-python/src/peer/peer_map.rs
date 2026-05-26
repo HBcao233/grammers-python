@@ -26,7 +26,7 @@ use crate::peer::PyPeer;
 /// While this type derives `Clone` for convenience, it is recommended to use
 /// [`PeerMap::handle`] instead to signal that it is a cheap clone.
 #[derive(Clone)]
-#[pyclass(name = "PeerMap", module = "grammers.client")]
+#[pyclass(from_py_object, name = "PeerMap", module = "grammers.client")]
 pub struct PyPeerMap {
     pub(crate) map: Arc<HashMap<PyPeerId, PyPeer>>,
     pub(crate) client: PyClient,

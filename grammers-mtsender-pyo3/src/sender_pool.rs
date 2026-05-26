@@ -6,7 +6,7 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use pyo3::PyResult;
+use pyo3::{PyResult, Python};
 
 use std::net::{Ipv4Addr, Ipv6Addr, SocketAddrV4, SocketAddrV6};
 use std::ops::{ControlFlow, Deref};
@@ -57,7 +57,6 @@ struct ConnectionInfo {
 }
 
 /// A fat [`SenderPoolHandle`] with additional metadata from its attached [`SenderPoolRunner`].
-#[derive(Clone)]
 pub struct SenderPoolFatHandle {
     /// The inner thin handle that self can be derefed into.
     ///
@@ -75,7 +74,6 @@ pub struct SenderPoolFatHandle {
 }
 
 /// Cheaply cloneable handle to interact with its [`SenderPoolRunner`].
-#[derive(Clone)]
 pub struct SenderPoolHandle(mpsc::UnboundedSender<Request>);
 
 /// Builder to configure the runner to drive I/O and linked handles.
@@ -153,13 +151,18 @@ impl SenderPoolHandle {
 
 impl SenderPool {
     /// Creates a new sender pool with non-[`ConnectionParams::default`] configuration.
-    pub fn new(session: Session, api_id: i32, connection_params: ConnectionParams) -> Self {
+    pub fn new(
+        py: Python<'_>,
+        session: Session,
+        api_id: i32,
+        connection_params: ConnectionParams,
+    ) -> Self {
         let (request_tx, request_rx) = mpsc::unbounded_channel();
         let (updates_tx, updates_rx) = mpsc::unbounded_channel();
 
         Self {
             runner: SenderPoolRunner {
-                session: session.clone(),
+                session: session.clone_ref(py),
                 api_id,
                 connection_params,
                 request_rx,

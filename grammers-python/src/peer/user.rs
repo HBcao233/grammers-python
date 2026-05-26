@@ -19,7 +19,7 @@ use crate::PyClient;
 /// Platform Identifier referenced only by [`RestrictionReason`].
 #[non_exhaustive]
 #[derive(Clone)]
-#[pyclass(name = "Platform", module = "grammers.client")]
+#[pyclass(from_py_object, name = "Platform", module = "grammers.client")]
 pub enum PyPlatform {
     All(),
     Android(),
@@ -43,7 +43,7 @@ impl PyPlatform {
 
 /// Reason why a user is globally restricted.
 #[derive(Clone)]
-#[pyclass(name = "RestrictionReason", module = "grammers.client")]
+#[pyclass(from_py_object, name = "RestrictionReason", module = "grammers.client")]
 pub struct PyRestrictionReason {
     pub platforms: Vec<PyPlatform>,
     pub reason: String,
@@ -172,7 +172,7 @@ struct UserData {
 ///
 /// [@BotFather]: https://t.me/BotFather
 #[derive(Clone)]
-#[pyclass(name = "User", module = "grammers.client", extends = pytl::TLObject)]
+#[pyclass(skip_from_py_object, name = "User", module = "grammers.client", extends = pytl::TLObject)]
 pub struct PyUser {
     #[pyo3(get)]
     pub(crate) client: PyClient,
@@ -580,10 +580,10 @@ impl PyUser {
     /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
     pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
         let id = self.id();
-        let session = self.client.session();
+        let inner = self.client.inner.clone();
         Ok(match self.auth() {
             Some(auth) => Some(PyPeerRef { id, auth }),
-            None => session.peer_ref(id).await?,
+            None => inner.session.peer_ref(id).await?,
         })
     }
 }

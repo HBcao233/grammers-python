@@ -84,7 +84,7 @@ struct MessageData {
 /// This message should be treated as a snapshot in time, that is, if the message is edited while
 /// using this object, those changes won't alter this structure.
 #[derive(Clone)]
-#[pyclass(name = "Message", module = "grammers.client", extends = pytl::TLObject)]
+#[pyclass(skip_from_py_object, name = "Message", module = "grammers.client", extends = pytl::TLObject)]
 pub struct PyMessage {
     #[pyo3(get)]
     pub(crate) client: PyClient,

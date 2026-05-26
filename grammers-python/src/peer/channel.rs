@@ -85,7 +85,7 @@ struct ChannelData {
 /// this variant will always represent a broadcast channel. The only difference between a
 /// broadcast channel and a megagroup are the permissions (default, and available).
 #[derive(Clone)]
-#[pyclass(name = "Channel", module = "grammers.client", extends = pytl::TLObject)]
+#[pyclass(skip_from_py_object, name = "Channel", module = "grammers.client", extends = pytl::TLObject)]
 pub struct PyChannel {
     #[pyo3(get)]
     pub(crate) client: PyClient,
@@ -635,10 +635,10 @@ impl PyChannel {
     /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
     pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
         let id = self.id();
-        let session = self.client.inner.lock().unwrap().session.clone();
+        let inner = self.client.inner.clone();
         Ok(match self.auth() {
             Some(auth) => Some(PyPeerRef { id, auth }),
-            None => session.peer_ref(id).await?,
+            None => inner.session.peer_ref(id).await?,
         })
     }
 

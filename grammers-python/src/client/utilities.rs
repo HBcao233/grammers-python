@@ -1,7 +1,7 @@
-use pyo3::exceptions::PyRuntimeError;
 use pyo3::prelude::*;
 
-use super::{PyClient, UpdatesConfiguration};
+use super::PyClient;
+use crate::peer::PyUser;
 
 #[pymethods]
 impl PyClient {
@@ -9,14 +9,14 @@ impl PyClient {
     #[pyo3(signature = ())]
     async fn start(&mut self) -> PyResult<Py<PyUser>> {
         let authorized = self.is_authorized().await?;
-        let user = if !authorized {
+        let user = if !authorized || self.bot_token().is_some() {
             self.authorize().await?
         } else {
             self.get_me().await?
         };
         self.set_me(user);
 
-        self._me().expect("me setup")
+        Ok(self._me().expect("me setup"))
     }
 
     /// Stop client
@@ -24,15 +24,14 @@ impl PyClient {
     #[pyo3(signature = ())]
     async fn stop(&mut self) -> PyResult<()> {
         let inner = self.inner.clone();
-        let stream_updates = inner.stream_updates.lock().unwrap().take();
-        if let Some(s) = stream_updates {
-            s.sync_update_state().await?;
+        if self._is_event_pool_running() {
+            self._stop_event_pool().await?;
         }
+
         self.disconnect();
 
         // session close
-        let session = self.session();
-        session.close().await?;
+        inner.session.close().await?;
 
         let task = inner.pool_task.lock().unwrap().take();
         if let Some(task) = task {

@@ -82,7 +82,7 @@ struct GroupData {
 }
 
 #[derive(Clone)]
-#[pyclass]
+#[pyclass(from_py_object)]
 pub enum GroupRawType {
     ChatEmpty,
     Chat,
@@ -113,7 +113,7 @@ impl GroupRawType {
 /// join more of them. Certain actions in official clients, like setting a chat's username,
 /// silently upgrade the chat to a megagroup.
 #[derive(Clone)]
-#[pyclass(name = "Group", module = "grammers.client", extends = pytl::TLObject, dict)]
+#[pyclass(skip_from_py_object, name = "Group", module = "grammers.client", extends = pytl::TLObject, dict)]
 pub struct PyGroup {
     #[pyo3(get)]
     pub raw_type: GroupRawType,
@@ -798,10 +798,10 @@ impl PyGroup {
     /// This is only possible if the peer would be usable on all methods or if it is in the session cache.
     pub async fn to_ref(&self) -> PyResult<Option<PyPeerRef>> {
         let id = self.id();
-        let session = self.client.session();
+        let inner = self.client.inner.clone();
         Ok(match self.auth() {
             Some(auth) => Some(PyPeerRef { id, auth }),
-            None => session.peer_ref(id).await?,
+            None => inner.session.peer_ref(id).await?,
         })
     }
 

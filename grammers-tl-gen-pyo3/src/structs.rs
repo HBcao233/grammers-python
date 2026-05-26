@@ -58,7 +58,7 @@ fn write_struct<W: Write>(
     writeln!(file, "{indent}#[derive(Debug, Clone)]")?;
     writeln!(
         file,
-        "{}#[pyo3::pyclass(name = \"{}\", module = \"grammers.tl{}\", extends = crate::{}, subclass, dict)]",
+        "{}#[pyo3::pyclass(skip_from_py_object, name = \"{}\", module = \"grammers.tl{}\", extends = crate::{}, subclass, dict)]",
         indent,
         type_name,
         if def.namespace.is_empty() {

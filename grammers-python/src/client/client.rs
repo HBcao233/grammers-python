@@ -1,4 +1,4 @@
-use std::sync::{Arc, Mutex, RwLock};
+use std::sync::{Arc, Mutex};
 
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
@@ -10,8 +10,7 @@ use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
 use grammers_session::updates::UpdatesLike;
 use grammers_session_pyo3::{PySession, Session};
 
-use super::UpdateStream;
-use crate::events::EventHandlersManager;
+use crate::events::{EventHandlersManager, EventPoolHandle};
 use crate::peer::PyUser;
 use crate::runtime::RUNTIME;
 
@@ -41,7 +40,8 @@ pub struct ClientInner {
     pub(crate) handle: SenderPoolFatHandle,
 
     pub(crate) event_handlers: EventHandlersManager,
-    pub(crate) event_runner: Mutex<Option<EventsRunner>>,
+    pub(crate) event_pool_handle: Mutex<Option<EventPoolHandle>>,
+    pub(crate) event_pool_task: Mutex<Option<JoinHandle<PyResult<()>>>>,
 
     pub(crate) session: Session,
     pub(crate) me: Mutex<Option<Py<PyUser>>>,
@@ -63,7 +63,13 @@ pub struct ClientInner {
 }
 
 #[derive(Clone)]
-#[pyclass(name = "Client", module = "grammers", subclass, dict)]
+#[pyclass(
+    from_py_object,
+    name = "Client",
+    module = "grammers",
+    subclass,
+    dict
+)]
 pub struct PyClient {
     pub inner: Arc<ClientInner>,
 }
@@ -97,7 +103,7 @@ impl PyClient {
         phone: Py<PyAny>,
         code: Py<PyAny>,
         password: Py<PyAny>,
-        bot_token: Option<&str>,
+        bot_token: Option<String>,
         device_model: Option<&str>,
         system_version: Option<&str>,
         app_version: Option<&str>,
@@ -170,7 +176,8 @@ impl PyClient {
             __non_exhaustive: (),
         };
 
-        let pool = SenderPool::new(self.session(), self.api_id, config);
+        let pool =
+            Python::attach(|py| SenderPool::new(py, session.clone_ref(py), api_id.0, config));
         let SenderPool {
             runner,
             updates,
@@ -181,23 +188,27 @@ impl PyClient {
         let inner = ClientInner {
             pool_task: Mutex::new(Some(pool_task)),
             updates: Mutex::new(Some(updates)),
-            stream_updates: Mutex::new(None),
             handle,
-            event_handers: None,
+            event_handlers: EventHandlersManager::new(),
+            event_pool_handle: Mutex::new(None),
+            event_pool_task: Mutex::new(None),
             session: session,
             api_id: api_id.0,
             api_hash: api_hash.to_string(),
             phone,
             code,
             password,
-            bot_token: bot_token.map(|x| x.to_string()),
+            bot_token: bot_token,
             use_ipv6,
+            device_model,
+            system_version,
+            app_version,
             system_lang_code: system_lang_code.to_string(),
             lang_code: lang_code.to_string(),
             me: Mutex::new(None),
         };
         Ok(Self {
-            inner: Arc::new(Mutex::new(inner)),
+            inner: Arc::new(inner),
         })
     }
 
@@ -248,8 +259,8 @@ impl PyClient {
 
     #[getter(session)]
     fn get_session(&self) -> Py<PyAny> {
-        let session = self.session();
-        Python::attach(|py| session.read().unwrap().get_inner(py))
+        let inner = self.inner.clone();
+        Python::attach(|py| inner.session.get_inner(py))
     }
 
     #[getter]
@@ -268,8 +279,9 @@ impl PyClient {
     }
 
     #[getter(me)]
-    fn _me(&self) -> Option<Py<PyUser>> {
-        match &self.inner.me {
+    pub fn _me(&self) -> Option<Py<PyUser>> {
+        let inner = self.inner.clone();
+        match inner.me.lock().unwrap().as_ref() {
             None => None,
             Some(me) => Some(Python::attach(|py| me.clone_ref(py))),
         }
@@ -277,15 +289,8 @@ impl PyClient {
 }
 
 impl PyClient {
-    pub fn session(&self) -> Session {
-        self.inner.session.clone()
-    }
-
     pub fn set_me(&self, user: Py<PyUser>) {
-        self.inner.me.lock().unwrap() = Some(user);
-    }
-
-    pub fn handle(&self) -> SenderPoolFatHandle {
-        self.inner.handle.clone()
+        let inner = self.inner.clone();
+        *inner.me.lock().unwrap() = Some(user);
     }
 }

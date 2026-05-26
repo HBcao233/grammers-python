@@ -1,5 +1,6 @@
-use pyo3::exceptions::PyNotImplementedError;
+use pyo3::exceptions::{PyBaseException, PyNotImplementedError};
 use pyo3::prelude::*;
+use pyo3::types::{PyAnyMethods, PyDict};
 
 use grammers_tl_types_pyo3 as pytl;
 use grammers_tl_types_pyo3::TLObject;
@@ -8,45 +9,74 @@ use super::PyEventKind;
 use crate::PyClient;
 use crate::peer::PyUser;
 
-pub(crate) enum Event {
+#[derive(FromPyObject, IntoPyObject)]
+pub enum Event {
     Logined(Py<PyLoginedEvent>),
-    Error(Py<PyErrorEvent>),
+    Error_(Py<PyErrorEvent>),
     RawUpdate(Py<PyRawUpdateEvent>),
 }
 
 impl Event {
-    pub fn logined(client: &PyClient, user: Py<PyUser>) -> PyResult<Self> {
-        Self::Logined(Py::new(py, PyLoginedEvent::new(client.clone(), user)))
+    pub fn logined(py: Python<'_>, client: Py<PyClient>, user: Py<PyUser>) -> PyResult<Self> {
+        Ok(Self::Logined(Py::new(
+            py,
+            PyLoginedEvent::new(client, user),
+        )?))
     }
 
-    pub fn error(client: &PyClient, error: PyErr) -> PyResult<Self> {
-        Self::Error(Py::new(py, PyErrorEvent::new(client.clone(), error)))
+    pub fn error(py: Python<'_>, client: Py<PyClient>, error: PyErr) -> PyResult<Self> {
+        Ok(Self::Error_(Py::new(
+            py,
+            PyErrorEvent::new(client, error.into_value(py)),
+        )?))
     }
 
-    pub fn raw_update(client: &PyClient, update: pytl::enums::PyUpdate) -> PyResult<Self> {
-        Self::RawUpdate(Py::new(py, PyRawUpdateEvent::new(client.clone(), update)))
+    pub fn raw_update(
+        py: Python<'_>,
+        client: Py<PyClient>,
+        update: pytl::enums::PyUpdate,
+    ) -> PyResult<Self> {
+        Ok(Self::RawUpdate(Py::new(
+            py,
+            PyRawUpdateEvent::new(client, update),
+        )?))
     }
 
     pub fn kind(&self) -> PyEventKind {
         match self {
             Event::Logined(_) => PyEventKind::Logined,
-            Event::Error(_) => PyEventKind::Error,
+            Event::Error_(_) => PyEventKind::Error,
             Event::RawUpdate(_) => PyEventKind::RawUpdate,
         }
     }
 
-    pub fn client(&self, py: Python<'_>) -> PyClient {
-        match self {
-            Event::Logined(x) => x.borrow(py).clone(),
-            Event::Error(x) => x.borrow(py).clone(),
-            Event::RawUpdate(x) => x.borrow(py).clone(),
-        }
+    pub fn client(&self, py: Python<'_>) -> PyResult<Py<PyClient>> {
+        Ok(match self {
+            Event::Logined(x) => x
+                .bind(py)
+                .as_any()
+                .call_method0("client")?
+                .cast_into::<PyClient>()?
+                .unbind(),
+            Event::Error_(x) => x
+                .bind(py)
+                .as_any()
+                .call_method0("client")?
+                .cast_into::<PyClient>()?
+                .unbind(),
+            Event::RawUpdate(x) => x
+                .bind(py)
+                .as_any()
+                .call_method0("client")?
+                .cast_into::<PyClient>()?
+                .unbind(),
+        })
     }
 
     pub fn clone_ref(&self, py: Python<'_>) -> Event {
         match self {
             Event::Logined(x) => Event::Logined(x.clone_ref(py)),
-            Event::Error(x) => Event::Error(x.clone_ref(py)),
+            Event::Error_(x) => Event::Error_(x.clone_ref(py)),
             Event::RawUpdate(x) => Event::RawUpdate(x.clone_ref(py)),
         }
     }
@@ -57,25 +87,27 @@ pub struct PyEventCommon {
     client: Py<PyClient>,
 }
 
+#[pymethods]
 impl PyEventCommon {
     #[new]
-    pub fn new(client: PyClient) -> Self {
+    pub fn new(client: Py<PyClient>) -> Self {
         Self { client }
     }
 
-    #[classattr]
-    fn kind() -> PyResult<PyEventKind> {
+    #[getter]
+    fn kind(&self) -> PyResult<PyEventKind> {
         Err(PyNotImplementedError::new_err(()))
     }
 
     #[getter]
-    fn client(self, py: Python<'_>) -> Py<PyClient> {
+    fn client(&self, py: Python<'_>) -> Py<PyClient> {
         self.client.clone_ref(py)
     }
 
     fn to_dict(slf: Bound<'_, Self>) -> PyResult<Py<PyDict>> {
-        let event_name = format!("{}Event", slf.borrow(py).kind().name());
-        let dict = slf.into_any().dict()?;
+        let kind: Bound<'_, PyEventKind> = slf.call_method0("kind")?.extract()?;
+        let event_name = format!("{}Event", kind.borrow().name());
+        let dict: Bound<'_, PyDict> = slf.into_any().getattr("__dict__")?.extract()?;
         dict.set_item("_", event_name)?;
         Ok(dict.unbind())
     }
@@ -96,6 +128,7 @@ pub struct PyLoginedEvent {
     user: Py<PyUser>,
 }
 
+#[pymethods]
 impl PyLoginedEvent {
     #[classattr]
     fn kind() -> PyEventKind {
@@ -103,8 +136,13 @@ impl PyLoginedEvent {
     }
 
     #[new]
-    fn new(client: PyClient, user: Py<PyUser>) -> PyClassInitializer<Self> {
+    fn new(client: Py<PyClient>, user: Py<PyUser>) -> PyClassInitializer<Self> {
         PyClassInitializer::from(PyEventCommon::new(client)).add_subclass(Self { user })
+    }
+
+    #[getter]
+    fn user(&self, py: Python<'_>) -> Py<PyUser> {
+        self.user.clone_ref(py)
     }
 }
 
@@ -112,9 +150,10 @@ impl PyLoginedEvent {
 pub struct PyErrorEvent {
     // The error occurred when run handler.
     #[pyo3(get)]
-    error: PyErr,
+    error: Py<PyBaseException>,
 }
 
+#[pymethods]
 impl PyErrorEvent {
     #[classattr]
     fn kind() -> PyEventKind {
@@ -122,18 +161,24 @@ impl PyErrorEvent {
     }
 
     #[new]
-    fn new(client: PyClient, error: PyErr) -> PyClassInitializer<Self> {
+    fn new(client: Py<PyClient>, error: Py<PyBaseException>) -> PyClassInitializer<Self> {
         PyClassInitializer::from(PyEventCommon::new(client)).add_subclass(Self { error })
+    }
+
+    #[getter]
+    fn error(&self, py: Python<'_>) -> Py<PyBaseException> {
+        self.error.clone_ref(py)
     }
 }
 
-#[pyclass(name = "LoginedEvent", module = "grammers.events", extends = PyEventCommon)]
+#[pyclass(name = "RawUpdateEvent", module = "grammers.events", extends = PyEventCommon)]
 pub struct PyRawUpdateEvent {
     // logined user.
     #[pyo3(get)]
     update: pytl::enums::PyUpdate,
 }
 
+#[pymethods]
 impl PyRawUpdateEvent {
     #[classattr]
     fn kind() -> PyEventKind {
@@ -141,7 +186,12 @@ impl PyRawUpdateEvent {
     }
 
     #[new]
-    pub fn new(client: PyClient, update: pytl::enums::PyUpdate) -> PyClassInitializer<Self> {
+    pub fn new(client: Py<PyClient>, update: pytl::enums::PyUpdate) -> PyClassInitializer<Self> {
         PyClassInitializer::from(PyEventCommon::new(client)).add_subclass(Self { update })
+    }
+
+    #[getter]
+    fn update(&self, _py: Python<'_>) -> pytl::enums::PyUpdate {
+        self.update.clone()
     }
 }

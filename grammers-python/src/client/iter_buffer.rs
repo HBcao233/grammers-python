@@ -44,15 +44,6 @@ impl<R, T> IterBuffer<R, T> {
         }
     }
 
-    /// Change
-    ///
-    /// Using `limit` instead of `take` on the iterator is useful because outgoing requests can
-    /// ask for less items from the server to only fetch what's needed.
-    pub fn limit(mut self, n: usize) -> Self {
-        self.limit = Some(n);
-        self
-    }
-
     /// Checks whether the limit has been reached and no more items should be fetched.
     fn limit_reached(&self) -> bool {
         if let Some(limit) = self.limit {

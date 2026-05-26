@@ -3,14 +3,14 @@ mod event;
 mod handler;
 mod pool;
 
-pub(crate) use common::{EventBuilder, EventKind};
+pub(crate) use common::EventBuilder;
 pub use common::{PyError, PyEventBuilder, PyEventKind, PyLogined, PyRawUpdate};
 pub(crate) use event::Event;
 pub use event::{PyErrorEvent, PyEventCommon, PyLoginedEvent, PyRawUpdateEvent};
 pub(crate) use handler::EventHandlersManager;
-pub(crate) use pool::EventPool;
+pub(crate) use pool::{EventPool, EventPoolHandle};
 
-#[pyo3::pymodule]
+#[pyo3::pymodule(name = "events")]
 pub(crate) mod events_ {
     #[pymodule_export]
     use super::PyEventKind;

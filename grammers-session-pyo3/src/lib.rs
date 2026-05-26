@@ -1,11 +1,13 @@
 mod peer;
-mod runtime;
 mod session;
 mod types;
+// mod utils;
+mod runtime;
 
 pub use peer::{
     PeerIdLike, PeerInfo, PyChannelKind, PyPeerAuth, PyPeerId, PyPeerInfo, PyPeerKind, PyPeerRef,
 };
+// pub use utils::into_future;
 pub use runtime::{asyncio, event_loop, into_future};
 pub use session::{PySession, Session};
 pub use types::{

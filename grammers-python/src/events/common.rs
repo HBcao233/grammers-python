@@ -1,9 +1,10 @@
+use pyo3::PyTypeInfo;
+use pyo3::exceptions::PyTypeError;
 use pyo3::prelude::*;
-
-use std::sync::Arc;
+use pyo3::types::PyType;
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
-#[pyclass(name = "EventKind", module = "grammers.events")]
+#[pyclass(from_py_object, name = "EventKind", module = "grammers.events")]
 pub enum PyEventKind {
     Logined = -1,  // When account is logined.
     Error = -2,    // When error occurred.
@@ -32,38 +33,94 @@ pub struct EventBuilder {
     pub filter: Option<Py<PyAny>>,
 }
 
+impl EventBuilder {
+    pub fn clone_ref(&self, py: Python<'_>) -> Self {
+        Self {
+            kind: self.kind,
+            filter: match &self.filter {
+                Some(x) => Some(x.clone_ref(py)),
+                None => None,
+            },
+        }
+    }
+}
+
 impl<'a, 'py> FromPyObject<'a, 'py> for EventBuilder {
     type Error = PyErr;
 
     fn extract(ob: Borrowed<'a, 'py, PyAny>) -> Result<Self, Self::Error> {
-        let ob = match ob.extract::<PyType>() {
-            Err(_) => ob,
-            Ok(ty) => ty.call0()?.borrow(),
+        let obj;
+        let ob = if ob.is_instance_of::<PyType>() {
+            obj = ob.call0()?;
+            obj.as_borrowed()
+        } else {
+            ob
         };
 
         if let Ok(kind) = ob.extract::<PyEventKind>() {
             return Ok(Self { kind, filter: None });
         }
-        if let Ok(v) = ob.extract::<PyConnected>() {
-            return Ok(Self {
-                kind: PyEventKind::Connected,
-                filter: v.filter,
-            });
-        }
-        if let Ok(v) = ob.extract::<PyLogined>() {
+        let py = ob.py();
+        if let Ok(v) = ob.cast::<PyLogined>() {
             return Ok(Self {
                 kind: PyEventKind::Logined,
-                filter: v.filter,
+                filter: match &v.borrow().filter {
+                    Some(x) => Some(x.clone_ref(py)),
+                    None => None,
+                },
             });
         }
-        if let Ok(v) = ob.extract::<PyRawUpdate>() {
+        if let Ok(v) = ob.cast::<PyError>() {
+            return Ok(Self {
+                kind: PyEventKind::Error,
+                filter: match &v.borrow().filter {
+                    Some(x) => Some(x.clone_ref(py)),
+                    None => None,
+                },
+            });
+        }
+        if let Ok(v) = ob.cast::<PyRawUpdate>() {
             return Ok(Self {
                 kind: PyEventKind::RawUpdate,
-                filter: v.filter,
+                filter: match &v.borrow().filter {
+                    Some(x) => Some(x.clone_ref(py)),
+                    None => None,
+                },
             });
         }
 
         Err(PyTypeError::new_err("need a EventBuilder or EventKind"))
+    }
+}
+
+impl<'py> IntoPyObject<'py> for EventBuilder {
+    type Target = PyAny;
+    type Output = Bound<'py, PyAny>;
+    type Error = PyErr;
+    fn into_pyobject(self, py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
+        match self.kind {
+            PyEventKind::Logined => Bound::new(
+                py,
+                PyLogined {
+                    filter: self.filter,
+                },
+            )
+            .map(|x| x.into_any()),
+            PyEventKind::Error => Bound::new(
+                py,
+                PyError {
+                    filter: self.filter,
+                },
+            )
+            .map(|x| x.into_any()),
+            PyEventKind::RawUpdate => Bound::new(
+                py,
+                PyRawUpdate {
+                    filter: self.filter,
+                },
+            )
+            .map(|x| x.into_any()),
+        }
     }
 }
 
@@ -72,19 +129,22 @@ pub struct PyEventBuilder {}
 
 #[pymethods]
 impl PyEventBuilder {
+    #[allow(non_snake_case)]
     #[classattr]
-    fn Logined() -> Py<PyType> {
-        PyLogined.type_object().unbind()
+    fn Logined(py: Python<'_>) -> Py<PyType> {
+        PyLogined::type_object(py).unbind()
     }
 
+    #[allow(non_snake_case)]
     #[classattr]
-    fn Error() -> Py<PyType> {
-        PyError.type_object().unbind()
+    fn Error(py: Python<'_>) -> Py<PyType> {
+        PyError::type_object(py).unbind()
     }
 
+    #[allow(non_snake_case)]
     #[classattr]
-    fn RawUpdate() -> Py<PyType> {
-        PyRawUpdate.type_object().unbind()
+    fn RawUpdate(py: Python<'_>) -> Py<PyType> {
+        PyRawUpdate::type_object(py).unbind()
     }
 }
 
@@ -101,12 +161,12 @@ impl PyLogined {
         Self { filter }
     }
 
-    fn __str__(&self) -> PyResult<String> {
-        let filter = match self.filter {
-            Some(x) => x.repr()?,
+    fn __str__(&self, py: Python<'_>) -> PyResult<String> {
+        let filter = match &self.filter {
+            Some(x) => x.bind(py).repr()?.extract()?,
             None => "None".to_string(),
         };
-        format!("EventBuilder.Logined(filter={})", filter)
+        Ok(format!("EventBuilder.Logined(filter={})", filter))
     }
 }
 
@@ -123,12 +183,12 @@ impl PyError {
         Self { filter }
     }
 
-    fn __str__(&self) -> PyResult<String> {
-        let filter = match self.filter {
-            Some(x) => x.repr()?,
+    fn __str__(&self, py: Python<'_>) -> PyResult<String> {
+        let filter = match &self.filter {
+            Some(x) => x.bind(py).repr()?.extract()?,
             None => "None".to_string(),
         };
-        format!("EventBuilder.Error(filter={})", filter)
+        Ok(format!("EventBuilder.Error(filter={})", filter))
     }
 }
 
@@ -145,11 +205,11 @@ impl PyRawUpdate {
         Self { filter }
     }
 
-    fn __str__(&self) -> PyResult<String> {
-        let filter = match self.filter {
-            Some(x) => x.repr()?.extract(),
+    fn __str__(&self, py: Python<'_>) -> PyResult<String> {
+        let filter = match &self.filter {
+            Some(x) => x.bind(py).repr()?.extract()?,
             None => "None".to_string(),
         };
-        format!("EventBuilder.RawUpdate(filter={})", filter)
+        Ok(format!("EventBuilder.RawUpdate(filter={})", filter))
     }
 }

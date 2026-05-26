@@ -9,7 +9,13 @@ use pyo3::types::PyType;
 use crate::into_future;
 
 #[derive(Clone)]
-#[pyclass(name = "Session", module = "grammers.sessions", subclass, dict)]
+#[pyclass(
+    skip_from_py_object,
+    name = "Session",
+    module = "grammers.sessions",
+    subclass,
+    dict
+)]
 pub struct PySession {}
 
 #[pymethods]
@@ -130,13 +136,12 @@ impl PySession {
 
 // For use on the Rust side
 pub struct Session(Py<PyAny>);
-impl Clone for Session {
-    fn clone(&self) -> Self {
-        Python::attach(|py| Self(self.get_inner(py)))
-    }
-}
 
 impl Session {
+    pub fn clone_ref(&self, py: Python<'_>) -> Self {
+        Self(self.get_inner(py))
+    }
+
     pub fn new(session: Py<PyAny>) -> Self {
         Self(session)
     }

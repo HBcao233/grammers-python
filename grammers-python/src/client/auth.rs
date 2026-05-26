@@ -15,7 +15,7 @@ use crate::utils::extract_password_parameters;
 
 /// Login token needed to continue the login process after sending the code.
 #[derive(Clone)]
-#[pyclass(name = "LoginToken", module = "grammers.custom")]
+#[pyclass(from_py_object, name = "LoginToken", module = "grammers.custom")]
 pub struct PyLoginToken {
     #[pyo3(get, set)]
     pub phone: String,
@@ -180,12 +180,14 @@ impl PyClient {
         }
 
         // check if session is logined
-        let session = self.session();
-        let dc_id = session.home_dc_id().await?;
-        let dc_option = session.dc_option(dc_id).await?;
+        let inner = self.inner.clone();
+        let dc_id = inner.session.home_dc_id().await?;
+        let dc_option = inner.session.dc_option(dc_id).await?;
         if dc_option.is_some() && dc_option.unwrap().auth_key.is_some() {
             if let Ok(x) = self.get_password_information().await {
-                return self.auto_check_password(Some(x)).await;
+                let user = self.auto_check_password(Some(x.into())).await?;
+                let user = Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))?;
+                return Ok(user);
             }
         }
 
@@ -201,15 +203,14 @@ impl PyClient {
         let code = crate::utils::maybe_await(code).await?;
         let code = Python::attach(|py| code.bind(py).str().map(|x| x.to_string()))?;
 
-        let user = match self.sign_in(login_token, code).await {
+        match self.sign_in(login_token, code).await {
             Ok(user) => Ok(user),
             Err(e) if Python::attach(|py| e.is_instance_of::<PasswordRequiredError>(py)) => {
-                self.auto_check_password(None).await
+                let user = self.auto_check_password(None).await?;
+                Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
             }
             Err(e) => Err(e),
-        }?;
-
-        Ok(user)
+        }
     }
 
     /// Signs in to the bot account associated with this token.
@@ -252,14 +253,14 @@ impl PyClient {
         let result = match self.invoke(&request).await {
             Ok(x) => x,
             Err(InvocationError::Rpc(err)) if err.code == 303 => {
-                let session = self.session();
-                let old_dc_id = session.home_dc_id().await?;
+                let inner = self.inner.clone();
+                let old_dc_id = inner.session.home_dc_id().await?;
                 let new_dc_id = err.value.unwrap() as i32;
                 // Disconnect from current DC to cull the now-unused connection.
                 // This also gives a chance for the new home DC to export its authorization
                 // if there's a need to connect back to the old DC after having logged in.
-                self.handle().disconnect_from_dc(old_dc_id);
-                session.set_home_dc_id(new_dc_id).await?;
+                inner.handle.disconnect_from_dc(old_dc_id);
+                inner.session.set_home_dc_id(new_dc_id).await?;
                 self.invoke(&request)
                     .await
                     .map_err(PyInvocationError::new)?
@@ -268,7 +269,10 @@ impl PyClient {
         };
 
         match result {
-            tl::enums::auth::Authorization::Authorization(x) => self.complete_login(x).await,
+            tl::enums::auth::Authorization::Authorization(x) => {
+                let user = self.complete_login(x).await?;
+                Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
+            }
             tl::enums::auth::Authorization::SignUpRequired(_) => Err(PyRuntimeError::new_err(
                 "API returned SignUpRequired even though we're logging in as a bot",
             )),
@@ -332,14 +336,14 @@ impl PyClient {
                 SC::PaymentRequired(_) => return Err(PyPaymentRequiredError::new()),
             },
             Err(InvocationError::Rpc(err)) if err.code == 303 => {
-                let session = self.session();
-                let old_dc_id = session.home_dc_id().await?;
+                let inner = self.inner.clone();
+                let old_dc_id = inner.session.home_dc_id().await?;
                 let new_dc_id = err.value.unwrap() as i32;
                 // Disconnect from current DC to cull the now-unused connection.
                 // This also gives a chance for the new home DC to export its authorization
                 // if there's a need to connect back to the old DC after having logged in.
-                self.handle().disconnect_from_dc(old_dc_id);
-                session.set_home_dc_id(new_dc_id).await?;
+                inner.handle.disconnect_from_dc(old_dc_id);
+                inner.session.set_home_dc_id(new_dc_id).await?;
                 match self
                     .invoke(&request)
                     .await
@@ -408,7 +412,10 @@ impl PyClient {
             })
             .await
         {
-            Ok(tl::enums::auth::Authorization::Authorization(x)) => self.complete_login(x).await,
+            Ok(tl::enums::auth::Authorization::Authorization(x)) => {
+                let user = self.complete_login(x).await?;
+                Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
+            }
             Ok(tl::enums::auth::Authorization::SignUpRequired(_)) => {
                 Err(PySignUpRequiredError::new())
             }
@@ -463,10 +470,13 @@ impl PyClient {
     #[pyo3(name = "check_password")]
     pub async fn py_check_password(
         &self,
-        password_info: pytl::types::account::PyPassword,
+        password_info: pytl::enums::account::PyPassword,
         password: String,
     ) -> PyResult<Py<PyUser>> {
-        let user = self.check_password(password_info.into(), password)?;
+        let password_info: tl::types::account::Password = match password_info {
+            pytl::enums::account::PyPassword::Password(x) => x.into(),
+        };
+        let user = self.check_password(password_info.into(), password).await?;
 
         Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
     }
@@ -518,7 +528,13 @@ impl PyClient {
         &self,
         password_info: Option<pytl::enums::account::PyPassword>,
     ) -> PyResult<Py<PyUser>> {
-        let user = self.auto_check_password(password_info.into()).await?;
+        let password_info: Option<tl::types::account::Password> = match password_info {
+            Some(pytl::enums::account::PyPassword::Password(x)) => Some(x.into()),
+            None => None,
+        };
+        let user = self
+            .auto_check_password(password_info.map(Into::into))
+            .await?;
 
         Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
     }
@@ -565,9 +581,10 @@ impl PyClient {
     #[pyo3(name = "complete_login")]
     async fn py_complete_login(
         &self,
-        auth: pytl::types::auth::PyAuthorization,
+        auth: Py<pytl::types::auth::PyAuthorization>,
     ) -> PyResult<Py<PyUser>> {
-        let user = self.complete_login(auth.into())?;
+        let auth: tl::types::auth::Authorization = Python::attach(|py| auth.borrow(py).clone().into());
+        let user = self.complete_login(auth).await?;
 
         Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
     }
@@ -576,7 +593,7 @@ impl PyClient {
 impl PyClient {
     pub async fn get_password_information(
         &self,
-    ) -> Result<tl::types::account::Password, InvocationError> {
+    ) -> Result<tl::enums::account::Password, InvocationError> {
         let request = tl::functions::account::GetPassword {};
 
         self.invoke(&request).await
@@ -584,7 +601,7 @@ impl PyClient {
 
     pub async fn check_password(
         &self,
-        password_info: tl::types::account::Password,
+        mut password_info: tl::types::account::Password,
         password: String,
     ) -> PyResult<tl::enums::User> {
         let current_algo = password_info.current_algo.as_ref().unwrap();
@@ -592,9 +609,11 @@ impl PyClient {
 
         // Telegram sent us incorrect parameters, trying to get them again
         if !check_p_and_g(params.2, params.3) {
-            password_info = match self.get_password_information().await? {
-                pytl::enums::account::PyPassword::Password(x) => x.into(),
-            };
+            password_info = self
+                .get_password_information()
+                .await
+                .map_err(PyInvocationError::new)?
+                .into();
             let current_algo = password_info.current_algo.as_ref().unwrap();
             params = extract_password_parameters(&current_algo);
             if !check_p_and_g(params.2, params.3) {
@@ -631,16 +650,15 @@ impl PyClient {
 
     async fn auto_check_password(
         &self,
-        password_info: Option<tl::enums::account::Password>,
+        password_info: Option<tl::types::account::Password>,
     ) -> PyResult<tl::enums::User> {
         let password_info = match password_info {
             Some(x) => x,
-            None => self.get_password_information().await?,
-        };
-        let password_info: pytl::types::account::PyPassword = match password_info {
-            pytl::enums::account::PyPassword::Password(x) => {
-                Python::attach(|py| x.0.borrow(py).clone())
-            }
+            None => self
+                .get_password_information()
+                .await
+                .map_err(PyInvocationError::new)?
+                .into(),
         };
         let hint = password_info.hint.clone();
 
@@ -662,11 +680,11 @@ impl PyClient {
             tl::enums::User::User(ref u) => Some(u.bot),
             tl::enums::User::Empty(_) => None,
         };
-        let session = self.session();
+        let inner = self.inner.clone();
         let auth = match user {
             tl::enums::User::User(ref u) => u.access_hash.filter(|_| !u.min).map(PyPeerAuth::new),
             tl::enums::User::Empty(_) => {
-                let peer = session.peer(PyPeerId::user(user_id)?).await?;
+                let peer = inner.session.peer(PyPeerId::user(user_id)?).await?;
                 match peer {
                     Some(p) => p.auth(),
                     None => None,
@@ -674,7 +692,8 @@ impl PyClient {
             }
         };
 
-        session
+        inner
+            .session
             .cache_peer(PeerInfo::User {
                 id: user_id,
                 auth: auth,
@@ -687,7 +706,8 @@ impl PyClient {
         // `message_box` will try to correct its state as updates arrive.
         let update_state = self.invoke(&tl::functions::updates::GetState {}).await;
         if let Ok(tl::enums::updates::State::State(state)) = update_state {
-            session
+            inner
+                .session
                 .set_update_state(UpdateStateLike::All(PyUpdatesState {
                     pts: state.pts,
                     qts: state.qts,
@@ -698,33 +718,8 @@ impl PyClient {
                 .await?;
         }
 
-        self._setup_stream_updates().await;
+        self._start_event_pool().await?;
 
-        user
-    }
-
-    async fn _setup_stream_updates(&self) -> PyResult<()> {
-        let updates = self
-            .inner
-            .clone()
-            .updates
-            .lock()
-            .unwrap()
-            .take()
-            .ok_or(PyRuntimeError::new_err("Client fail to initialize."))?;
-        let stream_updates = self
-            .stream_updates(
-                updates,
-                UpdatesConfiguration {
-                    catch_up: true,
-                    update_queue_limit: Some(100),
-                },
-            )
-            .await?;
-
-        let EventPool { runner, handle } = EventPool::new(self, stream_updates);
-        let event_pool_task = RUNTIME::spawn(runner.run);
-        self.inner.clone().event_runner.lock().unwrap() = Some(event_runner);
-        Ok(())
+        Ok(user)
     }
 }
