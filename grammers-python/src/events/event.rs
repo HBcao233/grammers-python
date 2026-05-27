@@ -90,19 +90,19 @@ impl PyEventCommon {
     }
 
     fn to_dict(slf: Bound<'_, Self>) -> PyResult<Py<PyDict>> {
-        let kind: Bound<'_, PyEventKind> = slf.call_method0("kind")?.extract()?;
+        let kind: Bound<'_, PyEventKind> = slf.getattr("kind")?.extract()?;
         let event_name = format!("{}Event", kind.borrow().name());
         let dict: Bound<'_, PyDict> = slf.into_any().getattr("__dict__")?.extract()?;
         dict.set_item("_", event_name)?;
         Ok(dict.unbind())
     }
 
-    fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
-        TLObject::pretty_format(slf, None)
+    fn __repr__(slf: Bound<'_, Self>) -> PyResult<String> {
+        TLObject::pretty_format(&slf, None)
     }
 
-    fn __str__(slf: &Bound<'_, Self>) -> PyResult<String> {
-        TLObject::pretty_format(slf, Some(0))
+    fn __str__(slf: Bound<'_, Self>) -> PyResult<String> {
+        TLObject::pretty_format(&slf, Some(0))
     }
 }
 
@@ -129,6 +129,19 @@ impl PyLoginedEvent {
     fn user(&self, py: Python<'_>) -> Py<PyUser> {
         self.user.clone_ref(py)
     }
+
+    fn to_dict(slf: Bound<'_, Self>) -> PyResult<Py<PyDict>> {
+        let py = slf.py();
+        let borrowed = slf.borrow();
+        let kind = PyLoginedEvent::kind();
+        let user = borrowed.user(py);
+
+        let dict = PyDict::new(py);
+        dict.set_item("_", "LoginedEvent")?;
+        dict.set_item("kind", kind)?;
+        dict.set_item("user", user)?;
+        Ok(dict.unbind())
+    }
 }
 
 #[pyclass(name = "ErrorEvent", module = "grammers.events", extends = PyEventCommon)]
@@ -154,6 +167,19 @@ impl PyErrorEvent {
     fn error(&self, py: Python<'_>) -> Py<PyBaseException> {
         self.error.clone_ref(py)
     }
+    
+    fn to_dict(slf: Bound<'_, Self>) -> PyResult<Py<PyDict>> {
+        let py = slf.py();
+        let borrowed = slf.borrow();
+        let kind = PyErrorEvent::kind();
+        let error = borrowed.error(py);
+
+        let dict = PyDict::new(py);
+        dict.set_item("_", "ErrorEvent")?;
+        dict.set_item("kind", kind)?;
+        dict.set_item("error", error)?;
+        Ok(dict.unbind())
+    }
 }
 
 #[pyclass(name = "RawUpdateEvent", module = "grammers.events", extends = PyEventCommon)]
@@ -178,5 +204,18 @@ impl PyRawUpdateEvent {
     #[getter]
     fn update(&self, _py: Python<'_>) -> pytl::enums::PyUpdate {
         self.update.clone()
+    }
+    
+    fn to_dict(slf: Bound<'_, Self>) -> PyResult<Py<PyDict>> {
+        let py = slf.py();
+        let borrowed = slf.borrow();
+        let kind = PyRawUpdateEvent::kind();
+        let update = borrowed.update(py);
+
+        let dict = PyDict::new(py);
+        dict.set_item("_", "RawUpdateEvent")?;
+        dict.set_item("kind", kind)?;
+        dict.set_item("update", update)?;
+        Ok(dict.unbind())
     }
 }

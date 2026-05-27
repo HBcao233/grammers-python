@@ -38,10 +38,8 @@ impl PyEventHandler {
             }
         };
 
-        println!("need_trigger: {}", need_trigger);
         if need_trigger {
             let py_handler = Python::attach(|py| self.handler.clone_ref(py).call1(py, (event.clone_ref(py),)))?;
-            println!("a");
             into_future(py_handler).await?;
         }
 
