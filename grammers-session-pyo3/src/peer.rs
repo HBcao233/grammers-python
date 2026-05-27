@@ -105,7 +105,7 @@ impl PyPeerId {
     }
 
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
-        pytl::TLObject::pretty_format(&slf.call_method0("to_dict")?, None)
+        pytl::TLObject::pretty_format(slf.call_method0("to_dict")?, None)
     }
 
     /// Peer kind.
@@ -395,7 +395,7 @@ impl PyPeerInfo {
     }
 
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
-        pytl::TLObject::pretty_format(&slf.call_method0("to_dict")?, None)
+        pytl::TLObject::pretty_format(slf.call_method0("to_dict")?, None)
     }
 }
 
@@ -760,7 +760,7 @@ impl PyPeerRef {
     }
 
     fn __repr__(slf: &Bound<'_, Self>) -> PyResult<String> {
-        pytl::TLObject::pretty_format(&slf.call_method0("to_dict")?, None)
+        pytl::TLObject::pretty_format(slf.call_method0("to_dict")?, None)
     }
 }
 

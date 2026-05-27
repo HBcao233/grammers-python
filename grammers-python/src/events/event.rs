@@ -98,11 +98,11 @@ impl PyEventCommon {
     }
 
     fn __repr__(slf: Bound<'_, Self>) -> PyResult<String> {
-        TLObject::pretty_format(&slf, None)
+        TLObject::pretty_format(slf.into_any(), None)
     }
 
     fn __str__(slf: Bound<'_, Self>) -> PyResult<String> {
-        TLObject::pretty_format(&slf, Some(0))
+        TLObject::pretty_format(slf.into_any(), Some(0))
     }
 }
 
