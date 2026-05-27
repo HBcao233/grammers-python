@@ -117,11 +117,23 @@ class Client:
         """
         Start login in to telegram
         """
+        ...
     async def stop(self) -> None:
         """
         Stop client
         Calling clent's methods after stopping will raise ClientStoppedError.
         """
+        ...
+    async def idle(self) -> None:
+        """
+        Block until the event pool finishes or a termination signal
+        (SIGINT / SIGTERM) is received.
+
+        Returns when:
+        - The event-pool runner completes (connection lost, error, quit).
+        - Ctrl-C or SIGTERM is received.
+        """
+        ...
 
     # ========== Auth Methods ==========
 

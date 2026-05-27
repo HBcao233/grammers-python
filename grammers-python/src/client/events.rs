@@ -6,7 +6,9 @@ use std::ffi::{CStr, CString};
 use crate::PyClient;
 use crate::client::UpdatesConfiguration;
 use crate::events::{Event, EventBuilder, EventPool};
-use crate::runtime::RUNTIME;
+// use crate::runtime::RUNTIME;
+use grammers_tl_types as tl;
+use grammers_session_pyo3::{PyUpdatesState, UpdateStateLike};
 
 #[pymethods]
 impl PyClient {
@@ -17,6 +19,23 @@ impl PyClient {
 
     pub async fn _start_event_pool(&self) -> PyResult<()> {
         let inner = self.inner.clone();
+        
+        // In the extremely rare case where `Err` happens, there's not much we can do.
+        // `message_box` will try to correct its state as updates arrive.
+        let update_state = self.invoke(&tl::functions::updates::GetState {}).await;
+        if let Ok(tl::enums::updates::State::State(state)) = update_state {
+            inner
+                .session
+                .set_update_state(UpdateStateLike::All(PyUpdatesState {
+                    pts: state.pts,
+                    qts: state.qts,
+                    date: state.date,
+                    seq: state.seq,
+                    channels: Vec::new(),
+                }))
+                .await?;
+        }
+        
         let updates = inner
             .updates
             .lock()
@@ -35,7 +54,7 @@ impl PyClient {
         let EventPool { runner, handle } = Python::attach(|py| {
             Ok::<_, PyErr>(EventPool::new(Py::new(py, self.clone())?, update_stream))
         })?;
-        let event_pool_task = RUNTIME.spawn(runner.run());
+        let event_pool_task = pyo3_async_runtimes::tokio::get_runtime().spawn(runner.run());
 
         *inner.event_pool_handle.lock().unwrap() = Some(handle);
         *inner.event_pool_task.lock().unwrap() = Some(event_pool_task);
@@ -83,7 +102,7 @@ impl PyClient {
                 "handler must be a coroutine function.",
             ));
         }
-        self.inner.event_handlers.add_handler(event, handler);
+        Python::attach(|py| self.inner.event_handlers.add_handler(py, event, handler))?;
         Ok(())
     }
 

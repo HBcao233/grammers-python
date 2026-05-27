@@ -1,38 +1,32 @@
 use std::{
     pin::Pin,
-    sync::{Arc, Mutex, OnceLock},
+    sync::{Arc, Mutex},
     task::{Context, Poll, Waker},
 };
 
 use pyo3::prelude::*;
 use pyo3::types::PyCFunction;
+use pyo3::sync::PyOnceLock;
 
-static PY_ASYNCIO: OnceLock<Py<PyModule>> = OnceLock::new();
-static PY_EVENT_LOOP: OnceLock<Py<PyAny>> = OnceLock::new();
+static ASYNCIO: PyOnceLock<Py<PyModule>> = PyOnceLock::new();
+static EVENT_LOOP: PyOnceLock<Py<PyAny>> = PyOnceLock::new();
 
-pub fn asyncio<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyModule>> {
-    match PY_ASYNCIO.get() {
-        Some(x) => Ok(x.bind(py).clone()),
-        None => {
-            let asyncio = py.import("asyncio")?;
-            let copy = asyncio.clone();
-            PY_ASYNCIO.set(asyncio.unbind()).unwrap();
-            Ok(copy)
-        }
-    }
+pub fn asyncio<'py>(py: Python<'py>) -> PyResult<&'py Bound<'py, PyModule>> {
+    ASYNCIO
+        .get_or_try_init(py, || Ok(py.import("asyncio")?.unbind()))
+        .map(|asyncio| asyncio.bind(py))
 }
 
-pub fn event_loop<'py>(py: Python<'py>) -> PyResult<Bound<'py, PyAny>> {
-    match PY_EVENT_LOOP.get() {
-        Some(x) => Ok(x.bind(py).clone()),
-        None => {
+pub fn event_loop<'py>(py: Python<'py>) -> PyResult<&'py Bound<'py, PyAny>> {
+    EVENT_LOOP
+        .get_or_try_init(py, || -> PyResult<Py<PyAny>> {
             let asyncio = asyncio(py)?;
-            let event_loop = asyncio.call_method0("get_running_loop")?;
-            let copy = event_loop.clone();
-            PY_EVENT_LOOP.set(event_loop.unbind()).unwrap();
-            Ok(copy)
-        }
-    }
+
+            Ok(asyncio
+                .call_method0(pyo3::intern!(py, "get_running_loop"))?
+                .unbind())
+        })
+        .map(|x| x.bind(py))
 }
 
 struct PyFutureInner {
@@ -81,14 +75,14 @@ impl std::future::Future for PyFuture {
                 let asyncio = asyncio(py)?;
                 let event_loop = event_loop(py)?;
 
-                let concurrent_future = asyncio
-                    .call_method1("run_coroutine_threadsafe", (coro, event_loop))?;
+                let concurrent_future =
+                    asyncio.call_method1("run_coroutine_threadsafe", (coro, event_loop))?;
 
                 let callback =
                     PyCFunction::new_closure(py, None, None, move |args, _| -> PyResult<()> {
                         let fut = args.get_item(0)?;
                         let result = fut.call_method0("result").map(|x| x.unbind());
-                        
+
                         let waker = {
                             let mut guard = inner.lock().unwrap();
                             guard.result = Some(result);
@@ -102,16 +96,15 @@ impl std::future::Future for PyFuture {
                         Ok(())
                     })?;
 
-                concurrent_future
-                    .call_method1("add_done_callback", (callback,))?;
-                
+                concurrent_future.call_method1("add_done_callback", (callback,))?;
+
                 Ok(concurrent_future.unbind())
             });
 
             match res {
                 Ok(concurrent_future) => {
                     self.inner.lock().unwrap().concurrent_future = Some(concurrent_future);
-                },
+                }
                 Err(e) => return Poll::Ready(Err(e)),
             }
         }
@@ -120,6 +113,7 @@ impl std::future::Future for PyFuture {
     }
 }
 
+/*
 impl Drop for PyFuture {
     fn drop(&mut self) {
         let concurrent_future = {
@@ -138,4 +132,4 @@ impl Drop for PyFuture {
             });
         }
     }
-}
+}*/

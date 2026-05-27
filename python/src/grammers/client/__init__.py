@@ -116,23 +116,6 @@ class Client(Client):
         """
         return await self.invoke(request)
 
-    async def idle(self):
-        """
-        Keep the program running without exiting until it
-        receives signals such as SIGINT, SIGTERM, or SIGQUIT.
-        """
-        loop = asyncio.get_running_loop()
-        stop_event = asyncio.Event()
-
-        for sig in (
-            signal.SIGINT,
-            signal.SIGTERM,
-            signal.SIGQUIT,
-        ):
-            loop.add_signal_handler(sig, stop_event.set)
-
-        await stop_event.wait()
-
     def run(self, coroutine: Awaitable | None = None):
         """
         Shortcut run method, which automatically invoke `Client.start()` and `Client.stop()`.

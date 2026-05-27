@@ -8,7 +8,7 @@ pub mod events;
 mod hints;
 mod message;
 mod peer;
-mod runtime;
+// mod runtime;
 mod utils;
 
 use client::PyClient;

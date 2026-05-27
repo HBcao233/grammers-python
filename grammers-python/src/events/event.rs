@@ -52,24 +52,9 @@ impl Event {
 
     pub fn client(&self, py: Python<'_>) -> PyResult<Py<PyClient>> {
         Ok(match self {
-            Event::Logined(x) => x
-                .bind(py)
-                .as_any()
-                .call_method0("client")?
-                .cast_into::<PyClient>()?
-                .unbind(),
-            Event::Error_(x) => x
-                .bind(py)
-                .as_any()
-                .call_method0("client")?
-                .cast_into::<PyClient>()?
-                .unbind(),
-            Event::RawUpdate(x) => x
-                .bind(py)
-                .as_any()
-                .call_method0("client")?
-                .cast_into::<PyClient>()?
-                .unbind(),
+            Event::Logined(x) => x.bind(py).as_super().borrow().client(py),
+            Event::Error_(x) => x.bind(py).as_super().borrow().client(py),
+            Event::RawUpdate(x) => x.bind(py).as_super().borrow().client(py),
         })
     }
 

@@ -3,7 +3,7 @@ use std::sync::{Arc, Mutex};
 use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 
-use tokio::sync::mpsc;
+use tokio::sync::{Notify, mpsc};
 use tokio::task::JoinHandle;
 
 use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
@@ -12,7 +12,7 @@ use grammers_session_pyo3::{PySession, Session};
 
 use crate::events::{EventHandlersManager, EventPoolHandle};
 use crate::peer::PyUser;
-use crate::runtime::RUNTIME;
+// use crate::runtime::RUNTIME;
 
 #[derive(Debug, Clone)]
 pub struct ApiId(pub i32);
@@ -42,6 +42,8 @@ pub struct ClientInner {
     pub(crate) event_handlers: EventHandlersManager,
     pub(crate) event_pool_handle: Mutex<Option<EventPoolHandle>>,
     pub(crate) event_pool_task: Mutex<Option<JoinHandle<PyResult<()>>>>,
+    /// Signalled when the event pool runner finishes (for any reason).
+    pub(crate) event_pool_done: Notify,
 
     pub(crate) session: Session,
     pub(crate) me: Mutex<Option<Py<PyUser>>>,
@@ -63,13 +65,7 @@ pub struct ClientInner {
 }
 
 #[derive(Clone)]
-#[pyclass(
-    from_py_object,
-    name = "Client",
-    module = "grammers",
-    subclass,
-    dict
-)]
+#[pyclass(from_py_object, name = "Client", module = "grammers", subclass, dict)]
 pub struct PyClient {
     pub inner: Arc<ClientInner>,
 }
@@ -183,7 +179,7 @@ impl PyClient {
             updates,
             handle,
         } = pool;
-        let pool_task = RUNTIME.spawn(runner.run());
+        let pool_task = pyo3_async_runtimes::tokio::get_runtime().spawn(runner.run());
 
         let inner = ClientInner {
             pool_task: Mutex::new(Some(pool_task)),
@@ -192,6 +188,7 @@ impl PyClient {
             event_handlers: EventHandlersManager::new(),
             event_pool_handle: Mutex::new(None),
             event_pool_task: Mutex::new(None),
+            event_pool_done: Notify::new(),
             session: session,
             api_id: api_id.0,
             api_hash: api_hash.to_string(),

@@ -4,7 +4,7 @@ use pyo3::prelude::*;
 
 use grammers_crypto::two_factor_auth::{calculate_2fa, check_p_and_g};
 use grammers_mtsender_pyo3::InvocationError;
-use grammers_session_pyo3::{PeerInfo, PyPeerAuth, PyPeerId, PyUpdatesState, UpdateStateLike};
+use grammers_session_pyo3::{PeerInfo, PyPeerAuth, PyPeerId};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
@@ -583,7 +583,8 @@ impl PyClient {
         &self,
         auth: Py<pytl::types::auth::PyAuthorization>,
     ) -> PyResult<Py<PyUser>> {
-        let auth: tl::types::auth::Authorization = Python::attach(|py| auth.borrow(py).clone().into());
+        let auth: tl::types::auth::Authorization =
+            Python::attach(|py| auth.borrow(py).clone().into());
         let user = self.complete_login(auth).await?;
 
         Python::attach(|py| Py::new(py, PyUser::from_raw(self, user)))
@@ -701,24 +702,6 @@ impl PyClient {
                 is_self: Some(true),
             })
             .await?;
-
-        // In the extremely rare case where `Err` happens, there's not much we can do.
-        // `message_box` will try to correct its state as updates arrive.
-        let update_state = self.invoke(&tl::functions::updates::GetState {}).await;
-        if let Ok(tl::enums::updates::State::State(state)) = update_state {
-            inner
-                .session
-                .set_update_state(UpdateStateLike::All(PyUpdatesState {
-                    pts: state.pts,
-                    qts: state.qts,
-                    date: state.date,
-                    seq: state.seq,
-                    channels: Vec::new(),
-                }))
-                .await?;
-        }
-
-        self._start_event_pool().await?;
 
         Ok(user)
     }

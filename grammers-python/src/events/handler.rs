@@ -1,21 +1,26 @@
-use pyo3::exceptions::PyKeyError;
-use pyo3::{Py, PyAny, PyResult, Python};
+use pyo3::exceptions::{PyKeyError, PyRuntimeError};
+use pyo3::prelude::*;
 use std::{
     collections::HashMap,
     sync::{Arc, Mutex},
 };
-use tokio::task::JoinSet;
+use tokio::sync::Semaphore;
 
 use super::{Event, EventBuilder, PyEventKind};
 use crate::utils::maybe_await;
 use grammers_session_pyo3::into_future;
 
-pub struct EventHandler {
+const HANDLER_PARALLEL_LIMIT: usize = 64;
+
+#[pyclass(name = "EventHandler")]
+pub struct PyEventHandler {
     event_builer: EventBuilder,
     handler: Py<PyAny>,
 }
 
-impl EventHandler {
+#[pymethods]
+impl PyEventHandler {
+    #[new]
     pub fn new(event_builer: EventBuilder, handler: Py<PyAny>) -> Self {
         Self {
             event_builer,
@@ -23,91 +28,87 @@ impl EventHandler {
         }
     }
 
-    pub fn clone_ref(&self, py: Python<'_>) -> Self {
-        Self {
-            event_builer: self.event_builer.clone_ref(py),
-            handler: self.handler.clone_ref(py),
+    async fn trigger(&self, event: Py<PyAny>) -> PyResult<()> {
+        let need_trigger = match &self.event_builer.filter {
+            None => true,
+            Some(filter) => {
+                let need_trigger = Python::attach(|py| filter.call1(py, (&event,)))?;
+                let need_trigger = maybe_await(need_trigger).await?;
+                Python::attach(|py| need_trigger.extract(py))?
+            }
+        };
+
+        println!("need_trigger: {}", need_trigger);
+        if need_trigger {
+            let py_handler = Python::attach(|py| self.handler.clone_ref(py).call1(py, (event.clone_ref(py),)))?;
+            println!("a");
+            into_future(py_handler).await?;
         }
+
+        Ok(())
     }
 }
 
-pub struct EventHandlersManagerInner {
-    handlers: Mutex<HashMap<PyEventKind, Vec<EventHandler>>>,
-    pub tasks: Mutex<JoinSet<()>>,
-    // error_tx: mpsc::UnboundedSender<PyErr>,
-}
-
-#[derive(Clone)]
 pub struct EventHandlersManager {
-    pub inner: Arc<EventHandlersManagerInner>,
+    handlers: Arc<Mutex<HashMap<PyEventKind, Vec<Py<PyEventHandler>>>>>,
+    semaphore: Arc<Semaphore>,
 }
 
 impl EventHandlersManager {
     pub fn new() -> Self {
         Self {
-            inner: Arc::new(EventHandlersManagerInner {
-                handlers: Mutex::new(HashMap::new()),
-                tasks: Mutex::new(JoinSet::new()),
-            }),
+            handlers: Arc::new(Mutex::new(HashMap::new())),
+            semaphore: Arc::new(Semaphore::new(HANDLER_PARALLEL_LIMIT)),
         }
     }
 
-    pub fn add_handler(&self, event_builer: EventBuilder, handler: Py<PyAny>) {
-        self.inner
-            .handlers
+    pub fn add_handler(
+        &self,
+        py: Python<'_>,
+        event_builer: EventBuilder,
+        handler: Py<PyAny>,
+    ) -> PyResult<()> {
+        self.handlers
+            .clone()
             .lock()
             .unwrap()
             .entry(event_builer.kind)
             .or_default()
-            .push(EventHandler::new(event_builer, handler));
+            .push(Py::new(py, PyEventHandler::new(event_builer, handler))?);
+        Ok(())
     }
 
     pub fn trigger_event(&self, event: Event) -> PyResult<()> {
         let kind = event.kind();
-        let handlers: Vec<EventHandler> =
-            match self.inner.clone().handlers.lock().unwrap().get(&kind) {
-                Some(handlers) => {
-                    Python::attach(|py| handlers.iter().map(|x| x.clone_ref(py)).collect())
+        match self.handlers.clone().lock().unwrap().get(&kind) {
+            Some(handlers) => {
+                if handlers.is_empty() {
+                    return Ok(());
                 }
-                None => return Err(PyKeyError::new_err(format!("'{}'", kind.__str__()))),
-            };
 
-        for handler in handlers {
-            let manager = self.clone();
-            let event_cloned = Python::attach(|py| event.clone_ref(py));
-
-            manager.inner.tasks.lock().unwrap().spawn(async move {
-                let result: PyResult<()> = async move {
-                    let need_trigger = match &handler.event_builer.filter {
-                        None => true,
-                        Some(filter) => {
-                            let need_trigger = Python::attach(|py| {
-                                filter.call1(py, (event_cloned.clone_ref(py),))
-                            })?;
-                            let need_trigger = maybe_await(need_trigger).await?;
-                            Python::attach(|py| need_trigger.extract(py))?
-                        }
-                    };
-
-                    if need_trigger {
-                        let py_handler =
-                            Python::attach(|py| handler.handler.call1(py, (event_cloned,)))?;
-                        println!("a");
-                        into_future(py_handler).await?;
-                        println!("b");
-                        Ok(())
-                    } else {
-                        Ok(())
+                Python::attach(|py| {
+                    let client = event.client(py)?.borrow(py).clone();
+                    let guard = client.inner.event_pool_handle.lock().unwrap();
+                    if guard.is_none() {
+                        return Err(PyRuntimeError::new_err("event pool is not running."));
                     }
-                }
-                .await;
+                    for handler in handlers {
+                        let semaphore = self.semaphore.clone();
+                        let coro = handler
+                            .bind(py)
+                            .call_method1("trigger", (event.clone_ref(py),))?
+                            .unbind();
+                        let _success = guard.as_ref().unwrap().task(Box::pin(async move {
+                            let _permit = semaphore.acquire_owned().await.unwrap();
+                            into_future(coro).await?;
+                            Ok(())
+                        }));
+                    }
 
-                if let Err(_err) = result {
-                    // let _ = manager.inner.error_tx.send(err);
-                    todo!();
-                }
-            });
+                    Ok(())
+                })
+            }
+            None => Err(PyKeyError::new_err(format!("'{}'", kind.__str__()))),
         }
-        Ok(())
     }
 }

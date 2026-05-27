@@ -1,5 +1,5 @@
 use pyo3::PyTypeInfo;
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::PyType;
 
@@ -157,8 +157,16 @@ pub struct PyLogined {
 impl PyLogined {
     #[new]
     #[pyo3(signature = (filter=None))]
-    fn new(filter: Option<Py<PyAny>>) -> Self {
-        Self { filter }
+    fn new(filter: Option<Py<PyAny>>) -> PyResult<Self> {
+        let is_callable = match filter {
+            None => true,
+            Some(ref x) => Python::attach(|py| x.bind(py).is_callable()),
+        };
+        if !is_callable {
+            Err(PyValueError::new_err("filter must be a callable or None."))
+        } else {
+            Ok(Self { filter })
+        }
     }
 
     fn __str__(&self, py: Python<'_>) -> PyResult<String> {
@@ -179,8 +187,16 @@ pub struct PyError {
 impl PyError {
     #[new]
     #[pyo3(signature = (filter=None))]
-    fn new(filter: Option<Py<PyAny>>) -> Self {
-        Self { filter }
+    fn new(filter: Option<Py<PyAny>>) -> PyResult<Self> {
+        let is_callable = match filter {
+            None => true,
+            Some(ref x) => Python::attach(|py| x.bind(py).is_callable()),
+        };
+        if !is_callable {
+            Err(PyValueError::new_err("filter must be a callable or None."))
+        } else {
+            Ok(Self { filter })
+        }
     }
 
     fn __str__(&self, py: Python<'_>) -> PyResult<String> {
@@ -201,8 +217,16 @@ pub struct PyRawUpdate {
 impl PyRawUpdate {
     #[new]
     #[pyo3(signature = (filter=None))]
-    fn new(filter: Option<Py<PyAny>>) -> Self {
-        Self { filter }
+    fn new(filter: Option<Py<PyAny>>) -> PyResult<Self> {
+        let is_callable = match filter {
+            None => true,
+            Some(ref x) => Python::attach(|py| x.bind(py).is_callable()),
+        };
+        if !is_callable {
+            Err(PyValueError::new_err("filter must be a callable or None."))
+        } else {
+            Ok(Self { filter })
+        }
     }
 
     fn __str__(&self, py: Python<'_>) -> PyResult<String> {
