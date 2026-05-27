@@ -2,12 +2,17 @@ use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyAnyMethods, PyTypeMethods};
 
-use crate::peer::PyPeer;
-use crate::utils::parse_peer_string;
 use grammers_session_pyo3::{PeerIdLike, PyPeerId, PyPeerKind, PyPeerRef};
+use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
-#[derive(Clone)]
+use crate::PyClient;
+use crate::message::{PyMessage, InputMessage};
+use crate::peer::{convertPeerId2Peer, PyPeer};
+use crate::utils::parse_peer_string;
+
+
+#[derive(Clone, IntoPyObject)]
 pub enum InputPeerLike {
     Phone(String),
     Username(String),
@@ -124,5 +129,83 @@ impl InputPeerLike {
                 }),
             },*/
         })
+    }
+}
+
+#[derive(Clone, FromPyObject)]
+pub enum InputReplyToLike {
+    MsgId(i32),
+    InputReplyTo(pytl::enums::PyInputReplyTo),
+}
+impl InputReplyToLike {
+    fn toMessageReplyHeader(&self, client: &PyClient) -> tl::enums::MessageReplyHeader {
+        let x = tl::enums::InputReplyTo::from(self);
+        match x {
+            tl::enums::InputReplyTo::Message(x) => tl::types::MessageReplyHeader {
+                reply_to_scheduled: false,
+                forum_topic: false,
+                quote: false,
+                reply_to_msg_id: Some(x.reply_to_msg_id),
+                reply_to_peer_id: PyPeerId::from(x.reply_to_peer_id).into(),
+                reply_from: None,
+                reply_media: None,
+                reply_to_top_id: x.top_msg_id,
+                quote_text: x.quote_text,
+                quote_entities: x.quote_entities,
+                quote_offset: x.quote_offset,
+                todo_item_id: x.todo_item_id,
+                poll_option: x.poll_option,
+            }.into(),
+            tl::enums::InputReplyTo::Story(x) => tl::types::MessageReplyStoryHeader {
+                peer: convertPeerId2Peer(PyPeerId::from(x.peer), client),
+                story_id: x.story_id,
+            }.into(),
+            tl::enums::InputReplyTo::MonoForum(_) => todo!(),
+        }
+    }
+    
+    fn toPyMessageReplyHeader(&self, client: &PyClient) -> pytl::enums::PyMessageReplyHeader {
+        self.toMessageReplyHeader(client).into()
+    }
+}
+impl From<InputReplyToLike> for tl::enums::InputReplyTo {
+    fn from(x: InputReplyToLike) -> Self {
+        match x {
+            InputReplyToLike::MsgId(reply_to_msg_id) => tl::types::InputReplyToMessage {
+                reply_to_msg_id,
+                top_msg_id: None,
+                reply_to_peer_id: None,
+                quote_text: None,
+                quote_entities: None,
+                quote_offset: None,
+                monoforum_peer_id: None,
+                todo_item_id: None,
+                poll_option: None,
+            }.into(),
+            InputReplyToLike::InputReplyTo(x) => x.into(),
+        }
+    }
+}
+impl From<InputReplyToLike> for pytl::enums::PyInputReplyTo {
+    fn from(x: InputReplyToLike) -> Self {
+        tl::enums::InputReplyTo::from(x).into()
+    }
+}
+
+
+#[derive(Clone, FromPyObject)]
+pub enum InputMessageLike {
+    Str(String),
+    Message(PyMessage),
+}
+impl InputMessageLike {
+    pub async fn into_input_message(self) -> InputMessage {
+        match self {
+            InputMessageLike::Str(message) => InputMessage {
+                message,
+                ..Self::default()
+            },
+            InputMessageLike::Message(x) => InputMessage::from_py_message(x),
+        }
     }
 }

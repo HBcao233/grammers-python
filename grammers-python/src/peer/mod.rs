@@ -26,9 +26,34 @@ mod user;
 pub use channel::PyChannel;
 // pub use chats::{AdminRightsBuilder, BannedRightsBuilder};
 // pub use dialog::Dialog;
-pub use group::PyGroup;
+pub use group::{PyGroup, GroupRawType};
 // pub use participant::{Participant, Role};
 pub use peer::PyPeer;
 pub use peer_map::PyPeerMap;
 // pub use permissions::{Permissions, Restrictions};
 pub use user::{PyPlatform, PyRestrictionReason, PyRestrictionReasonWrapper, PyUser};
+
+
+use pyo3::Python;
+use crate::PyClient;
+use grammers_session_pyo3::{PyPeerId, PyPeerKind};
+use grammers_tl_types as tl;
+
+pub fn convertPeerId2Peer(peer: PyPeerId, client: PyClient) -> tl::enums::Peer {
+    match peer.kind() {
+        PyPeerKind::User => tl::types::PeerUser {
+            user_id: peer.bare_id().unwrap()
+        }.into(),
+        PyPeerKind::UserSelf => tl::types::PeerUser {
+            user_id: Python::attach(|py| 
+                client._me().expect("me cache should set").borrow(py).id().bare_id().unwrap()
+            )
+        }.into(),
+        PyPeerKind::Chat => tl::types::PeerChat {
+            chat_id: peer.bare_id().unwrap()
+        }.into(),
+        PyPeerKind::Channel => tl::types::PeerChannel {
+            channel_id: peer.bare_id().unwrap()
+        }.into(),
+    }
+}

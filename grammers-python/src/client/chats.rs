@@ -496,6 +496,7 @@ impl PyClient {
     ) -> PyResult<PyPeerMap> {
         let inner = self.inner.clone();
         let session = &inner.session;
+
         let users = users
             .into_iter()
             .map(|user| PyPeer::from_user(self, user))
@@ -510,11 +511,27 @@ impl PyClient {
             .map(|peer| (peer.id(), peer))
             .collect::<HashMap<_, _>>();
 
+        let session = self.session();
         for peer in map.values() {
             if peer.auth().is_some() {
                 session.cache_peer(peer.info()).await?;
             }
         }
+
+        Ok(PyPeerMap {
+            map: Arc::new(map),
+            client: self.clone(),
+        })
+    }
+    
+    pub async fn build_peer_map_from_peer(&self, peer: PyPeer) -> PyResult<PyPeerMap> {
+        let session = self.session();
+        if peer.auth().is_some() {
+            session.cache_peer(peer.info()).await?;
+        }
+        let map = HashMap::from([
+            (peer.id(), peer),
+        ]);
 
         Ok(PyPeerMap {
             map: Arc::new(map),
