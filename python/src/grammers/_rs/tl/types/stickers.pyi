@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class SuggestedShortName(TLObject):
+class SuggestedShortName(TLObject, TLRequest):
     """
     [Read `stickers.suggestedShortName` docs](https://core.telegram.org/constructor/stickers.suggestedShortName).
 

@@ -2,10 +2,33 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class GetBoostsList(TLRequest):
+class ApplyBoost(TLObject, TLRequest):
+    """
+    [Read `premium.applyBoost` docs](https://core.telegram.org/method/premium.applyBoost).
+
+    Generated from the following TL definition:
+    ```tl
+    premium.applyBoost#6b7da746 flags:# slots:flags.0?Vector<int> peer:InputPeer = premium.MyBoosts
+    ```
+    """
+    def __new__(
+        cls,
+        slots: Optional[Sequence[int]],
+        peer: types.InputPeerEmpty
+        | types.InputPeerSelf
+        | types.InputPeerChat
+        | types.InputPeerUser
+        | types.InputPeerChannel
+        | types.InputPeerUserFromMessage
+        | types.InputPeerChannelFromMessage,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GetBoostsList(TLObject, TLRequest):
     """
     [Read `premium.getBoostsList` docs](https://core.telegram.org/method/premium.getBoostsList).
 
@@ -30,45 +53,7 @@ class GetBoostsList(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetMyBoosts(TLRequest):
-    """
-    [Read `premium.getMyBoosts` docs](https://core.telegram.org/method/premium.getMyBoosts).
-
-    Generated from the following TL definition:
-    ```tl
-    premium.getMyBoosts#be77b4a = premium.MyBoosts
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class ApplyBoost(TLRequest):
-    """
-    [Read `premium.applyBoost` docs](https://core.telegram.org/method/premium.applyBoost).
-
-    Generated from the following TL definition:
-    ```tl
-    premium.applyBoost#6b7da746 flags:# slots:flags.0?Vector<int> peer:InputPeer = premium.MyBoosts
-    ```
-    """
-    def __new__(
-        cls,
-        slots: Optional[Sequence[int]],
-        peer: types.InputPeerEmpty
-        | types.InputPeerSelf
-        | types.InputPeerChat
-        | types.InputPeerUser
-        | types.InputPeerChannel
-        | types.InputPeerUserFromMessage
-        | types.InputPeerChannelFromMessage,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetBoostsStatus(TLRequest):
+class GetBoostsStatus(TLObject, TLRequest):
     """
     [Read `premium.getBoostsStatus` docs](https://core.telegram.org/method/premium.getBoostsStatus).
 
@@ -90,7 +75,22 @@ class GetBoostsStatus(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetUserBoosts(TLRequest):
+class GetMyBoosts(TLObject, TLRequest):
+    """
+    [Read `premium.getMyBoosts` docs](https://core.telegram.org/method/premium.getMyBoosts).
+
+    Generated from the following TL definition:
+    ```tl
+    premium.getMyBoosts#be77b4a = premium.MyBoosts
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GetUserBoosts(TLObject, TLRequest):
     """
     [Read `premium.getUserBoosts` docs](https://core.telegram.org/method/premium.getUserBoosts).
 

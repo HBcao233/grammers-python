@@ -2,31 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class GetUsers(TLRequest):
-    """
-    [Read `users.getUsers` docs](https://core.telegram.org/method/users.getUsers).
-
-    Generated from the following TL definition:
-    ```tl
-    users.getUsers#d91a548 id:Vector<InputUser> = Vector<User>
-    ```
-    """
-    def __new__(
-        cls,
-        id: Sequence[
-            types.InputUserEmpty
-            | types.InputUserSelf
-            | types.InputUser
-            | types.InputUserFromMessage
-        ],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetFullUser(TLRequest):
+class GetFullUser(TLObject, TLRequest):
     """
     [Read `users.getFullUser` docs](https://core.telegram.org/method/users.getFullUser).
 
@@ -45,37 +24,7 @@ class GetFullUser(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class SetSecureValueErrors(TLRequest):
-    """
-    [Read `users.setSecureValueErrors` docs](https://core.telegram.org/method/users.setSecureValueErrors).
-
-    Generated from the following TL definition:
-    ```tl
-    users.setSecureValueErrors#90c894b5 id:InputUser errors:Vector<SecureValueError> = Bool
-    ```
-    """
-    def __new__(
-        cls,
-        id: types.InputUserEmpty
-        | types.InputUserSelf
-        | types.InputUser
-        | types.InputUserFromMessage,
-        errors: Sequence[
-            types.SecureValueErrorData
-            | types.SecureValueErrorFrontSide
-            | types.SecureValueErrorReverseSide
-            | types.SecureValueErrorSelfie
-            | types.SecureValueErrorFile
-            | types.SecureValueErrorFiles
-            | types.SecureValueError
-            | types.SecureValueErrorTranslationFile
-            | types.SecureValueErrorTranslationFiles
-        ],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetRequirementsToContact(TLRequest):
+class GetRequirementsToContact(TLObject, TLRequest):
     """
     [Read `users.getRequirementsToContact` docs](https://core.telegram.org/method/users.getRequirementsToContact).
 
@@ -96,7 +45,7 @@ class GetRequirementsToContact(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetSavedMusic(TLRequest):
+class GetSavedMusic(TLObject, TLRequest):
     """
     [Read `users.getSavedMusic` docs](https://core.telegram.org/method/users.getSavedMusic).
 
@@ -118,7 +67,7 @@ class GetSavedMusic(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetSavedMusicById(TLRequest):
+class GetSavedMusicById(TLObject, TLRequest):
     """
     [Read `users.getSavedMusicByID` docs](https://core.telegram.org/method/users.getSavedMusicByID).
 
@@ -138,7 +87,28 @@ class GetSavedMusicById(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class SuggestBirthday(TLRequest):
+class GetUsers(TLObject, TLRequest):
+    """
+    [Read `users.getUsers` docs](https://core.telegram.org/method/users.getUsers).
+
+    Generated from the following TL definition:
+    ```tl
+    users.getUsers#d91a548 id:Vector<InputUser> = Vector<User>
+    ```
+    """
+    def __new__(
+        cls,
+        id: Sequence[
+            types.InputUserEmpty
+            | types.InputUserSelf
+            | types.InputUser
+            | types.InputUserFromMessage
+        ],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SuggestBirthday(TLObject, TLRequest):
     """
     [Read `users.suggestBirthday` docs](https://core.telegram.org/method/users.suggestBirthday).
 

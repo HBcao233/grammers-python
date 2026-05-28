@@ -61,7 +61,7 @@ class SqliteSession(Session):
     def from_telethon_string(
         string: str,
         path: str = ':memory:',
-    ) -> Self:
+    ) -> SqliteSession:
         if string[0] != telethon_version:
             raise ValueError('Invalid telethon string.')
 
@@ -95,7 +95,7 @@ class SqliteSession(Session):
         )
         conn.commit()
 
-        session = SqliteSession(conn, 1)
+        session = SqliteSession(conn)
         return session
 
     @asynccontextmanager
@@ -104,7 +104,7 @@ class SqliteSession(Session):
             yield self._conn
 
     @staticmethod
-    def _init(conn: sqlite3.Connection) -> (int, Sequence[DcOption]):
+    def _init(conn: sqlite3.Connection) -> tuple[int, dict[int, DcOption]]:
         conn.execute('PRAGMA journal_mode=WAL')
 
         res = conn.execute('PRAGMA user_version').fetchone()
@@ -249,14 +249,17 @@ class SqliteSession(Session):
 
         return _parse(r.fetchone())
 
-    async def cache_peer(self, peer: PeerInfo) -> None:
+    async def cache_peer(
+        self, peer: PeerInfo.User | PeerInfo.Chat | PeerInfo.Channel
+    ) -> None:
         await self.init()
 
         peer_id = peer.id.bot_api_dialog_id
-        access_hash = peer.access_hash
+        access_hash: PeerAuth | int | None = peer.access_hash
         if access_hash is not None:
             access_hash = int(access_hash)
-        subtype = None
+
+        subtype: PeerSubtype | int | None = None
         match peer:
             case PeerInfo.User():
                 match (bool(peer.bot), bool(peer.is_self)):
@@ -293,7 +296,7 @@ class SqliteSession(Session):
             r = conn.execute('SELECT * FROM update_state LIMIT 1')
             res = r.fetchone()
             if res is None:
-                return UpdatesState()
+                return UpdatesState(0, 0, 0, 0, [])
 
             state = UpdatesState(
                 int(res[0]),
@@ -315,7 +318,13 @@ class SqliteSession(Session):
             state.channels = channels
             return state
 
-    async def set_update_state(self, update: UpdateState) -> None:
+    async def set_update_state(
+        self,
+        update: UpdateState.All
+        | UpdateState.Primary
+        | UpdateState.Secondary
+        | UpdateState.Channel,
+    ) -> None:
         await self.init()
 
         async with self.connection() as conn:

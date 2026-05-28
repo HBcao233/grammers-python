@@ -2,9 +2,8 @@ from typing import Any, Self
 from abc import ABC, abstractmethod
 
 from grammers.client import Client
-from grammers.tl import types
+from grammers.tl import types, enums
 from grammers.custom import User
-from grammers import hints
 
 class EventKind:
     class Logined:
@@ -59,8 +58,8 @@ class ErrorEvent(EventCommon):
     def error(self) -> BaseException: ...
 
 class RawUpdateEvent(EventCommon):
-    def __new__(cls, client: Client, update: types.Update) -> Self: ...
+    def __new__(cls, client: Client, update: enums.Update) -> Self: ...
     @property
     def kind(self) -> EventKind: ...
     @property
-    def update(self) -> hints.Update: ...
+    def update(self) -> enums.Update: ...

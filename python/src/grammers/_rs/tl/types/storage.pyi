@@ -2,55 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class FileUnknown(TLObject):
-    """
-    [Read `storage.fileUnknown` docs](https://core.telegram.org/constructor/storage.fileUnknown).
-
-    Generated from the following TL definition:
-    ```tl
-    storage.fileUnknown#aa963b05 = storage.FileType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class FilePartial(TLObject):
-    """
-    [Read `storage.filePartial` docs](https://core.telegram.org/constructor/storage.filePartial).
-
-    Generated from the following TL definition:
-    ```tl
-    storage.filePartial#40bc6f52 = storage.FileType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class FileJpeg(TLObject):
-    """
-    [Read `storage.fileJpeg` docs](https://core.telegram.org/constructor/storage.fileJpeg).
-
-    Generated from the following TL definition:
-    ```tl
-    storage.fileJpeg#7efe0e = storage.FileType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class FileGif(TLObject):
+class FileGif(TLObject, TLRequest):
     """
     [Read `storage.fileGif` docs](https://core.telegram.org/constructor/storage.fileGif).
 
@@ -65,13 +20,13 @@ class FileGif(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class FilePng(TLObject):
+class FileJpeg(TLObject, TLRequest):
     """
-    [Read `storage.filePng` docs](https://core.telegram.org/constructor/storage.filePng).
+    [Read `storage.fileJpeg` docs](https://core.telegram.org/constructor/storage.fileJpeg).
 
     Generated from the following TL definition:
     ```tl
-    storage.filePng#a4f63c0 = storage.FileType
+    storage.fileJpeg#7efe0e = storage.FileType
     ```
     """
     def __new__(
@@ -80,37 +35,7 @@ class FilePng(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class FilePdf(TLObject):
-    """
-    [Read `storage.filePdf` docs](https://core.telegram.org/constructor/storage.filePdf).
-
-    Generated from the following TL definition:
-    ```tl
-    storage.filePdf#ae1e508d = storage.FileType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class FileMp3(TLObject):
-    """
-    [Read `storage.fileMp3` docs](https://core.telegram.org/constructor/storage.fileMp3).
-
-    Generated from the following TL definition:
-    ```tl
-    storage.fileMp3#528a0677 = storage.FileType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class FileMov(TLObject):
+class FileMov(TLObject, TLRequest):
     """
     [Read `storage.fileMov` docs](https://core.telegram.org/constructor/storage.fileMov).
 
@@ -125,7 +50,22 @@ class FileMov(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class FileMp4(TLObject):
+class FileMp3(TLObject, TLRequest):
+    """
+    [Read `storage.fileMp3` docs](https://core.telegram.org/constructor/storage.fileMp3).
+
+    Generated from the following TL definition:
+    ```tl
+    storage.fileMp3#528a0677 = storage.FileType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class FileMp4(TLObject, TLRequest):
     """
     [Read `storage.fileMp4` docs](https://core.telegram.org/constructor/storage.fileMp4).
 
@@ -140,7 +80,67 @@ class FileMp4(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class FileWebp(TLObject):
+class FilePartial(TLObject, TLRequest):
+    """
+    [Read `storage.filePartial` docs](https://core.telegram.org/constructor/storage.filePartial).
+
+    Generated from the following TL definition:
+    ```tl
+    storage.filePartial#40bc6f52 = storage.FileType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class FilePdf(TLObject, TLRequest):
+    """
+    [Read `storage.filePdf` docs](https://core.telegram.org/constructor/storage.filePdf).
+
+    Generated from the following TL definition:
+    ```tl
+    storage.filePdf#ae1e508d = storage.FileType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class FilePng(TLObject, TLRequest):
+    """
+    [Read `storage.filePng` docs](https://core.telegram.org/constructor/storage.filePng).
+
+    Generated from the following TL definition:
+    ```tl
+    storage.filePng#a4f63c0 = storage.FileType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class FileUnknown(TLObject, TLRequest):
+    """
+    [Read `storage.fileUnknown` docs](https://core.telegram.org/constructor/storage.fileUnknown).
+
+    Generated from the following TL definition:
+    ```tl
+    storage.fileUnknown#aa963b05 = storage.FileType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class FileWebp(TLObject, TLRequest):
     """
     [Read `storage.fileWebp` docs](https://core.telegram.org/constructor/storage.fileWebp).
 

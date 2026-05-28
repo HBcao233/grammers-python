@@ -2,28 +2,45 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class SaveFilePart(TLRequest):
+class GetCdnFile(TLObject, TLRequest):
     """
-    [Read `upload.saveFilePart` docs](https://core.telegram.org/method/upload.saveFilePart).
+    [Read `upload.getCdnFile` docs](https://core.telegram.org/method/upload.getCdnFile).
 
     Generated from the following TL definition:
     ```tl
-    upload.saveFilePart#b304a621 file_id:long file_part:int bytes:bytes = Bool
+    upload.getCdnFile#395f69da file_token:bytes offset:long limit:int = upload.CdnFile
     ```
     """
     def __new__(
         cls,
-        file_id: int,
-        file_part: int,
-        bytes: bytes,
+        file_token: bytes,
+        offset: int,
+        limit: int,
     ) -> Self: ...
     def to_dict(self) -> dict: ...
 
 @final
-class GetFile(TLRequest):
+class GetCdnFileHashes(TLObject, TLRequest):
+    """
+    [Read `upload.getCdnFileHashes` docs](https://core.telegram.org/method/upload.getCdnFileHashes).
+
+    Generated from the following TL definition:
+    ```tl
+    upload.getCdnFileHashes#91dc3f31 file_token:bytes offset:long = Vector<FileHash>
+    ```
+    """
+    def __new__(
+        cls,
+        file_token: bytes,
+        offset: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GetFile(TLObject, TLRequest):
     """
     [Read `upload.getFile` docs](https://core.telegram.org/method/upload.getFile).
 
@@ -52,98 +69,7 @@ class GetFile(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class SaveBigFilePart(TLRequest):
-    """
-    [Read `upload.saveBigFilePart` docs](https://core.telegram.org/method/upload.saveBigFilePart).
-
-    Generated from the following TL definition:
-    ```tl
-    upload.saveBigFilePart#de7b673d file_id:long file_part:int file_total_parts:int bytes:bytes = Bool
-    ```
-    """
-    def __new__(
-        cls,
-        file_id: int,
-        file_part: int,
-        file_total_parts: int,
-        bytes: bytes,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetWebFile(TLRequest):
-    """
-    [Read `upload.getWebFile` docs](https://core.telegram.org/method/upload.getWebFile).
-
-    Generated from the following TL definition:
-    ```tl
-    upload.getWebFile#24e6818d location:InputWebFileLocation offset:int limit:int = upload.WebFile
-    ```
-    """
-    def __new__(
-        cls,
-        location: types.InputWebFileLocation
-        | types.InputWebFileGeoPointLocation
-        | types.InputWebFileAudioAlbumThumbLocation,
-        offset: int,
-        limit: int,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetCdnFile(TLRequest):
-    """
-    [Read `upload.getCdnFile` docs](https://core.telegram.org/method/upload.getCdnFile).
-
-    Generated from the following TL definition:
-    ```tl
-    upload.getCdnFile#395f69da file_token:bytes offset:long limit:int = upload.CdnFile
-    ```
-    """
-    def __new__(
-        cls,
-        file_token: bytes,
-        offset: int,
-        limit: int,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class ReuploadCdnFile(TLRequest):
-    """
-    [Read `upload.reuploadCdnFile` docs](https://core.telegram.org/method/upload.reuploadCdnFile).
-
-    Generated from the following TL definition:
-    ```tl
-    upload.reuploadCdnFile#9b2754a8 file_token:bytes request_token:bytes = Vector<FileHash>
-    ```
-    """
-    def __new__(
-        cls,
-        file_token: bytes,
-        request_token: bytes,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetCdnFileHashes(TLRequest):
-    """
-    [Read `upload.getCdnFileHashes` docs](https://core.telegram.org/method/upload.getCdnFileHashes).
-
-    Generated from the following TL definition:
-    ```tl
-    upload.getCdnFileHashes#91dc3f31 file_token:bytes offset:long = Vector<FileHash>
-    ```
-    """
-    def __new__(
-        cls,
-        file_token: bytes,
-        offset: int,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetFileHashes(TLRequest):
+class GetFileHashes(TLObject, TLRequest):
     """
     [Read `upload.getFileHashes` docs](https://core.telegram.org/method/upload.getFileHashes).
 
@@ -165,5 +91,42 @@ class GetFileHashes(TLRequest):
         | types.InputStickerSetThumb
         | types.InputGroupCallStream,
         offset: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GetWebFile(TLObject, TLRequest):
+    """
+    [Read `upload.getWebFile` docs](https://core.telegram.org/method/upload.getWebFile).
+
+    Generated from the following TL definition:
+    ```tl
+    upload.getWebFile#24e6818d location:InputWebFileLocation offset:int limit:int = upload.WebFile
+    ```
+    """
+    def __new__(
+        cls,
+        location: types.InputWebFileLocation
+        | types.InputWebFileGeoPointLocation
+        | types.InputWebFileAudioAlbumThumbLocation,
+        offset: int,
+        limit: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class ReuploadCdnFile(TLObject, TLRequest):
+    """
+    [Read `upload.reuploadCdnFile` docs](https://core.telegram.org/method/upload.reuploadCdnFile).
+
+    Generated from the following TL definition:
+    ```tl
+    upload.reuploadCdnFile#9b2754a8 file_token:bytes request_token:bytes = Vector<FileHash>
+    ```
+    """
+    def __new__(
+        cls,
+        file_token: bytes,
+        request_token: bytes,
     ) -> Self: ...
     def to_dict(self) -> dict: ...

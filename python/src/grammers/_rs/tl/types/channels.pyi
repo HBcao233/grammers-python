@@ -2,10 +2,63 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class ChannelParticipants(TLObject):
+class AdminLogResults(TLObject, TLRequest):
+    """
+    [Read `channels.adminLogResults` docs](https://core.telegram.org/constructor/channels.adminLogResults).
+
+    Generated from the following TL definition:
+    ```tl
+    channels.adminLogResults#ed8af74d events:Vector<ChannelAdminLogEvent> chats:Vector<Chat> users:Vector<User> = channels.AdminLogResults
+    ```
+    """
+    def __new__(
+        cls,
+        events: Sequence[types.ChannelAdminLogEvent],
+        chats: Sequence[
+            types.ChatEmpty
+            | types.Chat
+            | types.ChatForbidden
+            | types.Channel
+            | types.ChannelForbidden
+        ],
+        users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class ChannelParticipant(TLObject, TLRequest):
+    """
+    [Read `channels.channelParticipant` docs](https://core.telegram.org/constructor/channels.channelParticipant).
+
+    Generated from the following TL definition:
+    ```tl
+    channels.channelParticipant#dfb80317 participant:ChannelParticipant chats:Vector<Chat> users:Vector<User> = channels.ChannelParticipant
+    ```
+    """
+    def __new__(
+        cls,
+        participant: types.ChannelParticipant
+        | types.ChannelParticipantSelf
+        | types.ChannelParticipantCreator
+        | types.ChannelParticipantAdmin
+        | types.ChannelParticipantBanned
+        | types.ChannelParticipantLeft,
+        chats: Sequence[
+            types.ChatEmpty
+            | types.Chat
+            | types.ChatForbidden
+            | types.Channel
+            | types.ChannelForbidden
+        ],
+        users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class ChannelParticipants(TLObject, TLRequest):
     """
     [Read `channels.channelParticipants` docs](https://core.telegram.org/constructor/channels.channelParticipants).
 
@@ -37,7 +90,7 @@ class ChannelParticipants(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class ChannelParticipantsNotModified(TLObject):
+class ChannelParticipantsNotModified(TLObject, TLRequest):
     """
     [Read `channels.channelParticipantsNotModified` docs](https://core.telegram.org/constructor/channels.channelParticipantsNotModified).
 
@@ -52,60 +105,7 @@ class ChannelParticipantsNotModified(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class ChannelParticipant(TLObject):
-    """
-    [Read `channels.channelParticipant` docs](https://core.telegram.org/constructor/channels.channelParticipant).
-
-    Generated from the following TL definition:
-    ```tl
-    channels.channelParticipant#dfb80317 participant:ChannelParticipant chats:Vector<Chat> users:Vector<User> = channels.ChannelParticipant
-    ```
-    """
-    def __new__(
-        cls,
-        participant: types.ChannelParticipant
-        | types.ChannelParticipantSelf
-        | types.ChannelParticipantCreator
-        | types.ChannelParticipantAdmin
-        | types.ChannelParticipantBanned
-        | types.ChannelParticipantLeft,
-        chats: Sequence[
-            types.ChatEmpty
-            | types.Chat
-            | types.ChatForbidden
-            | types.Channel
-            | types.ChannelForbidden
-        ],
-        users: Sequence[types.UserEmpty | types.User],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class AdminLogResults(TLObject):
-    """
-    [Read `channels.adminLogResults` docs](https://core.telegram.org/constructor/channels.adminLogResults).
-
-    Generated from the following TL definition:
-    ```tl
-    channels.adminLogResults#ed8af74d events:Vector<ChannelAdminLogEvent> chats:Vector<Chat> users:Vector<User> = channels.AdminLogResults
-    ```
-    """
-    def __new__(
-        cls,
-        events: Sequence[types.ChannelAdminLogEvent],
-        chats: Sequence[
-            types.ChatEmpty
-            | types.Chat
-            | types.ChatForbidden
-            | types.Channel
-            | types.ChannelForbidden
-        ],
-        users: Sequence[types.UserEmpty | types.User],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SendAsPeers(TLObject):
+class SendAsPeers(TLObject, TLRequest):
     """
     [Read `channels.sendAsPeers` docs](https://core.telegram.org/constructor/channels.sendAsPeers).
 
@@ -129,7 +129,22 @@ class SendAsPeers(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class SponsoredMessageReportResultChooseOption(TLObject):
+class SponsoredMessageReportResultAdsHidden(TLObject, TLRequest):
+    """
+    [Read `channels.sponsoredMessageReportResultAdsHidden` docs](https://core.telegram.org/constructor/channels.sponsoredMessageReportResultAdsHidden).
+
+    Generated from the following TL definition:
+    ```tl
+    channels.sponsoredMessageReportResultAdsHidden#3e3bcf2f = channels.SponsoredMessageReportResult
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SponsoredMessageReportResultChooseOption(TLObject, TLRequest):
     """
     [Read `channels.sponsoredMessageReportResultChooseOption` docs](https://core.telegram.org/constructor/channels.sponsoredMessageReportResultChooseOption).
 
@@ -146,22 +161,7 @@ class SponsoredMessageReportResultChooseOption(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class SponsoredMessageReportResultAdsHidden(TLObject):
-    """
-    [Read `channels.sponsoredMessageReportResultAdsHidden` docs](https://core.telegram.org/constructor/channels.sponsoredMessageReportResultAdsHidden).
-
-    Generated from the following TL definition:
-    ```tl
-    channels.sponsoredMessageReportResultAdsHidden#3e3bcf2f = channels.SponsoredMessageReportResult
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SponsoredMessageReportResultReported(TLObject):
+class SponsoredMessageReportResultReported(TLObject, TLRequest):
     """
     [Read `channels.sponsoredMessageReportResultReported` docs](https://core.telegram.org/constructor/channels.sponsoredMessageReportResultReported).
 

@@ -2,25 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class TonesNotModified(TLObject):
-    """
-    [Read `aicompose.tonesNotModified` docs](https://core.telegram.org/constructor/aicompose.tonesNotModified).
-
-    Generated from the following TL definition:
-    ```tl
-    aicompose.tonesNotModified#c1f46103 = aicompose.Tones
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class Tones(TLObject):
+class Tones(TLObject, TLRequest):
     """
     [Read `aicompose.tones` docs](https://core.telegram.org/constructor/aicompose.tones).
 
@@ -34,5 +19,20 @@ class Tones(TLObject):
         hash: int,
         tones: Sequence[types.AiComposeTone | types.AiComposeToneDefault],
         users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class TonesNotModified(TLObject, TLRequest):
+    """
+    [Read `aicompose.tonesNotModified` docs](https://core.telegram.org/constructor/aicompose.tonesNotModified).
+
+    Generated from the following TL definition:
+    ```tl
+    aicompose.tonesNotModified#c1f46103 = aicompose.Tones
+    ```
+    """
+    def __new__(
+        cls,
     ) -> Self: ...
     def to_dict(self) -> dict: ...

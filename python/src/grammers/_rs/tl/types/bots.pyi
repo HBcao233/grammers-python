@@ -2,10 +2,27 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class BotInfo(TLObject):
+class AccessSettings(TLObject, TLRequest):
+    """
+    [Read `bots.accessSettings` docs](https://core.telegram.org/constructor/bots.accessSettings).
+
+    Generated from the following TL definition:
+    ```tl
+    bots.accessSettings#dd1fbf93 flags:# restricted:flags.0?true add_users:flags.1?Vector<User> = bots.AccessSettings
+    ```
+    """
+    def __new__(
+        cls,
+        restricted: bool,
+        add_users: Optional[Sequence[types.UserEmpty | types.User]],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class BotInfo(TLObject, TLRequest):
     """
     [Read `bots.botInfo` docs](https://core.telegram.org/constructor/bots.botInfo).
 
@@ -23,7 +40,23 @@ class BotInfo(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class PopularAppBots(TLObject):
+class ExportedBotToken(TLObject, TLRequest):
+    """
+    [Read `bots.exportedBotToken` docs](https://core.telegram.org/constructor/bots.exportedBotToken).
+
+    Generated from the following TL definition:
+    ```tl
+    bots.exportedBotToken#3c60b621 token:string = bots.ExportedBotToken
+    ```
+    """
+    def __new__(
+        cls,
+        token: str,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class PopularAppBots(TLObject, TLRequest):
     """
     [Read `bots.popularAppBots` docs](https://core.telegram.org/constructor/bots.popularAppBots).
 
@@ -40,7 +73,7 @@ class PopularAppBots(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class PreviewInfo(TLObject):
+class PreviewInfo(TLObject, TLRequest):
     """
     [Read `bots.previewInfo` docs](https://core.telegram.org/constructor/bots.previewInfo).
 
@@ -57,23 +90,7 @@ class PreviewInfo(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class ExportedBotToken(TLObject):
-    """
-    [Read `bots.exportedBotToken` docs](https://core.telegram.org/constructor/bots.exportedBotToken).
-
-    Generated from the following TL definition:
-    ```tl
-    bots.exportedBotToken#3c60b621 token:string = bots.ExportedBotToken
-    ```
-    """
-    def __new__(
-        cls,
-        token: str,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class RequestedButton(TLObject):
+class RequestedButton(TLObject, TLRequest):
     """
     [Read `bots.requestedButton` docs](https://core.telegram.org/constructor/bots.requestedButton).
 
@@ -85,22 +102,5 @@ class RequestedButton(TLObject):
     def __new__(
         cls,
         webapp_req_id: str,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class AccessSettings(TLObject):
-    """
-    [Read `bots.accessSettings` docs](https://core.telegram.org/constructor/bots.accessSettings).
-
-    Generated from the following TL definition:
-    ```tl
-    bots.accessSettings#dd1fbf93 flags:# restricted:flags.0?true add_users:flags.1?Vector<User> = bots.AccessSettings
-    ```
-    """
-    def __new__(
-        cls,
-        restricted: bool,
-        add_users: Optional[Sequence[types.UserEmpty | types.User]],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

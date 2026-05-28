@@ -2,10 +2,43 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class UserFull(TLObject):
+class SavedMusic(TLObject, TLRequest):
+    """
+    [Read `users.savedMusic` docs](https://core.telegram.org/constructor/users.savedMusic).
+
+    Generated from the following TL definition:
+    ```tl
+    users.savedMusic#34a2f297 count:int documents:Vector<Document> = users.SavedMusic
+    ```
+    """
+    def __new__(
+        cls,
+        count: int,
+        documents: Sequence[types.DocumentEmpty | types.Document],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SavedMusicNotModified(TLObject, TLRequest):
+    """
+    [Read `users.savedMusicNotModified` docs](https://core.telegram.org/constructor/users.savedMusicNotModified).
+
+    Generated from the following TL definition:
+    ```tl
+    users.savedMusicNotModified#e3878aa4 count:int = users.SavedMusic
+    ```
+    """
+    def __new__(
+        cls,
+        count: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class UserFull(TLObject, TLRequest):
     """
     [Read `users.userFull` docs](https://core.telegram.org/constructor/users.userFull).
 
@@ -29,7 +62,7 @@ class UserFull(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class Users(TLObject):
+class Users(TLObject, TLRequest):
     """
     [Read `users.users` docs](https://core.telegram.org/constructor/users.users).
 
@@ -45,7 +78,7 @@ class Users(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class UsersSlice(TLObject):
+class UsersSlice(TLObject, TLRequest):
     """
     [Read `users.usersSlice` docs](https://core.telegram.org/constructor/users.usersSlice).
 
@@ -58,38 +91,5 @@ class UsersSlice(TLObject):
         cls,
         count: int,
         users: Sequence[types.UserEmpty | types.User],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SavedMusicNotModified(TLObject):
-    """
-    [Read `users.savedMusicNotModified` docs](https://core.telegram.org/constructor/users.savedMusicNotModified).
-
-    Generated from the following TL definition:
-    ```tl
-    users.savedMusicNotModified#e3878aa4 count:int = users.SavedMusic
-    ```
-    """
-    def __new__(
-        cls,
-        count: int,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SavedMusic(TLObject):
-    """
-    [Read `users.savedMusic` docs](https://core.telegram.org/constructor/users.savedMusic).
-
-    Generated from the following TL definition:
-    ```tl
-    users.savedMusic#34a2f297 count:int documents:Vector<Document> = users.SavedMusic
-    ```
-    """
-    def __new__(
-        cls,
-        count: int,
-        documents: Sequence[types.DocumentEmpty | types.Document],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

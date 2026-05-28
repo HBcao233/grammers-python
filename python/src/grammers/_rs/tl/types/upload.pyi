@@ -2,10 +2,42 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class File(TLObject):
+class CdnFile(TLObject, TLRequest):
+    """
+    [Read `upload.cdnFile` docs](https://core.telegram.org/constructor/upload.cdnFile).
+
+    Generated from the following TL definition:
+    ```tl
+    upload.cdnFile#a99fca4f bytes:bytes = upload.CdnFile
+    ```
+    """
+    def __new__(
+        cls,
+        bytes: bytes,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class CdnFileReuploadNeeded(TLObject, TLRequest):
+    """
+    [Read `upload.cdnFileReuploadNeeded` docs](https://core.telegram.org/constructor/upload.cdnFileReuploadNeeded).
+
+    Generated from the following TL definition:
+    ```tl
+    upload.cdnFileReuploadNeeded#eea8e46e request_token:bytes = upload.CdnFile
+    ```
+    """
+    def __new__(
+        cls,
+        request_token: bytes,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class File(TLObject, TLRequest):
     """
     [Read `upload.file` docs](https://core.telegram.org/constructor/upload.file).
 
@@ -32,7 +64,7 @@ class File(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class FileCdnRedirect(TLObject):
+class FileCdnRedirect(TLObject, TLRequest):
     """
     [Read `upload.fileCdnRedirect` docs](https://core.telegram.org/constructor/upload.fileCdnRedirect).
 
@@ -52,7 +84,7 @@ class FileCdnRedirect(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class WebFile(TLObject):
+class WebFile(TLObject, TLRequest):
     """
     [Read `upload.webFile` docs](https://core.telegram.org/constructor/upload.webFile).
 
@@ -76,38 +108,6 @@ class WebFile(TLObject):
         | types.storage.FileMp4
         | types.storage.FileWebp,
         mtime: int,
-        bytes: bytes,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class CdnFileReuploadNeeded(TLObject):
-    """
-    [Read `upload.cdnFileReuploadNeeded` docs](https://core.telegram.org/constructor/upload.cdnFileReuploadNeeded).
-
-    Generated from the following TL definition:
-    ```tl
-    upload.cdnFileReuploadNeeded#eea8e46e request_token:bytes = upload.CdnFile
-    ```
-    """
-    def __new__(
-        cls,
-        request_token: bytes,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class CdnFile(TLObject):
-    """
-    [Read `upload.cdnFile` docs](https://core.telegram.org/constructor/upload.cdnFile).
-
-    Generated from the following TL definition:
-    ```tl
-    upload.cdnFile#a99fca4f bytes:bytes = upload.CdnFile
-    ```
-    """
-    def __new__(
-        cls,
         bytes: bytes,
     ) -> Self: ...
     def to_dict(self) -> dict: ...

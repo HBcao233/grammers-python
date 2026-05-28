@@ -9,7 +9,7 @@ if TYPE_CHECKING:
 
 
 class Filter:
-    async def __call__(self, event: Any) -> bool:
+    def __call__(self, event: EventCommon) -> bool | Awaitable[bool]:
         raise NotImplementedError
 
     def __invert__(self) -> InvertFilter:
@@ -125,7 +125,7 @@ def create(
     )()
 
 
-def all_filter(_: Filter, event: Any) -> bool:
+def all_filter(_: Filter, _event: EventCommon) -> bool:
     return True
 
 

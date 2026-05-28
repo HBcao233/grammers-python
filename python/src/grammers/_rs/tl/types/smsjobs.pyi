@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class EligibleToJoin(TLObject):
+class EligibleToJoin(TLObject, TLRequest):
     """
     [Read `smsjobs.eligibleToJoin` docs](https://core.telegram.org/constructor/smsjobs.eligibleToJoin).
 
@@ -22,7 +22,7 @@ class EligibleToJoin(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class Status(TLObject):
+class Status(TLObject, TLRequest):
     """
     [Read `smsjobs.status` docs](https://core.telegram.org/constructor/smsjobs.status).
 

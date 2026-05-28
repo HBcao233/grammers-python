@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class BroadcastStats(TLObject):
+class BroadcastStats(TLObject, TLRequest):
     """
     [Read `stats.broadcastStats` docs](https://core.telegram.org/constructor/stats.broadcastStats).
 
@@ -64,7 +64,7 @@ class BroadcastStats(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class MegagroupStats(TLObject):
+class MegagroupStats(TLObject, TLRequest):
     """
     [Read `stats.megagroupStats` docs](https://core.telegram.org/constructor/stats.megagroupStats).
 
@@ -106,7 +106,7 @@ class MegagroupStats(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class MessageStats(TLObject):
+class MessageStats(TLObject, TLRequest):
     """
     [Read `stats.messageStats` docs](https://core.telegram.org/constructor/stats.messageStats).
 
@@ -125,26 +125,23 @@ class MessageStats(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class StoryStats(TLObject):
+class PollStats(TLObject, TLRequest):
     """
-    [Read `stats.storyStats` docs](https://core.telegram.org/constructor/stats.storyStats).
+    [Read `stats.pollStats` docs](https://core.telegram.org/constructor/stats.pollStats).
 
     Generated from the following TL definition:
     ```tl
-    stats.storyStats#50cd067c views_graph:StatsGraph reactions_by_emotion_graph:StatsGraph = stats.StoryStats
+    stats.pollStats#2999beed votes_graph:StatsGraph = stats.PollStats
     ```
     """
     def __new__(
         cls,
-        views_graph: types.StatsGraphAsync | types.StatsGraphError | types.StatsGraph,
-        reactions_by_emotion_graph: types.StatsGraphAsync
-        | types.StatsGraphError
-        | types.StatsGraph,
+        votes_graph: types.StatsGraphAsync | types.StatsGraphError | types.StatsGraph,
     ) -> Self: ...
     def to_dict(self) -> dict: ...
 
 @final
-class PublicForwards(TLObject):
+class PublicForwards(TLObject, TLRequest):
     """
     [Read `stats.publicForwards` docs](https://core.telegram.org/constructor/stats.publicForwards).
 
@@ -170,17 +167,20 @@ class PublicForwards(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class PollStats(TLObject):
+class StoryStats(TLObject, TLRequest):
     """
-    [Read `stats.pollStats` docs](https://core.telegram.org/constructor/stats.pollStats).
+    [Read `stats.storyStats` docs](https://core.telegram.org/constructor/stats.storyStats).
 
     Generated from the following TL definition:
     ```tl
-    stats.pollStats#2999beed votes_graph:StatsGraph = stats.PollStats
+    stats.storyStats#50cd067c views_graph:StatsGraph reactions_by_emotion_graph:StatsGraph = stats.StoryStats
     ```
     """
     def __new__(
         cls,
-        votes_graph: types.StatsGraphAsync | types.StatsGraphError | types.StatsGraph,
+        views_graph: types.StatsGraphAsync | types.StatsGraphError | types.StatsGraph,
+        reactions_by_emotion_graph: types.StatsGraphAsync
+        | types.StatsGraphError
+        | types.StatsGraph,
     ) -> Self: ...
     def to_dict(self) -> dict: ...

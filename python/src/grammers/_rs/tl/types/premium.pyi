@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class BoostsList(TLObject):
+class BoostsList(TLObject, TLRequest):
     """
     [Read `premium.boostsList` docs](https://core.telegram.org/constructor/premium.boostsList).
 
@@ -24,31 +24,7 @@ class BoostsList(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class MyBoosts(TLObject):
-    """
-    [Read `premium.myBoosts` docs](https://core.telegram.org/constructor/premium.myBoosts).
-
-    Generated from the following TL definition:
-    ```tl
-    premium.myBoosts#9ae228e2 my_boosts:Vector<MyBoost> chats:Vector<Chat> users:Vector<User> = premium.MyBoosts
-    ```
-    """
-    def __new__(
-        cls,
-        my_boosts: Sequence[types.MyBoost],
-        chats: Sequence[
-            types.ChatEmpty
-            | types.Chat
-            | types.ChatForbidden
-            | types.Channel
-            | types.ChannelForbidden
-        ],
-        users: Sequence[types.UserEmpty | types.User],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class BoostsStatus(TLObject):
+class BoostsStatus(TLObject, TLRequest):
     """
     [Read `premium.boostsStatus` docs](https://core.telegram.org/constructor/premium.boostsStatus).
 
@@ -71,5 +47,29 @@ class BoostsStatus(TLObject):
             Sequence[types.PrepaidGiveaway | types.PrepaidStarsGiveaway]
         ],
         my_boost_slots: Optional[Sequence[int]],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class MyBoosts(TLObject, TLRequest):
+    """
+    [Read `premium.myBoosts` docs](https://core.telegram.org/constructor/premium.myBoosts).
+
+    Generated from the following TL definition:
+    ```tl
+    premium.myBoosts#9ae228e2 my_boosts:Vector<MyBoost> chats:Vector<Chat> users:Vector<User> = premium.MyBoosts
+    ```
+    """
+    def __new__(
+        cls,
+        my_boosts: Sequence[types.MyBoost],
+        chats: Sequence[
+            types.ChatEmpty
+            | types.Chat
+            | types.ChatForbidden
+            | types.Channel
+            | types.ChannelForbidden
+        ],
+        users: Sequence[types.UserEmpty | types.User],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

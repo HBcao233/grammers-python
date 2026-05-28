@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class GetBroadcastStats(TLRequest):
+class GetBroadcastStats(TLObject, TLRequest):
     """
     [Read `stats.getBroadcastStats` docs](https://core.telegram.org/method/stats.getBroadcastStats).
 
@@ -24,24 +24,7 @@ class GetBroadcastStats(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class LoadAsyncGraph(TLRequest):
-    """
-    [Read `stats.loadAsyncGraph` docs](https://core.telegram.org/method/stats.loadAsyncGraph).
-
-    Generated from the following TL definition:
-    ```tl
-    stats.loadAsyncGraph#621d5fa0 flags:# token:string x:flags.0?long = StatsGraph
-    ```
-    """
-    def __new__(
-        cls,
-        token: str,
-        x: Optional[int],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetMegagroupStats(TLRequest):
+class GetMegagroupStats(TLObject, TLRequest):
     """
     [Read `stats.getMegagroupStats` docs](https://core.telegram.org/method/stats.getMegagroupStats).
 
@@ -60,7 +43,7 @@ class GetMegagroupStats(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetMessagePublicForwards(TLRequest):
+class GetMessagePublicForwards(TLObject, TLRequest):
     """
     [Read `stats.getMessagePublicForwards` docs](https://core.telegram.org/method/stats.getMessagePublicForwards).
 
@@ -81,7 +64,7 @@ class GetMessagePublicForwards(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetMessageStats(TLRequest):
+class GetMessageStats(TLObject, TLRequest):
     """
     [Read `stats.getMessageStats` docs](https://core.telegram.org/method/stats.getMessageStats).
 
@@ -101,13 +84,13 @@ class GetMessageStats(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetStoryStats(TLRequest):
+class GetPollStats(TLObject, TLRequest):
     """
-    [Read `stats.getStoryStats` docs](https://core.telegram.org/method/stats.getStoryStats).
+    [Read `stats.getPollStats` docs](https://core.telegram.org/method/stats.getPollStats).
 
     Generated from the following TL definition:
     ```tl
-    stats.getStoryStats#374fef40 flags:# dark:flags.0?true peer:InputPeer id:int = stats.StoryStats
+    stats.getPollStats#c27dfa68 flags:# dark:flags.0?true peer:InputPeer msg_id:int = stats.PollStats
     ```
     """
     def __new__(
@@ -120,12 +103,12 @@ class GetStoryStats(TLRequest):
         | types.InputPeerChannel
         | types.InputPeerUserFromMessage
         | types.InputPeerChannelFromMessage,
-        id: int,
+        msg_id: int,
     ) -> Self: ...
     def to_dict(self) -> dict: ...
 
 @final
-class GetStoryPublicForwards(TLRequest):
+class GetStoryPublicForwards(TLObject, TLRequest):
     """
     [Read `stats.getStoryPublicForwards` docs](https://core.telegram.org/method/stats.getStoryPublicForwards).
 
@@ -150,13 +133,13 @@ class GetStoryPublicForwards(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetPollStats(TLRequest):
+class GetStoryStats(TLObject, TLRequest):
     """
-    [Read `stats.getPollStats` docs](https://core.telegram.org/method/stats.getPollStats).
+    [Read `stats.getStoryStats` docs](https://core.telegram.org/method/stats.getStoryStats).
 
     Generated from the following TL definition:
     ```tl
-    stats.getPollStats#c27dfa68 flags:# dark:flags.0?true peer:InputPeer msg_id:int = stats.PollStats
+    stats.getStoryStats#374fef40 flags:# dark:flags.0?true peer:InputPeer id:int = stats.StoryStats
     ```
     """
     def __new__(
@@ -169,6 +152,23 @@ class GetPollStats(TLRequest):
         | types.InputPeerChannel
         | types.InputPeerUserFromMessage
         | types.InputPeerChannelFromMessage,
-        msg_id: int,
+        id: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class LoadAsyncGraph(TLObject, TLRequest):
+    """
+    [Read `stats.loadAsyncGraph` docs](https://core.telegram.org/method/stats.loadAsyncGraph).
+
+    Generated from the following TL definition:
+    ```tl
+    stats.loadAsyncGraph#621d5fa0 flags:# token:string x:flags.0?long = StatsGraph
+    ```
+    """
+    def __new__(
+        cls,
+        token: str,
+        x: Optional[int],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

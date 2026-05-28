@@ -3,14 +3,17 @@ from grammers._rs.sessions import (
     PeerAuth,
     PeerInfo,
     PeerKind,
+    PeerRef,
     ChannelKind,
     DcOption,
     ChannelState,
     UpdatesState,
     UpdateState,
 )
+from grammers.tl import enums
+from typing import TypeAlias
 
-PeerIdLike = int | PeerId
+PeerIdLike: TypeAlias = int | PeerId | enums.InputPeer | enums.Peer
 
 __all__ = [
     'PeerId',
@@ -18,6 +21,7 @@ __all__ = [
     'PeerAuth',
     'PeerInfo',
     'PeerKind',
+    'PeerRef',
     'ChannelKind',
     'DcOption',
     'ChannelState',

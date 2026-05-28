@@ -1,7 +1,7 @@
 from typing import Awaitable, Callable, Optional, Protocol, Self, Sequence
 from collections.abc import AsyncIterator
 
-from grammers.tl import TLRequest, TLObject, types
+from grammers.tl import TLRequest, TLObject, types, enums
 from grammers.sessions import Session, PeerRef
 from grammers.custom import (
     BytesChunk,
@@ -9,14 +9,11 @@ from grammers.custom import (
     User,
     Group,
     Channel,
-    Peer,
     Message,
     HistoryMessageIter,
 )
 from grammers import hints
-
-class PasswordCallback(Protocol):
-    def __call__(self, hint: str) -> str | Awaitable[str]: ...
+from grammers.client import PasswordCallback
 
 class Client:
     @property
@@ -49,13 +46,13 @@ class Client:
     def password(self) -> str | PasswordCallback: ...
     def __new__(
         cls,
-        session: str,
+        session: Session,
         api_id: int | str,
         api_hash: str,
         *,
-        phone: str | Callable[[], str | Awaitable[str]],
-        code: Callable[[], str | Awaitable[str]],
-        password: PasswordCallback,
+        phone: str | Callable[[], str | Awaitable[str]] | None = None,
+        code: Callable[[], str | int | Awaitable[str | int]] | None,
+        password: str | PasswordCallback | None = None,
         bot_token: Optional[str] = None,
         app_version: Optional[str] = None,
         device_model: Optional[str] = None,
@@ -108,7 +105,7 @@ class Client:
                 await client.invoke(functions.Ping(ping_id=0))
         """
         ...
-    async def invoke_raw(request_body: bytes) -> bytes:
+    async def invoke_raw(self, request_body: bytes) -> bytes:
         """
         low-level api, send data to telegram directly.
         """
@@ -454,14 +451,14 @@ class Client:
         Both users and bots can use this method.
         """
         ...
-    async def resolve_input_peer(self, peer: hints.PeerIdLikeExtend) -> Peer:
+    async def resolve_input_peer(self, peer: enums.InputPeer) -> hints.Peer:
         """
         Resolves a InputPeer into a Peer.
 
         Both users and bots can use this method.
         """
         ...
-    async def resolve_peer(self, peer: hints.InputPeerLike) -> Peer:
+    async def resolve_peer(self, peer: hints.InputPeerLike) -> hints.Peer:
         """
         Resolves any InputPeerLike into a Peer.
 
@@ -476,6 +473,7 @@ class Client:
         """
         ...
     async def check_invite_link(
+        self,
         invite_link: str,
     ) -> types.ChatInviteAlready | types.ChatInvite | types.ChatInvitePeek:
         """
@@ -485,6 +483,7 @@ class Client:
         """
         ...
     async def accept_invite_link(
+        self,
         invite_link: str,
     ) -> types.ChatInviteAlready | types.ChatInvite | types.ChatInvitePeek:
         """
@@ -497,6 +496,7 @@ class Client:
     # ========== Messages Methods ==========
 
     async def get_messages_by_id(
+        self,
         peer: hints.InputPeerLike,
         message_ids: Sequence[int],
     ) -> list[Message]:
@@ -512,6 +512,7 @@ class Client:
         """
         ...
     def iter_history_messages(
+        self,
         peer: hints.InputPeerLike,
         limit: int | None = None,
         *,
@@ -545,6 +546,34 @@ class Client:
                 print(await iterator.total())
                 # Get the next `Message`.
                 print(await iterator.next())  # or await anext(iterator)
+        """
+        ...
+    async def send_message(
+        self,
+        peer: hints.InputPeerLike,
+        message: hints.InputMessageLike,
+        *,
+        media: enums.InputMedia | None = None,
+        entities: Sequence[enums.MessageEntity] | None = None,
+        reply_to: hints.InputReplyToLike | None = None,
+        reply_markup: enums.ReplyMarkup | None = None,
+        schedule_date: int | None = None,
+        send_as: hints.InputPeerLike | None = None,
+        no_webpage: bool | None = None,
+        silent: bool | None = None,
+        background: bool | None = None,
+        clear_draft: bool | None = None,
+        noforwards: bool | None = None,
+        update_stickersets_order: bool | None = None,
+        invert_media: bool | None = None,
+        allow_paid_floodskip: bool | None = None,
+        quick_reply_shortcut: enums.InputQuickReplyShortcut | None = None,
+        effect: int | None = None,
+        allow_paid_stars: int | None = None,
+        suggested_post: enums.SuggestedPost | None = None,
+    ):
+        """
+        Send message
         """
         ...
 

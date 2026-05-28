@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class CollectibleInfo(TLObject):
+class CollectibleInfo(TLObject, TLRequest):
     """
     [Read `fragment.collectibleInfo` docs](https://core.telegram.org/constructor/fragment.collectibleInfo).
 

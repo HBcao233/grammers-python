@@ -2,25 +2,32 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class GetState(TLRequest):
+class GetChannelDifference(TLObject, TLRequest):
     """
-    [Read `updates.getState` docs](https://core.telegram.org/method/updates.getState).
+    [Read `updates.getChannelDifference` docs](https://core.telegram.org/method/updates.getChannelDifference).
 
     Generated from the following TL definition:
     ```tl
-    updates.getState#edd4882a = updates.State
+    updates.getChannelDifference#3173d78 flags:# force:flags.0?true channel:InputChannel filter:ChannelMessagesFilter pts:int limit:int = updates.ChannelDifference
     ```
     """
     def __new__(
         cls,
+        force: bool,
+        channel: types.InputChannelEmpty
+        | types.InputChannel
+        | types.InputChannelFromMessage,
+        filter: types.ChannelMessagesFilterEmpty | types.ChannelMessagesFilter,
+        pts: int,
+        limit: int,
     ) -> Self: ...
     def to_dict(self) -> dict: ...
 
 @final
-class GetDifference(TLRequest):
+class GetDifference(TLObject, TLRequest):
     """
     [Read `updates.getDifference` docs](https://core.telegram.org/method/updates.getDifference).
 
@@ -41,23 +48,16 @@ class GetDifference(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetChannelDifference(TLRequest):
+class GetState(TLObject, TLRequest):
     """
-    [Read `updates.getChannelDifference` docs](https://core.telegram.org/method/updates.getChannelDifference).
+    [Read `updates.getState` docs](https://core.telegram.org/method/updates.getState).
 
     Generated from the following TL definition:
     ```tl
-    updates.getChannelDifference#3173d78 flags:# force:flags.0?true channel:InputChannel filter:ChannelMessagesFilter pts:int limit:int = updates.ChannelDifference
+    updates.getState#edd4882a = updates.State
     ```
     """
     def __new__(
         cls,
-        force: bool,
-        channel: types.InputChannelEmpty
-        | types.InputChannel
-        | types.InputChannelFromMessage,
-        filter: types.ChannelMessagesFilterEmpty | types.ChannelMessagesFilter,
-        pts: int,
-        limit: int,
     ) -> Self: ...
     def to_dict(self) -> dict: ...

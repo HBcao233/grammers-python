@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class EditPeerFolders(TLRequest):
+class EditPeerFolders(TLObject, TLRequest):
     """
     [Read `folders.editPeerFolders` docs](https://core.telegram.org/method/folders.editPeerFolders).
 

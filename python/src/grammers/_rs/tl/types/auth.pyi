@@ -2,10 +2,237 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class SentCode(TLObject):
+class Authorization(TLObject, TLRequest):
+    """
+    [Read `auth.authorization` docs](https://core.telegram.org/constructor/auth.authorization).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.authorization#2ea2c0d4 flags:# setup_password_required:flags.1?true otherwise_relogin_days:flags.1?int tmp_sessions:flags.0?int future_auth_token:flags.2?bytes user:User = auth.Authorization
+    ```
+    """
+    def __new__(
+        cls,
+        setup_password_required: bool,
+        otherwise_relogin_days: Optional[int],
+        tmp_sessions: Optional[int],
+        future_auth_token: Optional[bytes],
+        user: types.UserEmpty | types.User,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class AuthorizationSignUpRequired(TLObject, TLRequest):
+    """
+    [Read `auth.authorizationSignUpRequired` docs](https://core.telegram.org/constructor/auth.authorizationSignUpRequired).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.authorizationSignUpRequired#44747e9a flags:# terms_of_service:flags.0?help.TermsOfService = auth.Authorization
+    ```
+    """
+    def __new__(
+        cls,
+        terms_of_service: Optional[types.help.TermsOfService],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class CodeTypeCall(TLObject, TLRequest):
+    """
+    [Read `auth.codeTypeCall` docs](https://core.telegram.org/constructor/auth.codeTypeCall).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.codeTypeCall#741cd3e3 = auth.CodeType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class CodeTypeFlashCall(TLObject, TLRequest):
+    """
+    [Read `auth.codeTypeFlashCall` docs](https://core.telegram.org/constructor/auth.codeTypeFlashCall).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.codeTypeFlashCall#226ccefb = auth.CodeType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class CodeTypeFragmentSms(TLObject, TLRequest):
+    """
+    [Read `auth.codeTypeFragmentSms` docs](https://core.telegram.org/constructor/auth.codeTypeFragmentSms).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.codeTypeFragmentSms#6ed998c = auth.CodeType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class CodeTypeMissedCall(TLObject, TLRequest):
+    """
+    [Read `auth.codeTypeMissedCall` docs](https://core.telegram.org/constructor/auth.codeTypeMissedCall).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.codeTypeMissedCall#d61ad6ee = auth.CodeType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class CodeTypeSms(TLObject, TLRequest):
+    """
+    [Read `auth.codeTypeSms` docs](https://core.telegram.org/constructor/auth.codeTypeSms).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.codeTypeSms#72a3158c = auth.CodeType
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class ExportedAuthorization(TLObject, TLRequest):
+    """
+    [Read `auth.exportedAuthorization` docs](https://core.telegram.org/constructor/auth.exportedAuthorization).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.exportedAuthorization#b434e2b8 id:long bytes:bytes = auth.ExportedAuthorization
+    ```
+    """
+    def __new__(
+        cls,
+        id: int,
+        bytes: bytes,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class LoggedOut(TLObject, TLRequest):
+    """
+    [Read `auth.loggedOut` docs](https://core.telegram.org/constructor/auth.loggedOut).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.loggedOut#c3a2835f flags:# future_auth_token:flags.0?bytes = auth.LoggedOut
+    ```
+    """
+    def __new__(
+        cls,
+        future_auth_token: Optional[bytes],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class LoginToken(TLObject, TLRequest):
+    """
+    [Read `auth.loginToken` docs](https://core.telegram.org/constructor/auth.loginToken).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.loginToken#629f1980 expires:int token:bytes = auth.LoginToken
+    ```
+    """
+    def __new__(
+        cls,
+        expires: int,
+        token: bytes,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class LoginTokenMigrateTo(TLObject, TLRequest):
+    """
+    [Read `auth.loginTokenMigrateTo` docs](https://core.telegram.org/constructor/auth.loginTokenMigrateTo).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.loginTokenMigrateTo#68e9916 dc_id:int token:bytes = auth.LoginToken
+    ```
+    """
+    def __new__(
+        cls,
+        dc_id: int,
+        token: bytes,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class LoginTokenSuccess(TLObject, TLRequest):
+    """
+    [Read `auth.loginTokenSuccess` docs](https://core.telegram.org/constructor/auth.loginTokenSuccess).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.loginTokenSuccess#390d5c5e authorization:auth.Authorization = auth.LoginToken
+    ```
+    """
+    def __new__(
+        cls,
+        authorization: types.auth.Authorization
+        | types.auth.AuthorizationSignUpRequired,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class PasskeyLoginOptions(TLObject, TLRequest):
+    """
+    [Read `auth.passkeyLoginOptions` docs](https://core.telegram.org/constructor/auth.passkeyLoginOptions).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.passkeyLoginOptions#e2037789 options:DataJSON = auth.PasskeyLoginOptions
+    ```
+    """
+    def __new__(
+        cls,
+        options: types.DataJson,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class PasswordRecovery(TLObject, TLRequest):
+    """
+    [Read `auth.passwordRecovery` docs](https://core.telegram.org/constructor/auth.passwordRecovery).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.passwordRecovery#137948a5 email_pattern:string = auth.PasswordRecovery
+    ```
+    """
+    def __new__(
+        cls,
+        email_pattern: str,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SentCode(TLObject, TLRequest):
     """
     [Read `auth.sentCode` docs](https://core.telegram.org/constructor/auth.sentCode).
 
@@ -40,24 +267,7 @@ class SentCode(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class SentCodeSuccess(TLObject):
-    """
-    [Read `auth.sentCodeSuccess` docs](https://core.telegram.org/constructor/auth.sentCodeSuccess).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.sentCodeSuccess#2390fe44 authorization:auth.Authorization = auth.SentCode
-    ```
-    """
-    def __new__(
-        cls,
-        authorization: types.auth.Authorization
-        | types.auth.AuthorizationSignUpRequired,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SentCodePaymentRequired(TLObject):
+class SentCodePaymentRequired(TLObject, TLRequest):
     """
     [Read `auth.sentCodePaymentRequired` docs](https://core.telegram.org/constructor/auth.sentCodePaymentRequired).
 
@@ -79,151 +289,24 @@ class SentCodePaymentRequired(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class Authorization(TLObject):
+class SentCodeSuccess(TLObject, TLRequest):
     """
-    [Read `auth.authorization` docs](https://core.telegram.org/constructor/auth.authorization).
+    [Read `auth.sentCodeSuccess` docs](https://core.telegram.org/constructor/auth.sentCodeSuccess).
 
     Generated from the following TL definition:
     ```tl
-    auth.authorization#2ea2c0d4 flags:# setup_password_required:flags.1?true otherwise_relogin_days:flags.1?int tmp_sessions:flags.0?int future_auth_token:flags.2?bytes user:User = auth.Authorization
+    auth.sentCodeSuccess#2390fe44 authorization:auth.Authorization = auth.SentCode
     ```
     """
     def __new__(
         cls,
-        setup_password_required: bool,
-        otherwise_relogin_days: Optional[int],
-        tmp_sessions: Optional[int],
-        future_auth_token: Optional[bytes],
-        user: types.UserEmpty | types.User,
+        authorization: types.auth.Authorization
+        | types.auth.AuthorizationSignUpRequired,
     ) -> Self: ...
     def to_dict(self) -> dict: ...
 
 @final
-class AuthorizationSignUpRequired(TLObject):
-    """
-    [Read `auth.authorizationSignUpRequired` docs](https://core.telegram.org/constructor/auth.authorizationSignUpRequired).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.authorizationSignUpRequired#44747e9a flags:# terms_of_service:flags.0?help.TermsOfService = auth.Authorization
-    ```
-    """
-    def __new__(
-        cls,
-        terms_of_service: Optional[types.help.TermsOfService],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class ExportedAuthorization(TLObject):
-    """
-    [Read `auth.exportedAuthorization` docs](https://core.telegram.org/constructor/auth.exportedAuthorization).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.exportedAuthorization#b434e2b8 id:long bytes:bytes = auth.ExportedAuthorization
-    ```
-    """
-    def __new__(
-        cls,
-        id: int,
-        bytes: bytes,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class PasswordRecovery(TLObject):
-    """
-    [Read `auth.passwordRecovery` docs](https://core.telegram.org/constructor/auth.passwordRecovery).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.passwordRecovery#137948a5 email_pattern:string = auth.PasswordRecovery
-    ```
-    """
-    def __new__(
-        cls,
-        email_pattern: str,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class CodeTypeSms(TLObject):
-    """
-    [Read `auth.codeTypeSms` docs](https://core.telegram.org/constructor/auth.codeTypeSms).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.codeTypeSms#72a3158c = auth.CodeType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class CodeTypeCall(TLObject):
-    """
-    [Read `auth.codeTypeCall` docs](https://core.telegram.org/constructor/auth.codeTypeCall).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.codeTypeCall#741cd3e3 = auth.CodeType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class CodeTypeFlashCall(TLObject):
-    """
-    [Read `auth.codeTypeFlashCall` docs](https://core.telegram.org/constructor/auth.codeTypeFlashCall).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.codeTypeFlashCall#226ccefb = auth.CodeType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class CodeTypeMissedCall(TLObject):
-    """
-    [Read `auth.codeTypeMissedCall` docs](https://core.telegram.org/constructor/auth.codeTypeMissedCall).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.codeTypeMissedCall#d61ad6ee = auth.CodeType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class CodeTypeFragmentSms(TLObject):
-    """
-    [Read `auth.codeTypeFragmentSms` docs](https://core.telegram.org/constructor/auth.codeTypeFragmentSms).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.codeTypeFragmentSms#6ed998c = auth.CodeType
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SentCodeTypeApp(TLObject):
+class SentCodeTypeApp(TLObject, TLRequest):
     """
     [Read `auth.sentCodeTypeApp` docs](https://core.telegram.org/constructor/auth.sentCodeTypeApp).
 
@@ -239,23 +322,7 @@ class SentCodeTypeApp(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class SentCodeTypeSms(TLObject):
-    """
-    [Read `auth.sentCodeTypeSms` docs](https://core.telegram.org/constructor/auth.sentCodeTypeSms).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.sentCodeTypeSms#c000bba2 length:int = auth.SentCodeType
-    ```
-    """
-    def __new__(
-        cls,
-        length: int,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SentCodeTypeCall(TLObject):
+class SentCodeTypeCall(TLObject, TLRequest):
     """
     [Read `auth.sentCodeTypeCall` docs](https://core.telegram.org/constructor/auth.sentCodeTypeCall).
 
@@ -271,40 +338,7 @@ class SentCodeTypeCall(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class SentCodeTypeFlashCall(TLObject):
-    """
-    [Read `auth.sentCodeTypeFlashCall` docs](https://core.telegram.org/constructor/auth.sentCodeTypeFlashCall).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.sentCodeTypeFlashCall#ab03c6d9 pattern:string = auth.SentCodeType
-    ```
-    """
-    def __new__(
-        cls,
-        pattern: str,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SentCodeTypeMissedCall(TLObject):
-    """
-    [Read `auth.sentCodeTypeMissedCall` docs](https://core.telegram.org/constructor/auth.sentCodeTypeMissedCall).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.sentCodeTypeMissedCall#82006484 prefix:string length:int = auth.SentCodeType
-    ```
-    """
-    def __new__(
-        cls,
-        prefix: str,
-        length: int,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SentCodeTypeEmailCode(TLObject):
+class SentCodeTypeEmailCode(TLObject, TLRequest):
     """
     [Read `auth.sentCodeTypeEmailCode` docs](https://core.telegram.org/constructor/auth.sentCodeTypeEmailCode).
 
@@ -325,41 +359,7 @@ class SentCodeTypeEmailCode(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class SentCodeTypeSetUpEmailRequired(TLObject):
-    """
-    [Read `auth.sentCodeTypeSetUpEmailRequired` docs](https://core.telegram.org/constructor/auth.sentCodeTypeSetUpEmailRequired).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.sentCodeTypeSetUpEmailRequired#a5491dea flags:# apple_signin_allowed:flags.0?true google_signin_allowed:flags.1?true = auth.SentCodeType
-    ```
-    """
-    def __new__(
-        cls,
-        apple_signin_allowed: bool,
-        google_signin_allowed: bool,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SentCodeTypeFragmentSms(TLObject):
-    """
-    [Read `auth.sentCodeTypeFragmentSms` docs](https://core.telegram.org/constructor/auth.sentCodeTypeFragmentSms).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.sentCodeTypeFragmentSms#d9565c39 url:string length:int = auth.SentCodeType
-    ```
-    """
-    def __new__(
-        cls,
-        url: str,
-        length: int,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SentCodeTypeFirebaseSms(TLObject):
+class SentCodeTypeFirebaseSms(TLObject, TLRequest):
     """
     [Read `auth.sentCodeTypeFirebaseSms` docs](https://core.telegram.org/constructor/auth.sentCodeTypeFirebaseSms).
 
@@ -380,23 +380,90 @@ class SentCodeTypeFirebaseSms(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class SentCodeTypeSmsWord(TLObject):
+class SentCodeTypeFlashCall(TLObject, TLRequest):
     """
-    [Read `auth.sentCodeTypeSmsWord` docs](https://core.telegram.org/constructor/auth.sentCodeTypeSmsWord).
+    [Read `auth.sentCodeTypeFlashCall` docs](https://core.telegram.org/constructor/auth.sentCodeTypeFlashCall).
 
     Generated from the following TL definition:
     ```tl
-    auth.sentCodeTypeSmsWord#a416ac81 flags:# beginning:flags.0?string = auth.SentCodeType
+    auth.sentCodeTypeFlashCall#ab03c6d9 pattern:string = auth.SentCodeType
     ```
     """
     def __new__(
         cls,
-        beginning: Optional[str],
+        pattern: str,
     ) -> Self: ...
     def to_dict(self) -> dict: ...
 
 @final
-class SentCodeTypeSmsPhrase(TLObject):
+class SentCodeTypeFragmentSms(TLObject, TLRequest):
+    """
+    [Read `auth.sentCodeTypeFragmentSms` docs](https://core.telegram.org/constructor/auth.sentCodeTypeFragmentSms).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.sentCodeTypeFragmentSms#d9565c39 url:string length:int = auth.SentCodeType
+    ```
+    """
+    def __new__(
+        cls,
+        url: str,
+        length: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SentCodeTypeMissedCall(TLObject, TLRequest):
+    """
+    [Read `auth.sentCodeTypeMissedCall` docs](https://core.telegram.org/constructor/auth.sentCodeTypeMissedCall).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.sentCodeTypeMissedCall#82006484 prefix:string length:int = auth.SentCodeType
+    ```
+    """
+    def __new__(
+        cls,
+        prefix: str,
+        length: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SentCodeTypeSetUpEmailRequired(TLObject, TLRequest):
+    """
+    [Read `auth.sentCodeTypeSetUpEmailRequired` docs](https://core.telegram.org/constructor/auth.sentCodeTypeSetUpEmailRequired).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.sentCodeTypeSetUpEmailRequired#a5491dea flags:# apple_signin_allowed:flags.0?true google_signin_allowed:flags.1?true = auth.SentCodeType
+    ```
+    """
+    def __new__(
+        cls,
+        apple_signin_allowed: bool,
+        google_signin_allowed: bool,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SentCodeTypeSms(TLObject, TLRequest):
+    """
+    [Read `auth.sentCodeTypeSms` docs](https://core.telegram.org/constructor/auth.sentCodeTypeSms).
+
+    Generated from the following TL definition:
+    ```tl
+    auth.sentCodeTypeSms#c000bba2 length:int = auth.SentCodeType
+    ```
+    """
+    def __new__(
+        cls,
+        length: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SentCodeTypeSmsPhrase(TLObject, TLRequest):
     """
     [Read `auth.sentCodeTypeSmsPhrase` docs](https://core.telegram.org/constructor/auth.sentCodeTypeSmsPhrase).
 
@@ -412,84 +479,17 @@ class SentCodeTypeSmsPhrase(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class LoginToken(TLObject):
+class SentCodeTypeSmsWord(TLObject, TLRequest):
     """
-    [Read `auth.loginToken` docs](https://core.telegram.org/constructor/auth.loginToken).
+    [Read `auth.sentCodeTypeSmsWord` docs](https://core.telegram.org/constructor/auth.sentCodeTypeSmsWord).
 
     Generated from the following TL definition:
     ```tl
-    auth.loginToken#629f1980 expires:int token:bytes = auth.LoginToken
+    auth.sentCodeTypeSmsWord#a416ac81 flags:# beginning:flags.0?string = auth.SentCodeType
     ```
     """
     def __new__(
         cls,
-        expires: int,
-        token: bytes,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class LoginTokenMigrateTo(TLObject):
-    """
-    [Read `auth.loginTokenMigrateTo` docs](https://core.telegram.org/constructor/auth.loginTokenMigrateTo).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.loginTokenMigrateTo#68e9916 dc_id:int token:bytes = auth.LoginToken
-    ```
-    """
-    def __new__(
-        cls,
-        dc_id: int,
-        token: bytes,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class LoginTokenSuccess(TLObject):
-    """
-    [Read `auth.loginTokenSuccess` docs](https://core.telegram.org/constructor/auth.loginTokenSuccess).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.loginTokenSuccess#390d5c5e authorization:auth.Authorization = auth.LoginToken
-    ```
-    """
-    def __new__(
-        cls,
-        authorization: types.auth.Authorization
-        | types.auth.AuthorizationSignUpRequired,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class LoggedOut(TLObject):
-    """
-    [Read `auth.loggedOut` docs](https://core.telegram.org/constructor/auth.loggedOut).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.loggedOut#c3a2835f flags:# future_auth_token:flags.0?bytes = auth.LoggedOut
-    ```
-    """
-    def __new__(
-        cls,
-        future_auth_token: Optional[bytes],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class PasskeyLoginOptions(TLObject):
-    """
-    [Read `auth.passkeyLoginOptions` docs](https://core.telegram.org/constructor/auth.passkeyLoginOptions).
-
-    Generated from the following TL definition:
-    ```tl
-    auth.passkeyLoginOptions#e2037789 options:DataJSON = auth.PasskeyLoginOptions
-    ```
-    """
-    def __new__(
-        cls,
-        options: types.DataJson,
+        beginning: Optional[str],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

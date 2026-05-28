@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class CreateTone(TLRequest):
+class CreateTone(TLObject, TLRequest):
     """
     [Read `aicompose.createTone` docs](https://core.telegram.org/method/aicompose.createTone).
 
@@ -24,66 +24,7 @@ class CreateTone(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class UpdateTone(TLRequest):
-    """
-    [Read `aicompose.updateTone` docs](https://core.telegram.org/method/aicompose.updateTone).
-
-    Generated from the following TL definition:
-    ```tl
-    aicompose.updateTone#903bcf59 flags:# tone:InputAiComposeTone display_author:flags.0?Bool emoji_id:flags.1?long title:flags.2?string prompt:flags.3?string = AiComposeTone
-    ```
-    """
-    def __new__(
-        cls,
-        tone: types.InputAiComposeToneDefault
-        | types.InputAiComposeToneId
-        | types.InputAiComposeToneSlug,
-        display_author: Optional[bool],
-        emoji_id: Optional[int],
-        title: Optional[str],
-        prompt: Optional[str],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SaveTone(TLRequest):
-    """
-    [Read `aicompose.saveTone` docs](https://core.telegram.org/method/aicompose.saveTone).
-
-    Generated from the following TL definition:
-    ```tl
-    aicompose.saveTone#1782cbb1 tone:InputAiComposeTone unsave:Bool = Bool
-    ```
-    """
-    def __new__(
-        cls,
-        tone: types.InputAiComposeToneDefault
-        | types.InputAiComposeToneId
-        | types.InputAiComposeToneSlug,
-        unsave: bool,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class DeleteTone(TLRequest):
-    """
-    [Read `aicompose.deleteTone` docs](https://core.telegram.org/method/aicompose.deleteTone).
-
-    Generated from the following TL definition:
-    ```tl
-    aicompose.deleteTone#dd39316a tone:InputAiComposeTone = Bool
-    ```
-    """
-    def __new__(
-        cls,
-        tone: types.InputAiComposeToneDefault
-        | types.InputAiComposeToneId
-        | types.InputAiComposeToneSlug,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetTone(TLRequest):
+class GetTone(TLObject, TLRequest):
     """
     [Read `aicompose.getTone` docs](https://core.telegram.org/method/aicompose.getTone).
 
@@ -101,7 +42,26 @@ class GetTone(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetTones(TLRequest):
+class GetToneExample(TLObject, TLRequest):
+    """
+    [Read `aicompose.getToneExample` docs](https://core.telegram.org/method/aicompose.getToneExample).
+
+    Generated from the following TL definition:
+    ```tl
+    aicompose.getToneExample#d1b4ab14 tone:InputAiComposeTone num:int = AiComposeToneExample
+    ```
+    """
+    def __new__(
+        cls,
+        tone: types.InputAiComposeToneDefault
+        | types.InputAiComposeToneId
+        | types.InputAiComposeToneSlug,
+        num: int,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GetTones(TLObject, TLRequest):
     """
     [Read `aicompose.getTones` docs](https://core.telegram.org/method/aicompose.getTones).
 
@@ -117,13 +77,13 @@ class GetTones(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetToneExample(TLRequest):
+class UpdateTone(TLObject, TLRequest):
     """
-    [Read `aicompose.getToneExample` docs](https://core.telegram.org/method/aicompose.getToneExample).
+    [Read `aicompose.updateTone` docs](https://core.telegram.org/method/aicompose.updateTone).
 
     Generated from the following TL definition:
     ```tl
-    aicompose.getToneExample#d1b4ab14 tone:InputAiComposeTone num:int = AiComposeToneExample
+    aicompose.updateTone#903bcf59 flags:# tone:InputAiComposeTone display_author:flags.0?Bool emoji_id:flags.1?long title:flags.2?string prompt:flags.3?string = AiComposeTone
     ```
     """
     def __new__(
@@ -131,6 +91,9 @@ class GetToneExample(TLRequest):
         tone: types.InputAiComposeToneDefault
         | types.InputAiComposeToneId
         | types.InputAiComposeToneSlug,
-        num: int,
+        display_author: Optional[bool],
+        emoji_id: Optional[int],
+        title: Optional[str],
+        prompt: Optional[str],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

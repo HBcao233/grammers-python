@@ -2,62 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class ContactsNotModified(TLObject):
-    """
-    [Read `contacts.contactsNotModified` docs](https://core.telegram.org/constructor/contacts.contactsNotModified).
-
-    Generated from the following TL definition:
-    ```tl
-    contacts.contactsNotModified#b74ba9d2 = contacts.Contacts
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class Contacts(TLObject):
-    """
-    [Read `contacts.contacts` docs](https://core.telegram.org/constructor/contacts.contacts).
-
-    Generated from the following TL definition:
-    ```tl
-    contacts.contacts#eae87e42 contacts:Vector<Contact> saved_count:int users:Vector<User> = contacts.Contacts
-    ```
-    """
-    def __new__(
-        cls,
-        contacts: Sequence[types.Contact],
-        saved_count: int,
-        users: Sequence[types.UserEmpty | types.User],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class ImportedContacts(TLObject):
-    """
-    [Read `contacts.importedContacts` docs](https://core.telegram.org/constructor/contacts.importedContacts).
-
-    Generated from the following TL definition:
-    ```tl
-    contacts.importedContacts#77d01c3b imported:Vector<ImportedContact> popular_invites:Vector<PopularContact> retry_contacts:Vector<long> users:Vector<User> = contacts.ImportedContacts
-    ```
-    """
-    def __new__(
-        cls,
-        imported: Sequence[types.ImportedContact],
-        popular_invites: Sequence[types.PopularContact],
-        retry_contacts: Sequence[int],
-        users: Sequence[types.UserEmpty | types.User],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class Blocked(TLObject):
+class Blocked(TLObject, TLRequest):
     """
     [Read `contacts.blocked` docs](https://core.telegram.org/constructor/contacts.blocked).
 
@@ -81,7 +29,7 @@ class Blocked(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class BlockedSlice(TLObject):
+class BlockedSlice(TLObject, TLRequest):
     """
     [Read `contacts.blockedSlice` docs](https://core.telegram.org/constructor/contacts.blockedSlice).
 
@@ -106,7 +54,57 @@ class BlockedSlice(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class Found(TLObject):
+class ContactBirthdays(TLObject, TLRequest):
+    """
+    [Read `contacts.contactBirthdays` docs](https://core.telegram.org/constructor/contacts.contactBirthdays).
+
+    Generated from the following TL definition:
+    ```tl
+    contacts.contactBirthdays#114ff30d contacts:Vector<ContactBirthday> users:Vector<User> = contacts.ContactBirthdays
+    ```
+    """
+    def __new__(
+        cls,
+        contacts: Sequence[types.ContactBirthday],
+        users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class Contacts(TLObject, TLRequest):
+    """
+    [Read `contacts.contacts` docs](https://core.telegram.org/constructor/contacts.contacts).
+
+    Generated from the following TL definition:
+    ```tl
+    contacts.contacts#eae87e42 contacts:Vector<Contact> saved_count:int users:Vector<User> = contacts.Contacts
+    ```
+    """
+    def __new__(
+        cls,
+        contacts: Sequence[types.Contact],
+        saved_count: int,
+        users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class ContactsNotModified(TLObject, TLRequest):
+    """
+    [Read `contacts.contactsNotModified` docs](https://core.telegram.org/constructor/contacts.contactsNotModified).
+
+    Generated from the following TL definition:
+    ```tl
+    contacts.contactsNotModified#b74ba9d2 = contacts.Contacts
+    ```
+    """
+    def __new__(
+        cls,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class Found(TLObject, TLRequest):
     """
     [Read `contacts.found` docs](https://core.telegram.org/constructor/contacts.found).
 
@@ -131,7 +129,26 @@ class Found(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class ResolvedPeer(TLObject):
+class ImportedContacts(TLObject, TLRequest):
+    """
+    [Read `contacts.importedContacts` docs](https://core.telegram.org/constructor/contacts.importedContacts).
+
+    Generated from the following TL definition:
+    ```tl
+    contacts.importedContacts#77d01c3b imported:Vector<ImportedContact> popular_invites:Vector<PopularContact> retry_contacts:Vector<long> users:Vector<User> = contacts.ImportedContacts
+    ```
+    """
+    def __new__(
+        cls,
+        imported: Sequence[types.ImportedContact],
+        popular_invites: Sequence[types.PopularContact],
+        retry_contacts: Sequence[int],
+        users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class ResolvedPeer(TLObject, TLRequest):
     """
     [Read `contacts.resolvedPeer` docs](https://core.telegram.org/constructor/contacts.resolvedPeer).
 
@@ -155,13 +172,37 @@ class ResolvedPeer(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class TopPeersNotModified(TLObject):
+class SponsoredPeers(TLObject, TLRequest):
     """
-    [Read `contacts.topPeersNotModified` docs](https://core.telegram.org/constructor/contacts.topPeersNotModified).
+    [Read `contacts.sponsoredPeers` docs](https://core.telegram.org/constructor/contacts.sponsoredPeers).
 
     Generated from the following TL definition:
     ```tl
-    contacts.topPeersNotModified#de266ef5 = contacts.TopPeers
+    contacts.sponsoredPeers#eb032884 peers:Vector<SponsoredPeer> chats:Vector<Chat> users:Vector<User> = contacts.SponsoredPeers
+    ```
+    """
+    def __new__(
+        cls,
+        peers: Sequence[types.SponsoredPeer],
+        chats: Sequence[
+            types.ChatEmpty
+            | types.Chat
+            | types.ChatForbidden
+            | types.Channel
+            | types.ChannelForbidden
+        ],
+        users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class SponsoredPeersEmpty(TLObject, TLRequest):
+    """
+    [Read `contacts.sponsoredPeersEmpty` docs](https://core.telegram.org/constructor/contacts.sponsoredPeersEmpty).
+
+    Generated from the following TL definition:
+    ```tl
+    contacts.sponsoredPeersEmpty#ea32b4b1 = contacts.SponsoredPeers
     ```
     """
     def __new__(
@@ -170,7 +211,7 @@ class TopPeersNotModified(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class TopPeers(TLObject):
+class TopPeers(TLObject, TLRequest):
     """
     [Read `contacts.topPeers` docs](https://core.telegram.org/constructor/contacts.topPeers).
 
@@ -194,7 +235,7 @@ class TopPeers(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class TopPeersDisabled(TLObject):
+class TopPeersDisabled(TLObject, TLRequest):
     """
     [Read `contacts.topPeersDisabled` docs](https://core.telegram.org/constructor/contacts.topPeersDisabled).
 
@@ -209,57 +250,16 @@ class TopPeersDisabled(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class ContactBirthdays(TLObject):
+class TopPeersNotModified(TLObject, TLRequest):
     """
-    [Read `contacts.contactBirthdays` docs](https://core.telegram.org/constructor/contacts.contactBirthdays).
+    [Read `contacts.topPeersNotModified` docs](https://core.telegram.org/constructor/contacts.topPeersNotModified).
 
     Generated from the following TL definition:
     ```tl
-    contacts.contactBirthdays#114ff30d contacts:Vector<ContactBirthday> users:Vector<User> = contacts.ContactBirthdays
+    contacts.topPeersNotModified#de266ef5 = contacts.TopPeers
     ```
     """
     def __new__(
         cls,
-        contacts: Sequence[types.ContactBirthday],
-        users: Sequence[types.UserEmpty | types.User],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SponsoredPeersEmpty(TLObject):
-    """
-    [Read `contacts.sponsoredPeersEmpty` docs](https://core.telegram.org/constructor/contacts.sponsoredPeersEmpty).
-
-    Generated from the following TL definition:
-    ```tl
-    contacts.sponsoredPeersEmpty#ea32b4b1 = contacts.SponsoredPeers
-    ```
-    """
-    def __new__(
-        cls,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class SponsoredPeers(TLObject):
-    """
-    [Read `contacts.sponsoredPeers` docs](https://core.telegram.org/constructor/contacts.sponsoredPeers).
-
-    Generated from the following TL definition:
-    ```tl
-    contacts.sponsoredPeers#eb032884 peers:Vector<SponsoredPeer> chats:Vector<Chat> users:Vector<User> = contacts.SponsoredPeers
-    ```
-    """
-    def __new__(
-        cls,
-        peers: Sequence[types.SponsoredPeer],
-        chats: Sequence[
-            types.ChatEmpty
-            | types.Chat
-            | types.ChatForbidden
-            | types.Channel
-            | types.ChannelForbidden
-        ],
-        users: Sequence[types.UserEmpty | types.User],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

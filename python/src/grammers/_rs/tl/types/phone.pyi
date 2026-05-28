@@ -2,32 +2,26 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class PhoneCall(TLObject):
+class ExportedGroupCallInvite(TLObject, TLRequest):
     """
-    [Read `phone.phoneCall` docs](https://core.telegram.org/constructor/phone.phoneCall).
+    [Read `phone.exportedGroupCallInvite` docs](https://core.telegram.org/constructor/phone.exportedGroupCallInvite).
 
     Generated from the following TL definition:
     ```tl
-    phone.phoneCall#ec82e140 phone_call:PhoneCall users:Vector<User> = phone.PhoneCall
+    phone.exportedGroupCallInvite#204bd158 link:string = phone.ExportedGroupCallInvite
     ```
     """
     def __new__(
         cls,
-        phone_call: types.PhoneCallEmpty
-        | types.PhoneCallWaiting
-        | types.PhoneCallRequested
-        | types.PhoneCallAccepted
-        | types.PhoneCall
-        | types.PhoneCallDiscarded,
-        users: Sequence[types.UserEmpty | types.User],
+        link: str,
     ) -> Self: ...
     def to_dict(self) -> dict: ...
 
 @final
-class GroupCall(TLObject):
+class GroupCall(TLObject, TLRequest):
     """
     [Read `phone.groupCall` docs](https://core.telegram.org/constructor/phone.groupCall).
 
@@ -53,7 +47,65 @@ class GroupCall(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class GroupParticipants(TLObject):
+class GroupCallStars(TLObject, TLRequest):
+    """
+    [Read `phone.groupCallStars` docs](https://core.telegram.org/constructor/phone.groupCallStars).
+
+    Generated from the following TL definition:
+    ```tl
+    phone.groupCallStars#9d1dbd26 total_stars:long top_donors:Vector<GroupCallDonor> chats:Vector<Chat> users:Vector<User> = phone.GroupCallStars
+    ```
+    """
+    def __new__(
+        cls,
+        total_stars: int,
+        top_donors: Sequence[types.GroupCallDonor],
+        chats: Sequence[
+            types.ChatEmpty
+            | types.Chat
+            | types.ChatForbidden
+            | types.Channel
+            | types.ChannelForbidden
+        ],
+        users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GroupCallStreamChannels(TLObject, TLRequest):
+    """
+    [Read `phone.groupCallStreamChannels` docs](https://core.telegram.org/constructor/phone.groupCallStreamChannels).
+
+    Generated from the following TL definition:
+    ```tl
+    phone.groupCallStreamChannels#d0e482b2 channels:Vector<GroupCallStreamChannel> = phone.GroupCallStreamChannels
+    ```
+    """
+    def __new__(
+        cls,
+        channels: Sequence[types.GroupCallStreamChannel],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GroupCallStreamRtmpUrl(TLObject, TLRequest):
+    """
+    [Read `phone.groupCallStreamRtmpUrl` docs](https://core.telegram.org/constructor/phone.groupCallStreamRtmpUrl).
+
+    Generated from the following TL definition:
+    ```tl
+    phone.groupCallStreamRtmpUrl#2dbf3432 url:string key:string = phone.GroupCallStreamRtmpUrl
+    ```
+    """
+    def __new__(
+        cls,
+        url: str,
+        key: str,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GroupParticipants(TLObject, TLRequest):
     """
     [Read `phone.groupParticipants` docs](https://core.telegram.org/constructor/phone.groupParticipants).
 
@@ -80,7 +132,7 @@ class GroupParticipants(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class JoinAsPeers(TLObject):
+class JoinAsPeers(TLObject, TLRequest):
     """
     [Read `phone.joinAsPeers` docs](https://core.telegram.org/constructor/phone.joinAsPeers).
 
@@ -104,75 +156,23 @@ class JoinAsPeers(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class ExportedGroupCallInvite(TLObject):
+class PhoneCall(TLObject, TLRequest):
     """
-    [Read `phone.exportedGroupCallInvite` docs](https://core.telegram.org/constructor/phone.exportedGroupCallInvite).
+    [Read `phone.phoneCall` docs](https://core.telegram.org/constructor/phone.phoneCall).
 
     Generated from the following TL definition:
     ```tl
-    phone.exportedGroupCallInvite#204bd158 link:string = phone.ExportedGroupCallInvite
+    phone.phoneCall#ec82e140 phone_call:PhoneCall users:Vector<User> = phone.PhoneCall
     ```
     """
     def __new__(
         cls,
-        link: str,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GroupCallStreamChannels(TLObject):
-    """
-    [Read `phone.groupCallStreamChannels` docs](https://core.telegram.org/constructor/phone.groupCallStreamChannels).
-
-    Generated from the following TL definition:
-    ```tl
-    phone.groupCallStreamChannels#d0e482b2 channels:Vector<GroupCallStreamChannel> = phone.GroupCallStreamChannels
-    ```
-    """
-    def __new__(
-        cls,
-        channels: Sequence[types.GroupCallStreamChannel],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GroupCallStreamRtmpUrl(TLObject):
-    """
-    [Read `phone.groupCallStreamRtmpUrl` docs](https://core.telegram.org/constructor/phone.groupCallStreamRtmpUrl).
-
-    Generated from the following TL definition:
-    ```tl
-    phone.groupCallStreamRtmpUrl#2dbf3432 url:string key:string = phone.GroupCallStreamRtmpUrl
-    ```
-    """
-    def __new__(
-        cls,
-        url: str,
-        key: str,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GroupCallStars(TLObject):
-    """
-    [Read `phone.groupCallStars` docs](https://core.telegram.org/constructor/phone.groupCallStars).
-
-    Generated from the following TL definition:
-    ```tl
-    phone.groupCallStars#9d1dbd26 total_stars:long top_donors:Vector<GroupCallDonor> chats:Vector<Chat> users:Vector<User> = phone.GroupCallStars
-    ```
-    """
-    def __new__(
-        cls,
-        total_stars: int,
-        top_donors: Sequence[types.GroupCallDonor],
-        chats: Sequence[
-            types.ChatEmpty
-            | types.Chat
-            | types.ChatForbidden
-            | types.Channel
-            | types.ChannelForbidden
-        ],
+        phone_call: types.PhoneCallEmpty
+        | types.PhoneCallWaiting
+        | types.PhoneCallRequested
+        | types.PhoneCallAccepted
+        | types.PhoneCall
+        | types.PhoneCallDiscarded,
         users: Sequence[types.UserEmpty | types.User],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

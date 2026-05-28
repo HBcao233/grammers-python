@@ -2,45 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class GetLangPack(TLRequest):
-    """
-    [Read `langpack.getLangPack` docs](https://core.telegram.org/method/langpack.getLangPack).
-
-    Generated from the following TL definition:
-    ```tl
-    langpack.getLangPack#f2f2330a lang_pack:string lang_code:string = LangPackDifference
-    ```
-    """
-    def __new__(
-        cls,
-        lang_pack: str,
-        lang_code: str,
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetStrings(TLRequest):
-    """
-    [Read `langpack.getStrings` docs](https://core.telegram.org/method/langpack.getStrings).
-
-    Generated from the following TL definition:
-    ```tl
-    langpack.getStrings#efea3803 lang_pack:string lang_code:string keys:Vector<string> = Vector<LangPackString>
-    ```
-    """
-    def __new__(
-        cls,
-        lang_pack: str,
-        lang_code: str,
-        keys: Sequence[str],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class GetDifference(TLRequest):
+class GetDifference(TLObject, TLRequest):
     """
     [Read `langpack.getDifference` docs](https://core.telegram.org/method/langpack.getDifference).
 
@@ -58,7 +23,41 @@ class GetDifference(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetLanguages(TLRequest):
+class GetLangPack(TLObject, TLRequest):
+    """
+    [Read `langpack.getLangPack` docs](https://core.telegram.org/method/langpack.getLangPack).
+
+    Generated from the following TL definition:
+    ```tl
+    langpack.getLangPack#f2f2330a lang_pack:string lang_code:string = LangPackDifference
+    ```
+    """
+    def __new__(
+        cls,
+        lang_pack: str,
+        lang_code: str,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GetLanguage(TLObject, TLRequest):
+    """
+    [Read `langpack.getLanguage` docs](https://core.telegram.org/method/langpack.getLanguage).
+
+    Generated from the following TL definition:
+    ```tl
+    langpack.getLanguage#6a596502 lang_pack:string lang_code:string = LangPackLanguage
+    ```
+    """
+    def __new__(
+        cls,
+        lang_pack: str,
+        lang_code: str,
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class GetLanguages(TLObject, TLRequest):
     """
     [Read `langpack.getLanguages` docs](https://core.telegram.org/method/langpack.getLanguages).
 
@@ -74,18 +73,19 @@ class GetLanguages(TLRequest):
     def to_dict(self) -> dict: ...
 
 @final
-class GetLanguage(TLRequest):
+class GetStrings(TLObject, TLRequest):
     """
-    [Read `langpack.getLanguage` docs](https://core.telegram.org/method/langpack.getLanguage).
+    [Read `langpack.getStrings` docs](https://core.telegram.org/method/langpack.getStrings).
 
     Generated from the following TL definition:
     ```tl
-    langpack.getLanguage#6a596502 lang_pack:string lang_code:string = LangPackLanguage
+    langpack.getStrings#efea3803 lang_pack:string lang_code:string keys:Vector<string> = Vector<LangPackString>
     ```
     """
     def __new__(
         cls,
         lang_pack: str,
         lang_code: str,
+        keys: Sequence[str],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

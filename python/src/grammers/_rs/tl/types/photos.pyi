@@ -2,10 +2,27 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLObject, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class Photos(TLObject):
+class Photo(TLObject, TLRequest):
+    """
+    [Read `photos.photo` docs](https://core.telegram.org/constructor/photos.photo).
+
+    Generated from the following TL definition:
+    ```tl
+    photos.photo#20212ca8 photo:Photo users:Vector<User> = photos.Photo
+    ```
+    """
+    def __new__(
+        cls,
+        photo: types.PhotoEmpty | types.Photo,
+        users: Sequence[types.UserEmpty | types.User],
+    ) -> Self: ...
+    def to_dict(self) -> dict: ...
+
+@final
+class Photos(TLObject, TLRequest):
     """
     [Read `photos.photos` docs](https://core.telegram.org/constructor/photos.photos).
 
@@ -22,7 +39,7 @@ class Photos(TLObject):
     def to_dict(self) -> dict: ...
 
 @final
-class PhotosSlice(TLObject):
+class PhotosSlice(TLObject, TLRequest):
     """
     [Read `photos.photosSlice` docs](https://core.telegram.org/constructor/photos.photosSlice).
 
@@ -35,23 +52,6 @@ class PhotosSlice(TLObject):
         cls,
         count: int,
         photos: Sequence[types.PhotoEmpty | types.Photo],
-        users: Sequence[types.UserEmpty | types.User],
-    ) -> Self: ...
-    def to_dict(self) -> dict: ...
-
-@final
-class Photo(TLObject):
-    """
-    [Read `photos.photo` docs](https://core.telegram.org/constructor/photos.photo).
-
-    Generated from the following TL definition:
-    ```tl
-    photos.photo#20212ca8 photo:Photo users:Vector<User> = photos.Photo
-    ```
-    """
-    def __new__(
-        cls,
-        photo: types.PhotoEmpty | types.Photo,
         users: Sequence[types.UserEmpty | types.User],
     ) -> Self: ...
     def to_dict(self) -> dict: ...

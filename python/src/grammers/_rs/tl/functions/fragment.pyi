@@ -2,10 +2,10 @@
 # ruff: noqa: F401
 
 from typing import final, Self, Sequence, Optional
-from grammers.tl import TLRequest, types
+from grammers.tl import TLObject, TLRequest, types
 
 @final
-class GetCollectibleInfo(TLRequest):
+class GetCollectibleInfo(TLObject, TLRequest):
     """
     [Read `fragment.getCollectibleInfo` docs](https://core.telegram.org/method/fragment.getCollectibleInfo).
 

@@ -1,11 +1,10 @@
 import asyncio
-import signal
 from typing import Callable, Protocol, Awaitable, Optional
 from getpass import getpass
 
+from grammers import _rs
 from grammers.sessions import Session, SqliteSession
 from grammers.tl import TLRequest, TLObject
-from grammers._rs.client import Client
 
 
 __all__ = ['Client']
@@ -31,15 +30,15 @@ def default_phone_callback():
                 raise ValueError('Cancelled')
 
 
-def default_code_callback():
+def default_code_callback() -> str:
     return input('Please enter the code you received: ')
 
 
-def default_password_callback(hint: str):
+def default_password_callback(hint: str) -> str:
     return getpass(f'Please enter your password (hint: {hint}): ')
 
 
-class Client(Client):
+class Client(_rs.client.Client):
     def __new__(
         cls,
         session: str | Session,

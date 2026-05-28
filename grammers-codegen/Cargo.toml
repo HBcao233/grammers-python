@@ -1,8 +1,9 @@
 [package]
 name = "grammers-codegen"
-version = "0.4.7"
+version = "0.4.8"
 edition = "2021"
 
 [dependencies]
-grammers-tl-parser = { workspace = true }
+grammers-tl-parser = { path = "../../grammers/grammers-tl-parser" }
+
 anyhow = "1"

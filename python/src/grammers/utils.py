@@ -3,7 +3,7 @@ import re
 import inspect
 
 
-def parse_phone(phone: int | str) -> str:
+def parse_phone(phone: int | str) -> str | None:
     """Parses the given phone, or returns `None` if it's invalid."""
     if isinstance(phone, int):
         return str(phone)
@@ -11,9 +11,10 @@ def parse_phone(phone: int | str) -> str:
         phone = re.sub(r'[+()\s-]', '', str(phone))
         if phone.isdigit():
             return phone
+    return None
 
 
-def maybe_call(obj: Any, args: Sequence[Any] = None) -> Any:
+def maybe_call(obj: Any, args: Sequence[Any] | None = None) -> Any:
     if callable(obj):
         if args is None:
             return obj()
