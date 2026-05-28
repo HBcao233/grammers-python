@@ -15,10 +15,10 @@ pub use types::{
     UpdateStateLike,
 };
 
-use pyo3::{Py, PyAny, Python, PyResult};
 use pyo3::sync::PyOnceLock;
-use pyo3_async_runtimes::{TaskLocals, into_future_with_locals};
+use pyo3::{Py, PyAny, PyResult, Python};
 use pyo3_async_runtimes::tokio::get_current_locals;
+use pyo3_async_runtimes::{TaskLocals, into_future_with_locals};
 
 static LOCALS: PyOnceLock<TaskLocals> = PyOnceLock::new();
 
@@ -33,7 +33,8 @@ pub fn into_future(awaitable: Py<PyAny>) -> impl Future<Output = PyResult<Py<PyA
         Python::attach(|py| {
             let locals = get_locals(py)?;
             into_future_with_locals(&locals, awaitable.into_bound(py))
-        })?.await
+        })?
+        .await
     }
 }
 

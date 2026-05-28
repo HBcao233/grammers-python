@@ -1,5 +1,5 @@
-mod message;
 mod input_message;
+mod message;
 
-pub use message::PyMessage;
 pub use input_message::InputMessage;
+pub use message::PyMessage;

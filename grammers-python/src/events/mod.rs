@@ -8,6 +8,7 @@ pub use common::{PyError, PyEventBuilder, PyEventKind, PyLogined, PyRawUpdate};
 pub(crate) use event::Event;
 pub use event::{PyErrorEvent, PyEventCommon, PyLoginedEvent, PyRawUpdateEvent};
 pub(crate) use handler::EventHandlersManager;
+pub use handler::PyHandlerNotFoundError;
 pub(crate) use pool::{EventPool, EventPoolHandle};
 
 #[pyo3::pymodule(name = "events")]
@@ -26,6 +27,9 @@ pub(crate) mod events_ {
 
     #[pymodule_export]
     use super::PyRawUpdate;
+
+    #[pymodule_export]
+    use super::PyHandlerNotFoundError;
 
     #[pymodule_export]
     use super::PyEventCommon;

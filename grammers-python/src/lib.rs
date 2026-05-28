@@ -1,6 +1,7 @@
 //! grammers-python: Python bindings for the grammers Telegram client library
 
 mod client;
+mod convert;
 mod crypto;
 mod custom;
 mod errors;
@@ -9,8 +10,8 @@ mod hints;
 mod message;
 mod peer;
 // mod runtime;
-mod utils;
 mod media;
+mod utils;
 
 use client::PyClient;
 // use hints::PeerIdLikeExtend;

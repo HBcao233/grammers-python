@@ -586,7 +586,7 @@ impl PyUser {
             None => inner.session.peer_ref(id).await?,
         })
     }
-    
+
     #[getter]
     pub fn full_name(&self) -> String {
         match (self.first_name.clone(), self.last_name.clone()) {

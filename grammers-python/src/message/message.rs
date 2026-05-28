@@ -6,11 +6,11 @@
 // option. This file may not be copied, modified, or distributed
 // except according to those terms.
 
-use pyo3::exceptions::PyTypeError;
+use pyo3::exceptions::{PyTypeError, PyValueError};
 use pyo3::prelude::*;
 use pyo3::types::{PyDateTime, PyDict};
 
-use grammers_session_pyo3::{PyPeerId, PyPeerKind};
+use grammers_session_pyo3::{PyPeerId, PyPeerKind, PyPeerRef};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
@@ -19,8 +19,9 @@ use crate::utils::PyDateTimeWrapper;
 // use crate::media::{InputMedia, Media, Photo};
 // #[cfg(any(feature = "markdown", feature = "html"))]
 // use crate::parsers;
-use crate::peer::{PyPeer, PyPeerMap};
 use super::InputMessage;
+use crate::hints::{InputMessageLike, InputPeerLike, InputReplyToLike};
+use crate::peer::{PyPeer, PyPeerMap};
 
 // use to Default::default() eliminate so much None
 #[derive(Default)]
@@ -615,7 +616,7 @@ impl PyMessage {
     pub async fn from_raw_short_updates(
         client: &PyClient,
         updates: tl::types::UpdateShortSentMessage,
-        peer: PyPeer,
+        peer: &PyPeer,
         input: InputMessage,
         peers: PyPeerMap,
         send_as: Option<PyPeer>,
@@ -624,34 +625,37 @@ impl PyMessage {
             PyPeer::Channel(_) => true,
             _ => false,
         };
-        let noforwards = input.noforwards || match peer {
-            PyPeer::Channel(x) => Python::attach(|py| x.borrow(py).noforwards.unwrap_or_default()),
-            _ => false,
-        };
+        let noforwards = input.noforwards
+            || match peer {
+                PyPeer::Channel(x) => {
+                    Python::attach(|py| x.borrow(py).noforwards.unwrap_or_default())
+                }
+                _ => false,
+            };
         let me = client._me().expect("me cache should be set");
-        let from_id = Python::attach(|py| match send_as {
+        let from_id = Python::attach(|py| match &send_as {
             None => me.borrow(py).id(),
-            Some(send_as) => send_as.borrow(py).id(),
+            Some(x) => x.id(),
         });
-        let from_rank = match send_as {
+        let from_rank = match &send_as {
             None => {
                 // TODO: client.get_participant me.rank
                 None
-            },
-            Some(_) => None,  // channel don't has rank.
+            }
+            Some(_) => None, // channel don't has rank.
         };
         let post_author = match peer {
             PyPeer::Channel(x) => Python::attach(|py| {
                 let signatures = x.borrow(py).signatures;
-                if signatures {
-                    me.borrow(py).full_name()
+                if signatures.unwrap_or_default() {
+                    Some(me.borrow(py).full_name())
                 } else {
                     None
                 }
             }),
             _ => None,
         };
-        
+
         let base = PyClassInitializer::from(pytl::TLObject {});
         Ok(base.add_subclass(Self {
             out: updates.out,
@@ -671,24 +675,33 @@ impl PyMessage {
             paid_suggested_post_ton: false,
             invert_media: input.invert_media,
             id: updates.id,
-            from_id: from_id,
+            from_id: Some(from_id),
             from_boosts_applied: None,
             from_rank: from_rank,
             peer_id: peer.id().into(),
             saved_peer_id: None,
             fwd_from: None,
             via_bot_id: None,
-            reply_to: input.reply_to.map(Into::into),
+            via_business_bot_id: None,
+            guestchat_via_from_id: None,
+            reply_to: match input.reply_to {
+                Some(x) => Some(x.intoPyMessageReplyHeader(client)?),
+                None => None,
+            },
             date: Some(Python::attach(|py| {
-                PyDateTime::from_timestamp(py, updates.date as f64, None)
-                    .map(|x| x.unbind().into())
+                PyDateTime::from_timestamp(py, updates.date as f64, None).map(|x| x.unbind().into())
             })?),
             date_timestamp: Some(updates.date),
             action: None,
             message: Some(input.message),
             media: updates.media.map(Into::into),
             reply_markup: input.reply_markup.map(Into::into),
-            entities: updates.entities.unwrap_or_default().into_iter().map(Into::into).collect(),
+            entities: updates
+                .entities
+                .unwrap_or_default()
+                .into_iter()
+                .map(Into::into)
+                .collect(),
             views: None,
             forwards: None,
             replies: None,
@@ -699,7 +712,7 @@ impl PyMessage {
             ttl_period: updates.ttl_period,
             reactions: None,
             quick_reply_shortcut_id: None,
-            via_business_bot_id: None,
+
             effect: None,
             factcheck: None,
             report_delivery_until_date: None,
@@ -829,6 +842,13 @@ impl PyMessage {
             dict.set_item("summary_from_language", summary_from_language)?;
             Ok(dict.unbind())
         })
+    }
+
+    pub async fn peer_ref(&self) -> PyResult<Option<PyPeerRef>> {
+        match self.peer() {
+            Some(peer) => peer.to_ref().await,
+            None => Ok(None),
+        }
     }
 }
 
@@ -974,24 +994,82 @@ impl PyMessage {
     }
     */
 
-    /*
     /// Respond to this message by sending a new message to the same peer, but without directly
     /// replying to it.
     ///
     /// Shorthand for `Client::send_message`.
+    #[pyo3(signature = (
+        message,
+        *,
+        media=None,
+        entities=vec![],
+        reply_to=None,
+        reply_markup=None,
+        schedule_date=None,
+        send_as=None,
+        no_webpage=None,
+        silent=None,
+        background=None,
+        clear_draft=None,
+        noforwards=None,
+        update_stickersets_order=None,
+        invert_media=None,
+        allow_paid_floodskip=None,
+        quick_reply_shortcut=None,
+        effect=None,
+        allow_paid_stars=None,
+        suggested_post=None,
+    ))]
     pub async fn respond(
         &self,
         message: InputMessageLike,
-    ) -> PyResult<Self> {
+        media: Option<pytl::enums::PyInputMedia>,
+        entities: Vec<pytl::enums::PyMessageEntity>,
+        reply_to: Option<InputReplyToLike>,
+        reply_markup: Option<pytl::enums::PyReplyMarkup>,
+        schedule_date: Option<i32>,
+        send_as: Option<InputPeerLike>,
+        no_webpage: Option<bool>,
+        silent: Option<bool>,
+        background: Option<bool>,
+        clear_draft: Option<bool>,
+        noforwards: Option<bool>,
+        update_stickersets_order: Option<bool>,
+        invert_media: Option<bool>,
+        allow_paid_floodskip: Option<bool>,
+        quick_reply_shortcut: Option<pytl::enums::PyInputQuickReplyShortcut>,
+        effect: Option<i64>,
+        allow_paid_stars: Option<i64>,
+        suggested_post: Option<pytl::enums::PySuggestedPost>,
+    ) -> PyResult<Py<PyMessage>> {
+        let peer = InputPeerLike::PeerRef(self.peer_ref().await?.ok_or(PyValueError::new_err(
+            "Can't found peer ref from this message.",
+        ))?);
         self.client
             .send_message(
-                self.peer_ref().await.ok_or(InvocationError::Dropped)?,
+                peer,
                 message,
+                media,
+                entities,
+                reply_to,
+                reply_markup,
+                schedule_date,
+                send_as,
+                no_webpage,
+                silent,
+                background,
+                clear_draft,
+                noforwards,
+                update_stickersets_order,
+                invert_media,
+                allow_paid_floodskip,
+                quick_reply_shortcut,
+                effect,
+                allow_paid_stars,
+                suggested_post,
             )
             .await
-            .map_err(PyInvocationError::new)
     }
-    */
 
     /*
     /// Respond to this message by sending a album in the same peer, but without directly
@@ -1011,21 +1089,76 @@ impl PyMessage {
     }
     */
 
-    /*
     /// Directly reply to this message by sending a new message to the same peer that replies to
     /// it. This methods overrides the `reply_to` on the `InputMessage` to point to `self`.
     ///
     /// Shorthand for `Client::send_message`.
-    pub async fn reply<M: Into<InputMessage>>(&self, message: M) -> Result<Self, InvocationError> {
-        let message = message.into();
-        self.client
-            .send_message(
-                self.peer_ref().await.ok_or(InvocationError::Dropped)?,
-                message.reply_to(Some(self.id())),
-            )
-            .await
+    #[pyo3(signature = (
+        message,
+        *,
+        media=None,
+        entities=vec![],
+        reply_markup=None,
+        schedule_date=None,
+        send_as=None,
+        no_webpage=None,
+        silent=None,
+        background=None,
+        clear_draft=None,
+        noforwards=None,
+        update_stickersets_order=None,
+        invert_media=None,
+        allow_paid_floodskip=None,
+        quick_reply_shortcut=None,
+        effect=None,
+        allow_paid_stars=None,
+        suggested_post=None,
+    ))]
+    pub async fn reply(
+        &self,
+        message: InputMessageLike,
+        media: Option<pytl::enums::PyInputMedia>,
+        entities: Vec<pytl::enums::PyMessageEntity>,
+        reply_markup: Option<pytl::enums::PyReplyMarkup>,
+        schedule_date: Option<i32>,
+        send_as: Option<InputPeerLike>,
+        no_webpage: Option<bool>,
+        silent: Option<bool>,
+        background: Option<bool>,
+        clear_draft: Option<bool>,
+        noforwards: Option<bool>,
+        update_stickersets_order: Option<bool>,
+        invert_media: Option<bool>,
+        allow_paid_floodskip: Option<bool>,
+        quick_reply_shortcut: Option<pytl::enums::PyInputQuickReplyShortcut>,
+        effect: Option<i64>,
+        allow_paid_stars: Option<i64>,
+        suggested_post: Option<pytl::enums::PySuggestedPost>,
+    ) -> PyResult<Py<PyMessage>> {
+        let reply_to = Some(InputReplyToLike::MsgId(self.id));
+        self.respond(
+            message,
+            media,
+            entities,
+            reply_to,
+            reply_markup,
+            schedule_date,
+            send_as,
+            no_webpage,
+            silent,
+            background,
+            clear_draft,
+            noforwards,
+            update_stickersets_order,
+            invert_media,
+            allow_paid_floodskip,
+            quick_reply_shortcut,
+            effect,
+            allow_paid_stars,
+            suggested_post,
+        )
+        .await
     }
-    */
 
     /*
     /// Directly reply to this message by sending a album to the same peer that replies to

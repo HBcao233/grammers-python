@@ -7,8 +7,8 @@ use crate::PyClient;
 use crate::client::UpdatesConfiguration;
 use crate::events::{Event, EventBuilder, EventPool};
 // use crate::runtime::RUNTIME;
-use grammers_tl_types as tl;
 use grammers_session_pyo3::{PyUpdatesState, UpdateStateLike};
+use grammers_tl_types as tl;
 
 #[pymethods]
 impl PyClient {
@@ -19,7 +19,7 @@ impl PyClient {
 
     pub async fn _start_event_pool(&self) -> PyResult<()> {
         let inner = self.inner.clone();
-        
+
         // In the extremely rare case where `Err` happens, there's not much we can do.
         // `message_box` will try to correct its state as updates arrive.
         let update_state = self.invoke(&tl::functions::updates::GetState {}).await;
@@ -35,7 +35,7 @@ impl PyClient {
                 }))
                 .await?;
         }
-        
+
         let updates = inner
             .updates
             .lock()

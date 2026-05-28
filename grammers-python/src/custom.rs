@@ -26,7 +26,7 @@ pub(crate) mod custom_ {
 
     #[pymodule_export]
     use crate::peer::GroupRawType;
-    
+
     #[pymodule_export]
     use crate::peer::PyGroup;
 

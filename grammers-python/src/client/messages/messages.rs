@@ -9,11 +9,11 @@ use grammers_tl_types_pyo3 as pytl;
 
 use super::{PyHistoryMessageIter, parse_mention_entities};
 use crate::client::PyClient;
+use crate::convert::convertPeerId2Peer;
 use crate::errors::PyInvocationError;
-use crate::hints::{InputPeerLike, InputMessageLike, InputReplyToLike};
-use crate::message::{PyMessage, InputMessage};
+use crate::hints::{InputMessageLike, InputPeerLike, InputReplyToLike};
+use crate::message::{InputMessage, PyMessage};
 use crate::peer::{PyPeer, PyPeerMap};
-
 
 #[pymethods]
 impl PyClient {
@@ -190,11 +190,12 @@ impl PyClient {
         effect: Option<i64>,
         allow_paid_stars: Option<i64>,
         suggested_post: Option<pytl::enums::PySuggestedPost>,
-    ) -> PyResult<Option<Py<PyMessage>>> {
-        let x: InputMessage = message.into_input_message().await;
+    ) -> PyResult<Py<PyMessage>> {
+        let x: InputMessage = message.into_input_message().await?;
         let media: Option<tl::enums::InputMedia> = media.map(Into::into);
         let reply_markup: Option<tl::enums::ReplyMarkup> = reply_markup.map(Into::into);
-        let quick_reply_shortcut: Option<tl::enums::InputQuickReplyShortcut> = quick_reply_shortcut.map(Into::into);
+        let quick_reply_shortcut: Option<tl::enums::InputQuickReplyShortcut> =
+            quick_reply_shortcut.map(Into::into);
         let suggested_post: Option<tl::enums::SuggestedPost> = suggested_post.map(Into::into);
         let (
             message,
@@ -274,11 +275,11 @@ impl PyClient {
 impl PyClient {
     async fn map_random_ids_to_messages(
         &self,
-        peer: PyPeer,
-        peers: PyPeerMap,
+        _peer: &PyPeer,
+        _peers: PyPeerMap,
         random_ids: &[i64],
         updates: tl::enums::Updates,
-    ) -> PyResult<Vec<Option<PyClassInitializer<PyMessage>>>> {
+    ) -> PyResult<Vec<Option<Py<PyMessage>>>> {
         Ok(match updates {
             tl::enums::Updates::Updates(tl::types::Updates {
                 updates,
@@ -288,7 +289,7 @@ impl PyClient {
                 seq: _,
             }) => {
                 let peers = self.build_peer_map(users, chats).await?;
-    
+
                 let rnd_to_id = updates
                     .iter()
                     .filter_map(|update| match update {
@@ -296,35 +297,39 @@ impl PyClient {
                         _ => None,
                     })
                     .collect::<HashMap<_, _>>();
-    
+
                 // TODO ideally this would use the same UpdateIter mechanism to make sure we don't
                 //      accidentally miss variants
                 let mut id_to_msg = updates
                     .into_iter()
                     .filter_map(|update| match update {
                         tl::enums::Update::NewMessage(tl::types::UpdateNewMessage {
-                            message, ..
-                        }) => Some(message),
-                        tl::enums::Update::NewChannelMessage(tl::types::UpdateNewChannelMessage {
                             message,
                             ..
                         }) => Some(message),
+                        tl::enums::Update::NewChannelMessage(
+                            tl::types::UpdateNewChannelMessage { message, .. },
+                        ) => Some(message),
                         tl::enums::Update::NewScheduledMessage(
                             tl::types::UpdateNewScheduledMessage { message, .. },
                         ) => Some(message),
                         _ => None,
                     })
-                    .map(|message| Python::attach(|py|
-                        Py::new(py, PyMessage::from_raw(self, message, peers.handle())?)
-                    ))
+                    .map(|message| {
+                        Python::attach(|py| {
+                            Py::new(py, PyMessage::from_raw(self, message, peers.handle())?)
+                        })
+                    })
                     .collect::<Result<Vec<_>, _>>()?
                     .into_iter()
-                    .map(|message| Python::attach(|py| {
-                        let id = message.borrow(py).id();
-                        (id, message)
-                    }))
+                    .map(|message| {
+                        Python::attach(|py| {
+                            let id = message.borrow(py).id;
+                            (id, message)
+                        })
+                    })
                     .collect::<HashMap<_, _>>();
-    
+
                 random_ids
                     .iter()
                     .map(|rnd| {
@@ -343,20 +348,24 @@ impl PyClient {
                     })
                     .collect()
             }
-            _ => return Err(PyRuntimeError::new_err("API returned something other than Updates so messages can't be mapped")),
+            _ => {
+                return Err(PyRuntimeError::new_err(
+                    "API returned something other than Updates so messages can't be mapped",
+                ));
+            }
         })
     }
-    
+
     async fn _send_input_message(
         &self,
         peer: InputPeerLike,
         input_message: InputMessage,
-    ) -> PyResult<Option<Py<PyMessage>>> {
+    ) -> PyResult<Py<PyMessage>> {
         let peer_string = peer.stringify()?;
         let peer = self.resolve_peer(peer).await?.ok_or_else(|| {
             PyValueError::new_err(format!("peer {} can't resolve to PeerRef.", peer_string))
         })?;
-        
+
         let random_id = crate::utils::generate_random_id();
         let InputMessage {
             media,
@@ -380,22 +389,29 @@ impl PyClient {
             suggested_post,
         } = input_message.clone();
         let media = media.map(Into::into);
-        let entities = parse_mention_entities(self, entities.into_iter().map(Into::into).collect()).await;
+        let entities =
+            parse_mention_entities(self, entities.into_iter().map(Into::into).collect()).await;
         let reply_to = reply_to.map(Into::into);
         let reply_markup = reply_markup.map(Into::into);
-        let send_as_string = match send_as {
+        let send_as_string = match &send_as {
             Some(x) => x.stringify()?,
             None => String::new(),
         };
-        let send_as: Option<PyPeer> = self.resolve_peer(peer).await?.ok_or_else(|| {
-            PyValueError::new_err(format!("send_as {} can't resolve to PeerRef.", peer_string))
-        })?;
+        let send_as: Option<PyPeer> = match send_as {
+            Some(x) => Some(self.resolve_peer(x).await?.ok_or_else(|| {
+                PyValueError::new_err(format!(
+                    "send_as {} can't resolve to PeerRef.",
+                    send_as_string
+                ))
+            })?),
+            None => None,
+        };
         let quick_reply_shortcut = quick_reply_shortcut.map(Into::into);
         let suggested_post = suggested_post.map(Into::into);
-        
+
         let updates = if let Some(media) = media {
             self.invoke(&tl::functions::messages::SendMedia {
-                peer: peer.into(),
+                peer: peer.to_ref().await?.unwrap().into(),
                 random_id,
                 media,
                 message,
@@ -403,8 +419,10 @@ impl PyClient {
                 reply_to,
                 reply_markup,
                 schedule_date,
-                send_as,
-                no_webpage,
+                send_as: match &send_as {
+                    Some(x) => Some(x.to_ref().await?.unwrap().into()),
+                    None => None,
+                },
                 silent,
                 background,
                 clear_draft,
@@ -416,17 +434,23 @@ impl PyClient {
                 effect,
                 allow_paid_stars,
                 suggested_post,
-            }).await?
+                schedule_repeat_period: None,
+            })
+            .await
+            .map_err(PyInvocationError::new)?
         } else {
             self.invoke(&tl::functions::messages::SendMessage {
-                peer: peer.into(),
+                peer: peer.to_ref().await?.unwrap().into(),
                 random_id,
                 message,
                 entities,
                 reply_to,
                 reply_markup,
                 schedule_date,
-                send_as,
+                send_as: match &send_as {
+                    Some(x) => Some(x.to_ref().await?.unwrap().into()),
+                    None => None,
+                },
                 no_webpage,
                 silent,
                 background,
@@ -439,13 +463,27 @@ impl PyClient {
                 effect,
                 allow_paid_stars,
                 suggested_post,
-            }).await.map_err(PyInvocationError::new)?
+                schedule_repeat_period: None,
+            })
+            .await
+            .map_err(PyInvocationError::new)?
         };
-        
+
+        let peer_id = peer.id();
         let peers = self.build_peer_map_from_peer(peer).await?;
-        let res = match updates {
+        match updates {
             tl::enums::Updates::UpdateShortSentMessage(updates) => {
-                PyMessage::from_raw_short_updates(self, updates, peer, input_message, peers, send_as).await
+                let peers_clone = peers.clone();
+                let msg = PyMessage::from_raw_short_updates(
+                    self,
+                    updates,
+                    peers_clone.get(peer_id).unwrap(),
+                    input_message,
+                    peers,
+                    send_as,
+                )
+                .await?;
+                Python::attach(|py| Py::new(py, msg))
             }
             updates => {
                 let updates_debug = if log::log_enabled!(log::Level::Warn) {
@@ -454,12 +492,18 @@ impl PyClient {
                     None
                 };
 
-                match self.map_random_ids_to_messages(peer, peers, &[random_id], updates)
-                    .await
+                match self
+                    .map_random_ids_to_messages(
+                        peers.get(peer_id).unwrap(),
+                        peers.clone(),
+                        &[random_id],
+                        updates,
+                    )
+                    .await?
                     .pop()
                     .flatten()
                 {
-                    Some(message) => message,
+                    Some(message) => Ok(message),
                     None => {
                         if let Some(updates) = updates_debug {
                             log::warn!(
@@ -467,18 +511,19 @@ impl PyClient {
                             );
                             log::warn!("{:#?}", updates);
                         }
-                        PyMessage::from_raw(
+
+                        let msg = PyMessage::from_raw(
                             self,
                             tl::enums::Message::Empty(tl::types::MessageEmpty {
                                 id: 0,
-                                peer_id: Some(peer.id.into()),
+                                peer_id: Some(convertPeerId2Peer(peer_id, self.clone())?),
                             }),
                             peers,
-                        )
+                        )?;
+                        Python::attach(|py| Py::new(py, msg))
                     }
                 }
             }
-        };
-        res.map(|x| Python::attach(|py| Py::new(py, x)))
+        }
     }
 }

@@ -1,4 +1,4 @@
-use pyo3::exceptions::{PyKeyError, PyRuntimeError};
+use pyo3::exceptions::{PyException, PyRuntimeError};
 use pyo3::prelude::*;
 use std::{
     collections::HashMap,
@@ -11,6 +11,37 @@ use crate::utils::maybe_await;
 use grammers_session_pyo3::into_future;
 
 const HANDLER_PARALLEL_LIMIT: usize = 64;
+
+#[pyclass(name = "HandlerNotFoundError", module = "grammers.event", extends = PyException)]
+pub struct PyHandlerNotFoundError {
+    #[pyo3(get)]
+    pub event_kind: PyEventKind,
+}
+
+impl PyHandlerNotFoundError {
+    pub fn new_err(event_kind: PyEventKind) -> PyErr {
+        PyErr::new::<PyHandlerNotFoundError, _>((event_kind,))
+    }
+}
+
+#[pymethods]
+impl PyHandlerNotFoundError {
+    #[new]
+    #[pyo3(signature = (event_kind))]
+    fn new(event_kind: PyEventKind) -> Self {
+        Self { event_kind }
+    }
+
+    fn __str__(&self) -> PyResult<String> {
+        let kind = self.event_kind.__str__();
+        Ok(format!("Event handler of {} is not found.", kind))
+    }
+
+    fn __repr__(&self) -> PyResult<String> {
+        let kind = self.event_kind.__str__();
+        Ok(format!("HandlerNotFoundError(event_kind={})", kind))
+    }
+}
 
 #[pyclass(name = "EventHandler")]
 pub struct PyEventHandler {
@@ -39,7 +70,8 @@ impl PyEventHandler {
         };
 
         if need_trigger {
-            let py_handler = Python::attach(|py| self.handler.clone_ref(py).call1(py, (event.clone_ref(py),)))?;
+            let py_handler =
+                Python::attach(|py| self.handler.clone_ref(py).call1(py, (event.clone_ref(py),)))?;
             into_future(py_handler).await?;
         }
 
@@ -106,7 +138,7 @@ impl EventHandlersManager {
                     Ok(())
                 })
             }
-            None => Err(PyKeyError::new_err(format!("'{}'", kind.__str__()))),
+            None => Err(PyHandlerNotFoundError::new_err(kind)),
         }
     }
 }

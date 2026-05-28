@@ -160,10 +160,16 @@ impl TLObject {
                 return Ok("...".to_string());
             }
         }
-        
+
         let (next_indent, current_indent, closing_indent, newline_or_empty, comma_newline_or_space) =
             match indent {
-                None => (None, String::new(), String::new(), String::new(), ", ".to_string()),
+                None => (
+                    None,
+                    String::new(),
+                    String::new(),
+                    String::new(),
+                    ", ".to_string(),
+                ),
                 Some(x) => {
                     let current = FORMAT_INDENT.repeat(x + 1);
                     let closing = FORMAT_INDENT.repeat(x);
@@ -184,7 +190,8 @@ impl TLObject {
         };
 
         if let Ok(dict) = obj.cast::<PyMapping>() {
-            let class_name = dict.get_item("_")
+            let class_name = dict
+                .get_item("_")
                 .ok()
                 .and_then(|x| x.extract().ok())
                 .unwrap_or(cls_name);
@@ -208,18 +215,18 @@ impl TLObject {
                 if i > 0 {
                     result.push_str(&comma_newline_or_space);
                 }
-                
+
                 let formatted_value = TLObject::pretty_format(value, next_indent)?;
                 let formatted_value = if key == "phone" {
                     crate::utils::mask_phone(&formatted_value)
                 } else {
                     formatted_value
                 };
-                
+
                 write!(result, "{}{}={}", current_indent, key, formatted_value)
                     .expect("write to String failed");
             }
-            
+
             result.push_str(&newline_or_empty);
 
             return Ok(format!(
@@ -227,15 +234,15 @@ impl TLObject {
                 class_name, newline_or_empty, result, closing_indent,
             ));
         }
-        
+
         if obj.is_instance_of::<PyBytes>() {
             return Ok(obj.repr()?.to_string());
-        } 
-        
+        }
+
         if obj.is_instance_of::<PyString>() {
             return Ok(obj.repr()?.to_string());
-        } 
-        
+        }
+
         if let Ok(seq) = obj.cast::<PySequence>() {
             let len = seq.len()?;
             if len == 0 {
@@ -250,12 +257,14 @@ impl TLObject {
                 let value = seq.get_item(i)?;
                 let formatted = TLObject::pretty_format(value, next_indent)?;
                 use std::fmt::Write;
-                write!(result, "{}{}", current_indent, formatted)
-                    .expect("write to String failed");
+                write!(result, "{}{}", current_indent, formatted).expect("write to String failed");
             }
             result.push_str(&newline_or_empty);
 
-            return Ok(format!("[{}{}{}]", newline_or_empty, result, closing_indent));
+            return Ok(format!(
+                "[{}{}{}]",
+                newline_or_empty, result, closing_indent
+            ));
         }
 
         Ok(obj.repr()?.to_string())

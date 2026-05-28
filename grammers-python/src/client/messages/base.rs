@@ -4,10 +4,10 @@ use pyo3::{Py, PyErr, PyResult, Python};
 use grammers_tl_types as tl;
 use grammers_tl_types_pyo3 as pytl;
 
-use crate::client::{PyClient, IterBuffer};
+use crate::client::{IterBuffer, PyClient};
 use crate::errors::PyInvocationError;
-use crate::message::PyMessage;
 use crate::hints::InputPeerLike;
+use crate::message::PyMessage;
 
 pub const MAX_LIMIT: usize = 100;
 
@@ -121,7 +121,8 @@ pub(crate) async fn parse_mention_entities(
                                 pytl::types::PyInputPeerUser {
                                     user_id: mention_name.user_id,
                                     access_hash: 0,
-                                }.into()
+                                }
+                                .into(),
                             ))
                             .await
                             .ok()

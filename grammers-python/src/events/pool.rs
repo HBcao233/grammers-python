@@ -5,7 +5,7 @@ use std::pin::Pin;
 use tokio::sync::mpsc;
 use tokio::task::JoinSet;
 
-use super::Event;
+use super::{Event, PyHandlerNotFoundError};
 use crate::client::{PyClient, UpdateStream};
 
 enum Request {
@@ -69,7 +69,9 @@ impl EventPoolRunner {
                     };
 
                     if let Err(e) = client.trigger_event(event) {
-                        break Err(e);
+                        if !Python::attach(|py| e.is_instance_of::<PyHandlerNotFoundError>(py)) {
+                            break Err(e);
+                        }
                     }
                 },
                 Some(task_result) = self.tasks.join_next(), if !self.tasks.is_empty() => {

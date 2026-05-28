@@ -18,8 +18,6 @@ impl PyClient {
         };
         self.set_me(user);
 
-        self._start_event_pool().await?;
-
         Ok(self._me().expect("me setup"))
     }
 
@@ -49,6 +47,8 @@ impl PyClient {
     #[pyo3(signature = ())]
     async fn idle(&self) -> PyResult<()> {
         let inner = self.inner.clone();
+
+        self._start_event_pool().await?;
 
         let res = pyo3_async_runtimes::tokio::get_runtime()
             .spawn(async move {

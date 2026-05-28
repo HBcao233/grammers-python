@@ -8,7 +8,7 @@ use tokio::task::JoinHandle;
 
 use grammers_mtsender_pyo3::{ConnectionParams, SenderPool, SenderPoolFatHandle};
 use grammers_session::updates::UpdatesLike;
-use grammers_session_pyo3::{PySession, Session};
+use grammers_session_pyo3::{PyPeerRef, PySession, Session};
 
 use crate::events::{EventHandlersManager, EventPoolHandle};
 use crate::peer::PyUser;
@@ -286,6 +286,20 @@ impl PyClient {
 }
 
 impl PyClient {
+    pub fn me_ref(&self) -> PyResult<PyPeerRef> {
+        let me = self._me();
+        match me {
+            Some(me) => {
+                let (id, auth) = Python::attach(|py| {
+                    let borrowed = me.borrow(py);
+                    (borrowed.id(), borrowed.auth().unwrap_or_default())
+                });
+                Ok(PyPeerRef { id, auth })
+            }
+            None => Err(PyValueError::new_err("me must be cached")),
+        }
+    }
+
     pub fn set_me(&self, user: Py<PyUser>) {
         let inner = self.inner.clone();
         *inner.me.lock().unwrap() = Some(user);

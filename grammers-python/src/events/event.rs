@@ -167,7 +167,7 @@ impl PyErrorEvent {
     fn error(&self, py: Python<'_>) -> Py<PyBaseException> {
         self.error.clone_ref(py)
     }
-    
+
     fn to_dict(slf: Bound<'_, Self>) -> PyResult<Py<PyDict>> {
         let py = slf.py();
         let borrowed = slf.borrow();
@@ -205,7 +205,7 @@ impl PyRawUpdateEvent {
     fn update(&self, _py: Python<'_>) -> pytl::enums::PyUpdate {
         self.update.clone()
     }
-    
+
     fn to_dict(slf: Bound<'_, Self>) -> PyResult<Py<PyDict>> {
         let py = slf.py();
         let borrowed = slf.borrow();
