@@ -5,7 +5,7 @@ from .types import (
     UpdatesState,
     UpdateState,
 )
-from grammers.tl import types, enums
+from grammers.tl import enums
 from abc import ABC, abstractmethod
 
 class Session(ABC):

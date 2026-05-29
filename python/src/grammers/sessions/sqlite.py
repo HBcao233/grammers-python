@@ -14,7 +14,6 @@ from .types import (
 from .dc_options import DEFAULT_DC, KNOWN_DC_OPTIONS
 from enum import IntEnum
 from contextlib import asynccontextmanager
-from typing import Self, Sequence
 import asyncio
 import sqlite3
 import logging
@@ -61,7 +60,7 @@ class SqliteSession(Session):
     def from_telethon_string(
         string: str,
         path: str = ':memory:',
-    ) -> SqliteSession:
+    ) -> 'SqliteSession':
         if string[0] != telethon_version:
             raise ValueError('Invalid telethon string.')
 
@@ -320,10 +319,7 @@ class SqliteSession(Session):
 
     async def set_update_state(
         self,
-        update: UpdateState.All
-        | UpdateState.Primary
-        | UpdateState.Secondary
-        | UpdateState.Channel,
+        update: 'UpdateState.All | UpdateState.Primary | UpdateState.Secondary | UpdateState.Channel',
     ) -> None:
         await self.init()
 

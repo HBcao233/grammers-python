@@ -47,6 +47,7 @@ pub struct ClientInner {
 
     pub(crate) session: Session,
     pub(crate) me: Mutex<Option<Py<PyUser>>>,
+    pub(crate) auth_copied_to_dcs: tokio::sync::Mutex<Vec<i32>>,
 
     // Readonly properties.
     pub(crate) api_id: i32,
@@ -203,6 +204,7 @@ impl PyClient {
             system_lang_code: system_lang_code.to_string(),
             lang_code: lang_code.to_string(),
             me: Mutex::new(None),
+            auth_copied_to_dcs: tokio::sync::Mutex::new(Vec::new()),
         };
         Ok(Self {
             inner: Arc::new(inner),

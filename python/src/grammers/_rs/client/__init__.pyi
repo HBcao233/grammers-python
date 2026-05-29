@@ -1,10 +1,9 @@
-from typing import Awaitable, Callable, Optional, Protocol, Self, Sequence
+from typing import Awaitable, Callable, Optional, Self, Sequence
 from collections.abc import AsyncIterator
 
 from grammers.tl import TLRequest, TLObject, types, enums
 from grammers.sessions import Session, PeerRef
 from grammers.custom import (
-    BytesChunk,
     LoginToken,
     User,
     Group,
@@ -577,16 +576,16 @@ class Client:
         """
         ...
 
-    # ========== Uploads Methods ==========
+    # ========== Files Methods ==========
 
     async def iter_download(
         self,
-        media: TLObject,  # TODO
+        downloadable: hints.Downloadable,
         *,
         chunk_size: int = 512,
-        offset: int = 0,
-        limit: Optional[int] = None,
-    ) -> AsyncIterator[BytesChunk]:
+        skip_chunks: int = 0,
+        # limit: Optional[int] = None,
+    ) -> AsyncIterator[bytearray]:
         """
         Stream-download Telegram media as an async iterator.
 
@@ -666,6 +665,9 @@ class Client:
                 await response.write(chunk)
         """
         ...
+    async def download_media(
+        self, downloadable: hints.Downloadable, path: str
+    ) -> None: ...
 
     # ========== Events Methods ==========
 

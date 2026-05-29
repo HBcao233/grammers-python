@@ -13,3 +13,7 @@ Peer: TypeAlias = custom.User | custom.Group | custom.Channel
 MsgId: TypeAlias = int
 InputReplyToLike: TypeAlias = MsgId | enums.InputReplyTo
 InputMessageLike: TypeAlias = str | custom.Message
+
+Downloadable: TypeAlias = (
+    enums.Photo | types.MessageMediaPhoto | enums.Document | types.MessageMediaDocument
+)

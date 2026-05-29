@@ -2,7 +2,7 @@ from typing import Any, Self
 from abc import ABC, abstractmethod
 
 from grammers.client import Client
-from grammers.tl import types, enums
+from grammers.tl import enums
 from grammers.custom import User
 
 class EventKind:

@@ -2,6 +2,7 @@ mod auth;
 mod chats;
 mod client;
 mod events;
+mod files;
 mod iter_buffer;
 mod messages;
 mod net;

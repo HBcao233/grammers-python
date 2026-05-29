@@ -1,9 +1,9 @@
 use pyo3::prelude::*;
 
 use grammers_mtsender_pyo3::InvocationError;
+use grammers_tl_types as tl;
 use grammers_tl_types_pyo3::{TLObjectLike, TLRequestLike};
-
-use grammers_tl_types::{Deserializable, RemoteCall, Serializable};
+use tl::{Deserializable, RemoteCall, Serializable};
 
 use super::PyClient;
 use crate::errors::PyInvocationError;
@@ -92,5 +92,41 @@ impl PyClient {
             .handle
             .invoke_in_dc(dc_id, request_body.clone())
             .await
+    }
+
+    pub(crate) async fn copy_auth_to_dc(&self, target_dc_id: i32) -> Result<(), InvocationError> {
+        let inner = self.inner.clone();
+        let mut auth_copied_to_dcs = inner.auth_copied_to_dcs.lock().await;
+        if auth_copied_to_dcs.contains(&target_dc_id) {
+            return Ok(());
+        }
+
+        let home_dc_id = inner
+            .session
+            .home_dc_id()
+            .await
+            .map_err(InvocationError::PyErr)?;
+        if target_dc_id == home_dc_id {
+            return Ok(());
+        }
+
+        let tl::enums::auth::ExportedAuthorization::Authorization(exported_auth) = self
+            .invoke(&tl::functions::auth::ExportAuthorization {
+                dc_id: target_dc_id,
+            })
+            .await?;
+
+        self.invoke_in_dc(
+            target_dc_id,
+            &tl::functions::auth::ImportAuthorization {
+                id: exported_auth.id,
+                bytes: exported_auth.bytes,
+            },
+        )
+        .await?;
+
+        auth_copied_to_dcs.push(target_dc_id);
+
+        Ok(())
     }
 }
