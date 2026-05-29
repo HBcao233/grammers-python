@@ -4,6 +4,6 @@ version = "0.4.8"
 edition = "2021"
 
 [dependencies]
-grammers-tl-parser = { path = "../../grammers/grammers-tl-parser" }
+grammers-tl-parser = { workspace = true }
 
 anyhow = "1"
