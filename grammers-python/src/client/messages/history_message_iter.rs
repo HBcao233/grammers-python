@@ -13,7 +13,10 @@ use crate::hints::InputPeerLike;
 use crate::message::PyMessage;
 
 /// Iterator returned by [`Client::iter_history_messages`].
-pub type HistoryMessageIter = IterBuffer<tl::functions::messages::GetHistory, Py<PyMessage>>;
+pub struct HistoryMessageIter {
+    inner: IterBuffer<tl::functions::messages::GetHistory, Py<PyMessage>>,
+    reverse: bool,
+}
 
 impl HistoryMessageIter {
     pub(crate) fn new(
@@ -26,8 +29,9 @@ impl HistoryMessageIter {
         page_limit: i32,
         max_id: i32,
         min_id: i32,
+        reverse: bool,
     ) -> Self {
-        Self::from_request(
+        let inner = IterBuffer::from_request(
             client,
             MAX_LIMIT,
             limit,
@@ -41,34 +45,47 @@ impl HistoryMessageIter {
                 min_id,
                 hash: 0,
             },
-        )
+        );
+        Self { inner, reverse }
     }
 
     pub async fn total(&mut self) -> PyResult<usize> {
-        self.request.limit = 1;
-        self.get_total().await
+        self.inner.request.limit = 1;
+        self.inner.get_total().await
     }
 
     pub async fn next(&mut self) -> PyResult<Option<Py<PyMessage>>> {
-        if let Some(result) = self.next_raw() {
+        if let Some(result) = self.inner.next_raw() {
             return result.map_err(PyInvocationError::new);
         }
 
-        self.request.limit = self.determine_limit(MAX_LIMIT);
-        self.fill_buffer(self.request.limit).await?;
+        self.inner.request.limit = self.inner.determine_limit(MAX_LIMIT);
+        let request = &mut self.inner.request;
+        if self.reverse {
+            request.add_offset = -request.limit;
+            request.min_id = request.offset_id;
+            if request.offset_id == 0 && request.offset_date == 0 {
+                // With no explicit offset, start from the oldest available page.
+                request.offset_id = 1;
+                request.add_offset = -request.limit + 1; // +1 to include the first message (ID=1)
+            }
+        }
+        self.inner
+            .fill_buffer(self.inner.request.limit, self.reverse)
+            .await?;
 
         // Don't bother updating offsets if this is the last time stuff has to be fetched.
-        if !self.last_chunk && !self.buffer.is_empty() {
-            let last = &self.buffer[self.buffer.len() - 1];
+        if !self.inner.last_chunk && !self.inner.buffer.is_empty() {
+            let last = &self.inner.buffer[self.inner.buffer.len() - 1];
             let (id, date_timestamp) = Python::attach(|py| {
                 let borrowed = last.borrow(py);
                 (borrowed.id, borrowed.date_timestamp.unwrap_or(0))
             });
-            self.request.offset_id = id;
-            self.request.offset_date = date_timestamp;
+            self.inner.request.offset_id = id;
+            self.inner.request.offset_date = date_timestamp;
         }
 
-        Ok(self.pop_item())
+        Ok(self.inner.pop_item())
     }
 }
 
@@ -97,6 +114,7 @@ impl PyHistoryMessageIter {
         page_limit=0,
         max_id=0,
         min_id=0,
+        reverse=false,
     ))]
     pub(crate) fn new(
         client: PyClient,
@@ -108,6 +126,7 @@ impl PyHistoryMessageIter {
         page_limit: i32,
         max_id: i32,
         min_id: i32,
+        reverse: bool,
     ) -> Self {
         Self {
             peer: Some(peer),
@@ -121,6 +140,7 @@ impl PyHistoryMessageIter {
                 page_limit,
                 max_id,
                 min_id,
+                reverse,
             ))),
         }
     }
@@ -137,10 +157,15 @@ impl PyHistoryMessageIter {
         let mut iter = self.iter.lock().await;
         if let Some(p) = self.peer.take() {
             let peer_string = p.stringify()?;
-            let peer = iter.client.resolve_peer_ref(p).await?.ok_or_else(|| {
-                PyValueError::new_err(format!("peer {} can't resolve to PeerRef.", peer_string))
-            })?;
-            iter.request.peer = peer.into();
+            let peer = iter
+                .inner
+                .client
+                .resolve_peer_ref(p)
+                .await?
+                .ok_or_else(|| {
+                    PyValueError::new_err(format!("peer {} can't resolve to PeerRef.", peer_string))
+                })?;
+            iter.inner.request.peer = peer.into();
         }
         Ok(())
     }

@@ -119,6 +119,7 @@ impl PyClient {
         page_limit=0,
         max_id=0,
         min_id=0,
+        reverse=false,
     ))]
     pub fn iter_history_messages(
         &self,
@@ -130,6 +131,7 @@ impl PyClient {
         page_limit: i32,
         max_id: i32,
         min_id: i32,
+        reverse: bool,
     ) -> PyResult<Py<PyHistoryMessageIter>> {
         let res = PyHistoryMessageIter::new(
             self.clone(),
@@ -141,6 +143,7 @@ impl PyClient {
             page_limit,
             max_id,
             min_id,
+            reverse,
         );
         Python::attach(|py| Py::new(py, res))
     }

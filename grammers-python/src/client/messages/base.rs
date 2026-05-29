@@ -40,10 +40,10 @@ impl<R: tl::RemoteCall<Return = tl::enums::messages::Messages>> IterBuffer<R, Py
     /// Performs the network call, fills the buffer, and returns the `offset_rate` if any.
     ///
     /// The `request.limit` should be set to the right value before calling this method.
-    pub(crate) async fn fill_buffer(&mut self, limit: i32) -> PyResult<Option<i32>> {
+    pub(crate) async fn fill_buffer(&mut self, limit: i32, reverse: bool) -> PyResult<Option<i32>> {
         use tl::enums::messages::Messages;
 
-        let (messages, users, chats, rate) = match self
+        let (mut messages, users, chats, rate) = match self
             .client
             .invoke(&self.request)
             .await
@@ -56,17 +56,25 @@ impl<R: tl::RemoteCall<Return = tl::enums::messages::Messages>> IterBuffer<R, Py
             }
             Messages::Slice(m) => {
                 // Can't rely on `count(messages) < limit` as the stop condition.
-                // See https://github.com/LonamiWebs/Telethon/issues/3949 for more.
+                // See https://t.me/tdlibchat/57257 for discussion. As an example:
+                // offset_id 132002, limit 4 => we get msg 131999 & 131998
+                // offset_id 132002, limit 3 => we get msg 131999
+                // offset_id 132002, limit 2 => we get msg 132000
+                // offset_id 132002, limit 1 => we get msg 132001
                 //
-                // If the highest fetched message ID is lower than or equal to the limit,
-                // there can't be more messages after (highest ID - limit), because the
-                // absolute lowest message ID is 1.
-                self.last_chunk = m.messages.is_empty() || m.messages[0].id() <= limit;
+                // When iterating newest-to-oldest, the highest fetched message ID is
+                // lower than or equal to the limit, there can't be more messages after
+                // (highest ID - limit), because the absolute lowest message ID is 1.
+                self.last_chunk =
+                    m.messages.is_empty() || (!reverse && m.messages[0].id() <= limit);
+
                 self.total = Some(m.count as usize);
+
                 (m.messages, m.users, m.chats, m.next_rate)
             }
             Messages::ChannelMessages(m) => {
-                self.last_chunk = m.messages.is_empty() || m.messages[0].id() <= limit;
+                self.last_chunk =
+                    m.messages.is_empty() || (!reverse && m.messages[0].id() <= limit);
                 self.total = Some(m.count as usize);
                 (m.messages, m.users, m.chats, None)
             }
@@ -77,15 +85,21 @@ impl<R: tl::RemoteCall<Return = tl::enums::messages::Messages>> IterBuffer<R, Py
             }
         };
 
+        if reverse {
+            messages.reverse();
+        }
+
         let peers = self.client.build_peer_map(users, chats).await?;
 
-        let client = self.client.clone();
         Python::attach(|py| {
             self.buffer.extend(
                 messages
                     .into_iter()
                     .map(|message| {
-                        Py::new(py, PyMessage::from_raw(&client, message, peers.handle())?)
+                        Py::new(
+                            py,
+                            PyMessage::from_raw(&self.client, message, peers.handle())?,
+                        )
                     })
                     .collect::<Result<Vec<_>, _>>()?,
             );
