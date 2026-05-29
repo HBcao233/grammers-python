@@ -1,6 +1,6 @@
 # gramme.rs-python
 
-Python bindings for the [grammers](https://github.com/Lonami/grammers) Telegram MTProto library.
+Python bindings for the [gramme.rs](https://codeberg.org/Lonami/grammers) Telegram MTProto library.
 
 This project is a community-maintained Python wrapper built with PyO3. It is not affiliated with Telegram, and it is not an official Python client maintained by the `grammers` project.
 
@@ -57,33 +57,6 @@ Features:
 
 ## Minimal Example
 
-### Bot Login
-
-```python
-from grammers import Client
-
-API_ID = 123456
-API_HASH = "your_api_hash"
-BOT_TOKEN = "123456:ABCDEF..."
-
-client = Client(
-    "bot",
-    API_ID,
-    API_HASH,
-    bot_token=BOT_TOKEN,
-)
-
-async def main():
-    print(client.me)
-
-    messages = await client.get_history_messages(777000, limit=1)
-    print(messages[0])
-
-client.run(main())
-```
-
-### User Login
-
 ```python
 from grammers import Client
 
@@ -94,6 +67,8 @@ client = Client(
     "me",
     API_ID,
     API_HASH,
+    # if bot_token provided, will login as a bot user, else login as a common user.
+    # bot_token="123456:ABCDEF..."
 )
 
 async def main():
@@ -116,7 +91,7 @@ The first argument passed to `Client(...)` is the session name:
 client = Client("me", API_ID, API_HASH)
 ```
 
-This creates a local session file that stores authentication data, allowing future runs to reuse the same login session.
+This creates a local session file (`me.session`) that stores authentication data, allowing future runs to reuse the same login session.
 
 ## Crates
 
@@ -125,12 +100,14 @@ This creates a local session file that stores authentication data, allowing futu
 - [grammers-mtsender-pyo3](https://github.com/hbcao233/grammers-python/blob/main/grammers-mtsender-pyo3)
 - [grammers-tl-types-pyo3](https://github.com/hbcao233/grammers-python/blob/main/grammers-tl-types-pyo3)
 - [grammers-tl-gen-pyo3](https://github.com/hbcao233/grammers-python/blob/main/grammers-tl-gen-pyo3)
+- [grammers-codegen](https://github.com/hbcao233/grammers-python/blob/main/grammers-codegen):
+    generate python code about tl types
 
 ## Development
 
 Requirements:
 - Rust toolchain
-- Python 3.8+
+- Python 3.12+
 - maturin
 
 Install dependencies:
@@ -143,5 +120,6 @@ pip install maturin
 Build in development mode:
 
 ```bash
+make codegen
 make dev
 ```
