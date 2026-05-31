@@ -4,8 +4,6 @@ use tokio::io::AsyncWriteExt;
 use pyo3::exceptions::{PyIOError, PyRuntimeError, PyValueError};
 use pyo3::prelude::*;
 
-use grammers_tl_types as tl;
-
 use super::{DownloadIter, DownloadIterVariant, PyDownloadIter};
 use crate::client::PyClient;
 use crate::media::Downloadable;
@@ -19,31 +17,34 @@ impl PyClient {
         downloadable,
         *,
         chunk_size=MAX_CHUNK_SIZE,
-        skip_chunks=0
+        skip_chunks=0,
+        limit=0
     ))]
     pub async fn iter_download(
         &self,
         downloadable: Downloadable,
         chunk_size: i32,
         skip_chunks: i32,
+        limit: i32,
     ) -> PyResult<Py<PyDownloadIter>> {
-        let iter = PyDownloadIter::new(self.clone(), downloadable, chunk_size, skip_chunks)?;
+        let iter = PyDownloadIter::new(self.clone(), downloadable, chunk_size, skip_chunks, limit)?;
         Python::attach(|py| Py::new(py, iter))
     }
 
     pub async fn download_media(&self, downloadable: Downloadable, path: String) -> PyResult<()> {
+        let dc_id = downloadable.dc_id();
+        let size = downloadable.size();
+
         if let Some(location) = downloadable.into_raw_input_location() {
-            let mut iter = DownloadIter {
-                client: self.clone(),
-                done: false,
-                variant: DownloadIterVariant::Request(tl::functions::upload::GetFile {
-                    precise: false,
-                    cdn_supported: false,
-                    location,
-                    offset: 0,
-                    limit: MAX_CHUNK_SIZE,
-                }),
-            };
+            let mut iter = DownloadIter::new(
+                self.clone(),
+                DownloadIterVariant::Request(location),
+                MAX_CHUNK_SIZE,
+                0,
+                0,
+                dc_id,
+                size,
+            );
 
             let res: PyResult<()> = pyo3_async_runtimes::tokio::get_runtime()
                 .spawn(async move {

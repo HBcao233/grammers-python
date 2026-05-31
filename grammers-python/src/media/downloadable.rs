@@ -14,6 +14,36 @@ pub enum Downloadable {
 }
 
 impl Downloadable {
+    pub fn dc_id(&self) -> Option<i32> {
+        Python::attach(|py| match self {
+            Self::Photo(x) => get_photo_dc_id(py, x),
+            Self::MessageMediaPhoto(x) => x
+                .borrow(py)
+                .photo
+                .as_ref()
+                .and_then(|p| get_photo_dc_id(py, p)),
+            Self::Document(x) => get_document_dc_id(py, x),
+            Self::MessageMediaDocument(x) => x
+                .borrow(py)
+                .document
+                .as_ref()
+                .and_then(|d| get_document_dc_id(py, d)),
+        })
+    }
+
+    pub fn size(&self) -> Option<i64> {
+        Python::attach(|py| match self {
+            Self::Photo(_) => None,
+            Self::MessageMediaPhoto(_) => None,
+            Self::Document(x) => get_document_size(py, x),
+            Self::MessageMediaDocument(x) => x
+                .borrow(py)
+                .document
+                .as_ref()
+                .and_then(|d| get_document_size(py, d)),
+        })
+    }
+
     pub fn into_raw_input_location(self) -> Option<tl::enums::InputFileLocation> {
         match self {
             Self::Photo(x) => convertPhoto2InputFileLocation(x.into()),
@@ -23,6 +53,33 @@ impl Downloadable {
             Self::MessageMediaDocument(x) => Python::attach(|py| x.borrow(py).document.clone())
                 .and_then(|x| convertDocument2InputFileLocation(x.into())),
         }
+    }
+}
+
+fn get_photo_dc_id(py: Python<'_>, x: &pytl::enums::PyPhoto) -> Option<i32> {
+    use pytl::enums::PyPhoto as P;
+
+    match x {
+        P::Empty(_) => None,
+        P::Photo(photo) => Some(photo.0.borrow(py).dc_id),
+    }
+}
+
+fn get_document_dc_id(py: Python<'_>, x: &pytl::enums::PyDocument) -> Option<i32> {
+    use pytl::enums::PyDocument as D;
+
+    match x {
+        D::Empty(_) => None,
+        D::Document(document) => Some(document.0.borrow(py).dc_id),
+    }
+}
+
+fn get_document_size(py: Python<'_>, x: &pytl::enums::PyDocument) -> Option<i64> {
+    use pytl::enums::PyDocument as D;
+
+    match x {
+        D::Empty(_) => None,
+        D::Document(document) => Some(document.0.borrow(py).size),
     }
 }
 
