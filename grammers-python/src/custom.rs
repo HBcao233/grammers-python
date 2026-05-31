@@ -47,4 +47,10 @@ pub(crate) mod custom_ {
 
     #[pymodule_export]
     use crate::client::PyHistoryMessageIter;
+
+    #[pymodule_export]
+    use crate::client::PyDownloadIter;
+
+    #[pymodule_export]
+    use crate::client::PyProgressUpdate;
 }

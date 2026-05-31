@@ -1,6 +1,6 @@
 from grammers.sessions import PeerId, PeerAuth
 from grammers.tl import types, TLObject, enums
-from grammers import Client, hints
+from grammers import Client, hints, custom
 from typing import Self, final
 from datetime import datetime
 
@@ -965,3 +965,28 @@ class HistoryMessageIter:
         Returns `None` if the `limit` is reached or there are no messages left.
         """
         ...
+
+class DownloadIter:
+    def __new__(
+        cls,
+        client: Client,
+        downloadable: hints.Downloadable,
+        *,
+        chunk_size: int = custom.MAX_CHUNK_SIZE,
+        skip_chunks: int = 0,
+        limit: int = 0,
+    ) -> Self: ...
+    def __aiter__(self): ...
+    def __anext__(self): ...
+    async def next(self) -> bytearray: ...
+
+class ProgressUpdate:
+    def __new__(cls, downloaded: int, total: int | None = None) -> Self: ...
+    @property
+    def downloaded(self) -> int: ...
+    @downloaded.setter
+    def downloaded(self, downloaded: int) -> None: ...
+    @property
+    def total(self) -> int | None: ...
+    @total.setter
+    def total(self, total: int | None) -> None: ...

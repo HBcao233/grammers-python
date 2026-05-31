@@ -14,7 +14,12 @@ from grammers._rs.custom import (
     RestrictionReason,
     Message,
     HistoryMessageIter,
+    DownloadIter,
+    ProgressUpdate,
 )
+
+MIN_CHUNK_SIZE: int = 4 * 1024
+MAX_CHUNK_SIZE: int = 512 * 1024
 
 __all__ = [
     'LoginToken',
@@ -32,4 +37,6 @@ __all__ = [
     'RestrictionReason',
     'Message',
     'HistoryMessageIter',
+    'DownloadIter',
+    'ProgressUpdate',
 ]

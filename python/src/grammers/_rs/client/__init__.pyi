@@ -3,22 +3,14 @@ from collections.abc import AsyncIterator
 
 from grammers.tl import TLRequest, TLObject, types, enums
 from grammers.sessions import Session, PeerRef
-from grammers.custom import (
-    LoginToken,
-    User,
-    Group,
-    Channel,
-    Message,
-    HistoryMessageIter,
-)
-from grammers import hints
+from grammers import hints, custom
 from grammers.client import PasswordCallback
 
 class Client:
     @property
     def session(self) -> Session: ...
     @property
-    def me(self) -> types.User | None:
+    def me(self) -> custom.User | None:
         """
         the information about the currently logged-in user,
         `Client.authorize()` will set this attribute once
@@ -151,14 +143,14 @@ class Client:
                     print('Client is not authorized, you will need to sign_in!')
         """
         ...
-    async def authorize(self) -> types.User:
+    async def authorize(self) -> custom.User:
         """
         Terminal interactive login.
 
         Pseudo-code
             .. code-block:: python
 
-                async def authorize(self) -> types.User:
+                async def authorize(self) -> custom.User:
                     bot_token = self.bot_token
                     if bot_token:
                         return await self.bot_sign_in(bot_token)
@@ -186,7 +178,7 @@ class Client:
                         return await self._check_password()
         """
         ...
-    async def bot_sign_in(self) -> types.User:
+    async def bot_sign_in(self) -> custom.User:
         """
         Signs in to the bot account associated with this token.
 
@@ -214,7 +206,7 @@ class Client:
                 asyncio.run(main())
         """
         ...
-    async def request_login_code(self, phone: str, api_hash: str) -> LoginToken:
+    async def request_login_code(self, phone: str, api_hash: str) -> custom.LoginToken:
         """
         Requests the login code for the account associated to the given phone
         number via another Telegram application or SMS.
@@ -239,7 +231,7 @@ class Client:
                     token = await client.request_login_code(PHONE, API_HASH)
         """
         ...
-    async def sign_in(self, token: LoginToken, code: str) -> types.User:
+    async def sign_in(self, token: custom.LoginToken, code: str) -> custom.User:
         """
         Signs in to the user account.
 
@@ -286,7 +278,7 @@ class Client:
         ...
     async def check_password(
         self, password_info: types.account.Password, password: str
-    ) -> types.User:
+    ) -> custom.User:
         """
         Sign in using two-factor authentication (user password).
 
@@ -347,14 +339,14 @@ class Client:
         ...
     async def _check_password(
         self, password_info: types.account.Password | None = None
-    ) -> types.User:
+    ) -> custom.User:
         """
         Check password used by `Client.authorize()`
 
         Pseudo-code
             .. code-block:: python
 
-                async def _check_password(self, password_info: types.account.Password | None = None) -> types.User:
+                async def _check_password(self, password_info: types.account.Password | None = None) -> custom.User:
                     if password_info is None:
                         password_info = await self.get_password_information()
 
@@ -368,14 +360,14 @@ class Client:
                     return await sekf.check_password(password_info, password)
         """
         ...
-    async def _complete_login(self, auth: types.auth.Authorization) -> types.User:
+    async def _complete_login(self, auth: types.auth.Authorization) -> custom.User:
         """
         Complete login, will cache peer and save update state.
 
         Pseudo-code
             .. code-block:: python
 
-                async def _complete_login(self, auth: types.auth.Authorization) -> types.User:
+                async def _complete_login(self, auth: types.auth.Authorization) -> custom.User:
                     user = auth.user
                     user_id = user.id
                     bot = getattr(user, 'bot', None)
@@ -414,7 +406,7 @@ class Client:
 
     # ========== Chats Methods ==========
 
-    async def get_me(self) -> types.User:
+    async def get_me(self) -> custom.User:
         """
         Fetch information about the currently logged-in user.
 
@@ -428,7 +420,7 @@ class Client:
                 me = await client.get_me()
         """
         ...
-    async def resolve_username(self, username: str) -> User | Group | Channel:
+    async def resolve_username(self, username: str) -> hints.Peer:
         """
         Resolves a username into the peer that owns it, if any.
 
@@ -443,7 +435,7 @@ class Client:
                     print("Found peer!: {:?}", peer.name)
         """
         ...
-    async def resolve_phone(self, phone: str) -> User:
+    async def resolve_phone(self, phone: str) -> custom.User:
         """
         Resolves a phone into User.
 
@@ -498,7 +490,7 @@ class Client:
         self,
         peer: hints.InputPeerLike,
         message_ids: Sequence[int],
-    ) -> list[Message]:
+    ) -> list[custom.Message]:
         """
         Get messages by id.
 
@@ -521,7 +513,7 @@ class Client:
         page_limit: int = 0,
         max_id: int = 0,
         min_id: int = 0,
-    ) -> HistoryMessageIter:
+    ) -> custom.HistoryMessageIter:
         """
         Returns the conversation history with one interlocutor / within a chat.
         Note: Using `async for` with `limit=None` will iterate through the entire messages history.
@@ -582,74 +574,38 @@ class Client:
         self,
         downloadable: hints.Downloadable,
         *,
-        chunk_size: int = 512,
+        chunk_size: int = custom.MAX_CHUNK_SIZE,
         skip_chunks: int = 0,
-        # limit: Optional[int] = None,
+        limit: Optional[int] = None,
     ) -> AsyncIterator[bytearray]:
         """
         Stream-download Telegram media as an async iterator.
 
         Parameters
         ----------
-        media:
+        downloadable:
             Telegram media object, file location, message, or input document.
 
         chunk_size:
-            Size of each streamed chunk in bytes (unit: KB).
+            Size of each streamed chunk in bytes (unit: B).
 
-            For best performance, a chunk size >= 256 KB is strongly recommended.
+            chunk_size need between [4 * 1024, 512 * 1024] and divisible by 4 * 1024.
 
-            Very small chunk sizes may significantly increase:
+            Small chunk sizes may significantly increase:
             - Python async scheduling overhead
             - cross-language boundary overhead
             - memory allocation pressure
 
-            Recommended values:
-            - 256 KB
-            - 512 KB
-            - 1 MB (1024 KB)
-
-        offset:
-            Starting download offset in bytes.
+        skip_chunks:
+            skip download chunk count.
 
         limit:
             Optional maximum number of bytes to download.
 
         Yields
         ------
-        BytesChunk
-            A zero-copy bytes-like chunk object.
-
-        Performance Notes
-        -----------------
-        This API is optimized for lightweight streaming workloads such as:
-        - proxying traffic
-        - forwarding files
-        - websocket streaming
-        - HTTP relay
-        - incremental network transfer
-
-        Avoid long-running CPU-intensive work or synchronous blocking operations
-        inside the iteration loop.
-
-        Asynchronous IO operations such as:
-        - file writes
-        - socket writes
-        - HTTP streaming
-
-        are expected and work well with the downloader pipeline.
-
-        Bad:
-            async for chunk in client.iter_download(...):
-                heavy_hash(chunk)
-                compress(chunk)
-
-        Better:
-            async for chunk in client.iter_download(...):
-                await output.write(chunk)
-
-        For heavy processing workloads, parallel pipelines or worker tasks
-        are recommended to avoid slowing down the downloader.
+        bytearray
+            A zero-copy bytes-like chunk bytearray.
 
         Example
         -------
@@ -666,8 +622,45 @@ class Client:
         """
         ...
     async def download_media(
-        self, downloadable: hints.Downloadable, path: str
-    ) -> None: ...
+        self,
+        downloadable: hints.Downloadable,
+        path: str,
+        *,
+        chunk_size: int = custom.MAX_CHUNK_SIZE,
+        progress_callback: Callable[[custom.ProgressUpdate], None | Awaitable[None]]
+        | None = None,
+    ) -> None:
+        """
+        Download Telegram media to file path.
+
+        Parameters
+        ----------
+        downloadable:
+            Telegram media object, file location, message, or input document.
+
+        path:
+            output file path.
+
+        chunk_size:
+            Size of each streamed chunk in bytes (unit: B).
+
+            chunk_size need between [4 * 1024, 512 * 1024] and divisible by 4 * 1024.
+
+            Small chunk sizes may significantly increase:
+            - Python async scheduling overhead
+            - cross-language boundary overhead
+            - memory allocation pressure
+
+        skip_chunks:
+            skip download chunk count.
+
+        limit:
+            Optional maximum number of bytes to download.
+
+        progress_callback:
+            progress callable
+        """
+        ...
 
     # ========== Events Methods ==========
 

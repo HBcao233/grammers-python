@@ -1,3 +1,5 @@
+#![allow(non_snake_case)]
+
 use pyo3::{FromPyObject, Py, Python};
 
 use grammers_tl_types as tl;

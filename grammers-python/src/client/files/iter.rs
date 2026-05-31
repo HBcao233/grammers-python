@@ -92,7 +92,9 @@ async fn download_single_chunk(
                 }
             }
             Err(InvocationError::Rpc(err)) if err.code == FILE_MIGRATE_ERROR => {
-                dc_id = err.value.ok_or_else(|| PyRuntimeError::new_err("got FILE_MIGRATE_ERROR, but no dc_id received."))? as i32;
+                dc_id = err.value.ok_or_else(|| {
+                    PyRuntimeError::new_err("got FILE_MIGRATE_ERROR, but no dc_id received.")
+                })? as i32;
                 continue;
             }
             Err(e) => Err(PyInvocationError::new(e)),
@@ -169,7 +171,7 @@ impl DownloadIter {
                 }
                 self.done = done;
                 self.dc_id = Some(dc_id);
-                
+
                 if !done {
                     let limit_i64 = self.limit as i64;
                     let range: Box<dyn Iterator<Item = i64> + Send> = if limit_i64 > 0 {
@@ -250,14 +252,10 @@ impl PyDownloadIter {
             ));
         }
         if skip_chunks < 0 {
-            return Err(PyValueError::new_err(
-                "skip_chunks must be >= 0.",
-            ));
+            return Err(PyValueError::new_err("skip_chunks must be >= 0."));
         }
         if limit < 0 {
-            return Err(PyValueError::new_err(
-                "limit must be >= 0.",
-            ));
+            return Err(PyValueError::new_err("limit must be >= 0."));
         }
 
         let dc_id = downloadable.dc_id();

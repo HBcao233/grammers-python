@@ -14,6 +14,7 @@ pub(crate) use auth::{
     PyLoginToken, SignInError, SignUpRequiredError,
 };
 pub use client::PyClient;
+pub(crate) use files::{PyDownloadIter, PyProgressUpdate};
 use iter_buffer::IterBuffer;
 pub(crate) use messages::PyHistoryMessageIter;
 pub(crate) use updates::UpdateStream;
