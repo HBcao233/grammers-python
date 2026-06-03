@@ -61,16 +61,15 @@ jobs:
 
       - uses: actions/setup-python@v6
         with:
-          python-version: 3.12
+          python-version: '3.12'
 
-      - name: setup ziglang
-        run: 'pip install ziglang'
-      
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          args: --release --out dist -i python3.12
+          command: build
+          args: --release --out dist --interpreter python3.12
+          maturin-version: latest
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           
