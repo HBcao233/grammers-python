@@ -59,17 +59,18 @@ jobs:
           add-to-path: true
           local-cache: true
 
-      - name: Set up Python
-        uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6
         with:
           python-version: 3.12
 
+      - name: setup ziglang
+        run: 'pip install ziglang'
+      
       - name: Build wheels
         uses: PyO3/maturin-action@v1
         with:
           target: ${{ matrix.platform.target }}
-          command: build
-          args: --release --out dist --find-interpreter
+          args: --release --out dist -i python3.12
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
           
