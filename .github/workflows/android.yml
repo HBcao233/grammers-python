@@ -68,7 +68,7 @@ jobs:
         with:
           target: ${{ matrix.platform.target }}
           command: build
-          args: --release --out dist --interpreter python3.12
+          args: --release --out dist --no-interpreter
           maturin-version: latest
         env:
           ANDROID_NDK_HOME: ${{ steps.setup-ndk.outputs.ndk-path }}
